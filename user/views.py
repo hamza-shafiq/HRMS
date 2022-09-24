@@ -1,5 +1,5 @@
 from rest_framework import generics, status, views
-from .serializers import CreateUserSerializer, EmailVerificationSerializer
+from .serializers import CreateUserSerializer, EmailVerificationSerializer, LoginSerializer
 from rest_framework.response import Response
 from .models import User
 from .utils import Utils
@@ -12,8 +12,7 @@ from rest_framework.permissions import AllowAny
 
 
 class RegisterView(generics.GenericAPIView):
-
-
+    permission_classes = (AllowAny,)
     serializer_class = CreateUserSerializer
 
     def post(self, request):
@@ -55,3 +54,13 @@ class VerifyEmail(views.APIView):
             return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
         except jwt.exceptions.DecodeError as identifier:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = LoginSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
