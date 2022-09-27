@@ -3,19 +3,20 @@ from employees.models import Employee, BaseModel
 
 
 class Asset(BaseModel):
-    name = models.CharField(max_length=50)
+    asset_name = models.CharField(max_length=50)
     asset_model = models.CharField(max_length=50)
-    type = models.CharField(max_length=50)
-    description = models.CharField(max_length=250)
+    asset_type = models.CharField(max_length=50)
+    asset_description = models.CharField(max_length=250)
+    cost = models.FloatField
     is_deleted = models.BooleanField()
 
     def __str__(self):
-        return f'{self.name}'
+        return f'{self.asset_name} {self.id}'
 
 
 class AssignedAsset(BaseModel):
-    asset_name = models.ForeignKey(to=Asset, on_delete=models.CASCADE)
-    employee_id = models.ForeignKey(to=Employee, on_delete=models.CASCADE)
+    asset = models.ForeignKey(to=Asset, on_delete=models.CASCADE)
+    employee = models.ForeignKey(to=Employee, on_delete=models.CASCADE, related_name="assigned_asset")
 
     def __str__(self):
-        return f"{self.asset_name.name} {self.employee_id.first_name}"
+        return f"{self.asset.asset_name} {self.employee.first_name} {self.id}"
