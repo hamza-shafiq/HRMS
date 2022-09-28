@@ -17,7 +17,7 @@ class Asset(BaseTitleDescriptionModel):
         return f'{self.title} {self.id}'
 
 
-class AssignedAsset(BaseModel, ):
+class AssignedAsset(BaseModel):
     asset = models.ForeignKey(to=Asset, on_delete=models.CASCADE, related_name='assignee')
     employee = models.ForeignKey(to=Employee, on_delete=models.CASCADE, related_name="assets")
 
