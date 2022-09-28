@@ -15,7 +15,7 @@ class Recruits(BaseModel):
     email = models.EmailField()
     phone_number = models.TextField(max_length=20)
     position = models.CharField(max_length=20)
-    resume = models.FileField()
+    resume = models.URLField(max_length=200)
     status = models.CharField(max_length=100, choices=CHOICES)
 
     def __str__(self):
@@ -23,8 +23,8 @@ class Recruits(BaseModel):
 
 
 class Referrals(BaseModel):
-    recruit = models.ForeignKey(Recruits, on_delete=models.CASCADE)
-    referer = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    recruit = models.ForeignKey(Recruits, on_delete=models.CASCADE, related_name="referrers")
+    referer = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='recruits_referred')
 
     class Meta:
         unique_together = ('recruit', 'referer')
