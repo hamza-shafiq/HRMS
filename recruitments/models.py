@@ -23,8 +23,8 @@ class Recruits(BaseModel):
 
 
 class Referrals(BaseModel):
-    recruit = models.ForeignKey(Recruits, on_delete=models.CASCADE, related_name="referrals")
-    referer = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    recruit = models.ForeignKey(Recruits, on_delete=models.CASCADE, related_name="referrers")
+    referer = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='recruits_referred')
 
     class Meta:
         unique_together = ('recruit', 'referer')

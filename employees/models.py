@@ -6,6 +6,7 @@ from django_extensions.db.models import TimeStampedModel
 
 class BaseModel(TimeStampedModel):
     id = models.CharField(max_length=50, primary_key=True, default=uuid.uuid4())
+    config = models.JSONField(blank=True, default=dict)
 
     class Meta:
         abstract = True
