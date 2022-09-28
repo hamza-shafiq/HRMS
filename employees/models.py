@@ -2,10 +2,11 @@ import uuid
 
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
+from django_softdelete.models import SoftDeleteModel
 
 
-class BaseModel(TimeStampedModel):
-    id = models.CharField(max_length=50, primary_key=True, default=uuid.uuid4())
+class BaseModel(TimeStampedModel, SoftDeleteModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     config = models.JSONField(blank=True, default=dict)
 
     class Meta:
@@ -30,7 +31,7 @@ class Employee(BaseModel):
     last_name = models.CharField(max_length=50)
     phone_number = models.TextField(max_length=20)
     email = models.EmailField()
-    national_id_number = models.IntegerField(null=False, unique=True)
+    national_id_number = models.CharField(max_length=50, null=False, unique=True)
     emergency_contact_number = models.TextField(max_length=20)
     gender = models.CharField(choices=GENDER_OPTIONS, max_length=255)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="employees")

@@ -3,16 +3,15 @@ from employees.models import Employee, BaseModel
 from django_extensions.db.models import TitleDescriptionModel
 
 
-class BaseTitleDescriptionModels(BaseModel, TitleDescriptionModel):
+class BaseTitleDescriptionModel(BaseModel, TitleDescriptionModel):
     class Meta:
         abstract = True
 
 
-class Asset(BaseTitleDescriptionModels):
+class Asset(BaseTitleDescriptionModel):
     asset_model = models.CharField(max_length=50)
     asset_type = models.CharField(max_length=50)
     cost = models.FloatField()
-    is_deleted = models.BooleanField()
 
     def __str__(self):
         return f'{self.title} {self.id}'
