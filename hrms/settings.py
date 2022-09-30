@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'finance.apps.FinanceConfig',
     'attendance.apps.AttendanceConfig',
     'recruitments.apps.RecruitmentsConfig',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
