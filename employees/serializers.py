@@ -27,3 +27,5 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return Employee.objects.create(**validated_data)
+
+    # TODO when creating an employee add to the employee Group Model to limit the access

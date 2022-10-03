@@ -1,5 +1,6 @@
 from django.db import models
-from employees.models import Employee, BaseModel
+from employees.models import Employee
+from user.models import BaseModel
 
 
 class Payroll(BaseModel):

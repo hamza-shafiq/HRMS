@@ -9,7 +9,7 @@ class EmployeeFilter(filters.FilterSet):
 
     class Meta:
         model = Employee
-        fields = ['first_name', 'last_name', 'phone_number', 'email', 'national_id_number',
+        fields = ['first_name', 'last_name', 'phone_number', 'national_id_number',
                   'gender', 'department', 'designation', 'joining_date']
 
 
