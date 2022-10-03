@@ -28,7 +28,7 @@ urlpatterns = [
         template_name='api-docs.html',
         extra_context={'schema_url': 'openapi-schema'}
     ), name='swagger-ui'),
-    path('redocs/', TemplateView.as_view(
+    path('', TemplateView.as_view(
         template_name='redoc.html',
         extra_context={'schema_url': 'openapi-schema'}
     ), name='doc'),
