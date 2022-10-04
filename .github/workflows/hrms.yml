@@ -17,6 +17,7 @@ jobs:
       postgres:
         image: postgres:latest
         env:
+          SECRET_KEY: django-insecure-=%hx#==fyy4fwrod#$ut@!&$6*j9z_(-*35h77gsul66qx5=p%
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: github_actions
