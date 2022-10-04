@@ -30,7 +30,7 @@ jobs:
         pip install -r requirements.txt
     - name: Run Migrations
       env:
-        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SECRET_KEY: 'django-insecure-=%hx#==fyy4fwrod#$ut@!&$6*j9z_(-*35h77gsul66qx5=p%'
       run: python manage.py migrate
     - name: Run Tests
       run: python manage.py test
