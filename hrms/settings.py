@@ -26,8 +26,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
-# SECRET_KEY = env('SECRET_KEY')
+# SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -109,10 +109,10 @@ WSGI_APPLICATION = 'hrms.wsgi.application'
 if os.environ.get('GITHUB_WORKFLOW'):
     DATABASES = {
         'default': {
-           'ENGINE': 'django.db.backends.postgresql',
-           'NAME': 'github_actions',
-           'USER': 'postgres',
-           'PASSWORD': 'postgres',
+           'ENGINE': os.environ.get("DATABASE_ENGINE"),
+           'NAME': os.environ.get("POSTGRES_DB"),
+           'USER': os.environ.get("POSTGRES_USER"),
+           'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
            'HOST': '127.0.0.1',
            'PORT': '5432',
         }

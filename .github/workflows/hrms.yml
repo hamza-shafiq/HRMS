@@ -11,9 +11,9 @@ jobs:
       postgres:
         image: postgres:latest
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: github_actions
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -30,24 +30,24 @@ jobs:
         pip install -r requirements.txt
     - name: Run Migrations
       env:
-        SECRET_KEY: 'django-insecure-=%hx#==fyy4fwrod#$ut@!&$6*j9z_(-*35h77gsul66qx5=p%'
+        SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       run: python manage.py migrate
     - name: Run Tests
       env:
-        SECRET_KEY: 'django-insecure-=%hx#==fyy4fwrod#$ut@!&$6*j9z_(-*35h77gsul66qx5=p%'
+        SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       run: python manage.py test
 
-  deploy:
-    needs: build-test
-    name: Deploy to server
-    runs-on: ubuntu-latest
-    steps:
-      - name: executing remote ssh commands using ssh key
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_KEY }}
-          port: ${{ secrets.SERVER_PORT }}
-          script: |
-            /home/ubuntu/server/deploy/deploy_dev.sh
+#  deploy:
+#    needs: build-test
+#    name: Deploy to server
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: executing remote ssh commands using ssh key
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.SERVER_HOST }}
+#          username: ${{ secrets.SERVER_USERNAME }}
+#          key: ${{ secrets.SERVER_KEY }}
+#          port: ${{ secrets.SERVER_PORT }}
+#          script: |
+#            /home/ubuntu/server/deploy/deploy_dev.sh
