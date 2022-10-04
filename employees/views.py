@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
 from employees.models import Employee, Department
 from django_filters import rest_framework as filters
-
+from rest_framework_roles.granting import is_self
 
 class EmployeeFilter(filters.FilterSet):
 
@@ -14,7 +14,12 @@ class EmployeeFilter(filters.FilterSet):
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    view_permissions = {
+        'retrieve': {'admin': True, 'anon': True},
+        'create': {'admin': True},
+        'list': {'anon': True},
+        'update': {'admin': True},
+    }
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 

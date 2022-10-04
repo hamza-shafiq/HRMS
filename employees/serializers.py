@@ -1,3 +1,4 @@
+from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from employees.models import Employee, Department
 
@@ -20,12 +21,20 @@ class EmployeeSerializer(serializers.ModelSerializer):
         read_only=True,
         view_name='assigned-asset-detail'
     )
+    password = serializers.CharField(
+        max_length=68, min_length=6, write_only=True)
 
     class Meta:
         model = Employee
-        fields = '__all__'
+        fields = ['assets', 'username', 'email', 'password', 'first_name', 'last_name', 'phone_number',
+                  'national_id_number', 'emergency_contact_number', 'gender', 'department', 'designation', 'bank',
+                  'account_number', 'profile_pic', 'joining_date', 'employee_status', 'is_verified', 'is_employee',
+                  'is_active']
+
+    def validate_password(self, value):
+        if value:
+            return make_password(value)
+        return value
 
     def create(self, validated_data):
         return Employee.objects.create(**validated_data)
-
-    # TODO when creating an employee add to the employee Group Model to limit the access

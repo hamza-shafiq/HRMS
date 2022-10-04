@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
+    'rest_framework_roles',
     'user.apps.UserConfig',
     'employees.apps.EmployeesConfig',
     'assets.apps.AssetsConfig',
@@ -84,6 +85,10 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK_ROLES = {
+  'roles': 'hrms.roles.ROLES',
+}
+
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
@@ -94,6 +99,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
