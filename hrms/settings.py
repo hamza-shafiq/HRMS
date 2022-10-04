@@ -109,10 +109,10 @@ WSGI_APPLICATION = 'hrms.wsgi.application'
 if os.environ.get('GITHUB_WORKFLOW'):
     DATABASES = {
         'default': {
-           'ENGINE': env('DATABASE_ENGINE'),
-           'NAME': os.environ.get("POSTGRES_DB"),
-           'USER': os.environ.get("POSTGRES_USER"),
-           'PASSWORD': os.environ.get("POSTGRES_PASSWORD"),
+           'ENGINE': 'django.db.backends.postgresql',
+           'NAME': 'github_actions',
+           'USER': 'postgres',
+           'PASSWORD': 'postgres',
            'HOST': '127.0.0.1',
            'PORT': '5432',
         }
