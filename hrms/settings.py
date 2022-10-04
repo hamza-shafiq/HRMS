@@ -172,8 +172,8 @@ STATIC_ROOT = os.path.join(PROJECT_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_USE_TLS = env('EMAIL_USE_TLS')
-EMAIL_HOST = env('EMAIL_HOST')
-EMAIL_PORT = env('EMAIL_PORT')
-EMAIL_HOST_USER = env('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS')
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
