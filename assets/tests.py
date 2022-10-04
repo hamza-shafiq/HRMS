@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from models import Asset
+from .models import Asset
 
 
 class AssetTests(TestCase):
