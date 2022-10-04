@@ -9,18 +9,28 @@ class EmployeeFilter(filters.FilterSet):
 
     class Meta:
         model = Employee
-        fields = ['first_name', 'last_name', 'phone_number', 'email', 'national_id_number',
+        fields = ['first_name', 'last_name', 'phone_number', 'national_id_number',
                   'gender', 'department', 'designation', 'joining_date']
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    view_permissions = {
+        'retrieve': {'admin': True, 'employee': True},
+        'create': {'admin': True},
+        'list': {'admin': True, 'employee': True},
+        'update': {'admin': True},
+    }
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    view_permissions = {
+        'retrieve': {'admin': True, 'employee': True},
+        'create': {'admin': True},
+        'list': {'admin': True},
+        'update': {'admin': True},
+    }
     queryset = Employee.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = EmployeeFilter

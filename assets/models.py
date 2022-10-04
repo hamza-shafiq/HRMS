@@ -1,5 +1,6 @@
 from django.db import models
-from employees.models import Employee, BaseModel
+from employees.models import Employee
+from user.models import BaseModel
 from django_extensions.db.models import TitleDescriptionModel
 
 
