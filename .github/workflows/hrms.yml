@@ -2,7 +2,7 @@ name: HRMS CI
 
 on:
   push:
-    branches: [ "deployment" ]
+    branches: [ "staging" ]
 
 jobs:
   build-test:
@@ -37,17 +37,17 @@ jobs:
         SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       run: python manage.py test
 
-#  deploy:
-#    needs: build-test
-#    name: Deploy to server
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: executing remote ssh commands using ssh key
-#        uses: appleboy/ssh-action@master
-#        with:
-#          host: ${{ secrets.SERVER_HOST }}
-#          username: ${{ secrets.SERVER_USERNAME }}
-#          key: ${{ secrets.SERVER_KEY }}
-#          port: ${{ secrets.SERVER_PORT }}
-#          script: |
-#            /home/ubuntu/server/deploy/deploy_dev.sh
+  deploy:
+    needs: build-test
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    steps:
+      - name: executing remote ssh commands using ssh key
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_KEY }}
+          port: ${{ secrets.SERVER_PORT }}
+          script: |
+            /home/ubuntu/server/deploy/deploy_dev.sh
