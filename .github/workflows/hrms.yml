@@ -15,7 +15,6 @@ jobs:
           POSTGRES_USER: ${{ secrets.DATABASE_USER }}
           POSTGRES_PASSWORD: ${{ secrets.DATABASE_NAME }}
           POSTGRES_DB: ${{ secrets.DATABASE_PASSWORD }}
-          POSTGRES_PORT: ${{ secrets.DATABASE_PORT }}
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
