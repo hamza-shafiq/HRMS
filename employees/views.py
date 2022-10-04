@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
 from employees.models import Employee, Department
 from django_filters import rest_framework as filters
-from rest_framework_roles.granting import is_self
+
 
 class EmployeeFilter(filters.FilterSet):
 
@@ -15,9 +15,9 @@ class EmployeeFilter(filters.FilterSet):
 
 class DepartmentViewSet(viewsets.ModelViewSet):
     view_permissions = {
-        'retrieve': {'admin': True, 'anon': True},
+        'retrieve': {'admin': True, 'employee': True},
         'create': {'admin': True},
-        'list': {'anon': True},
+        'list': {'admin': True, 'employee': True},
         'update': {'admin': True},
     }
     queryset = Department.objects.all()
@@ -25,7 +25,12 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    view_permissions = {
+        'retrieve': {'admin': True, 'employee': True},
+        'create': {'admin': True},
+        'list': {'admin': True},
+        'update': {'admin': True},
+    }
     queryset = Employee.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = EmployeeFilter

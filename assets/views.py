@@ -5,12 +5,22 @@ from assets.models import Asset, AssignedAsset
 
 
 class AssetViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    view_permissions = {
+        'retrieve': {'admin': True, 'employee': True},
+        'create': {'admin': True},
+        'list': {'admin': True, 'employee': True},
+        'update': {'admin': True},
+    }
     queryset = Asset.objects.all()
     serializer_class = AssetSerializer
 
 
 class AssignedAssetViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    view_permissions = {
+        'retrieve': {'admin': True, 'employee': True},
+        'create': {'admin': True},
+        'list': {'admin': True, 'employee': True},
+        'update': {'admin': True},
+    }
     queryset = AssignedAsset.objects.all()
     serializer_class = AssignedAssetSerializer

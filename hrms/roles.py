@@ -1,8 +1,11 @@
-from rest_framework_roles.roles import is_user, is_anon, is_admin
+from rest_framework_roles.roles import is_admin
+
+
+def is_employee(request, view):
+    return request.user.is_employee
 
 
 ROLES = {
     'admin': is_admin,
-    'user': is_user,
-    'anon': is_anon,
+    'employee': is_employee
 }
