@@ -14,3 +14,4 @@ sqlparse==0.4.2
 pyyaml
 uritemplate
 django-jazzmin
+django-rest-swagger
