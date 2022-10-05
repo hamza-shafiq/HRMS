@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'attendance.apps.AttendanceConfig',
     'recruitments.apps.RecruitmentsConfig',
     'django_filters',
-    'rest_framework_swagger',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -100,22 +100,20 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'HRMS API - ViteAce Solutions',
+    'DESCRIPTION': 'API Documentation - v1',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
 }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
-}
-
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'api_key': {
-            'type': 'apiKey',
-            'in': 'header',
-            'name': 'Authorization'
-        }
-    }
 }
 
 WSGI_APPLICATION = 'hrms.wsgi.application'
