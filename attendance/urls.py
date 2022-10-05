@@ -21,10 +21,14 @@ leaves_detail = LeavesViewSet.as_view({
     'patch': 'partial_update',
     'delete': 'destroy'
 })
+mark_attendance = AttendanceViewSet.as_view({
+    'post': 'mark_attendance'
+})
 
 urlpatterns = [
     path('attendance/', attendance_list, name="attendance-list"),
     path('attendance/<str:pk>/', attendance_detail, name='attendance-detail'),
     path('leaves/', leaves_list, name="leaves-list"),
     path('leaves/<str:pk>/', leaves_detail, name='leaves-detail'),
+    path('attendance/mark-attendance/', mark_attendance, name='mark-attendance')
 ]
