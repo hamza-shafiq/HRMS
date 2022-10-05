@@ -14,7 +14,6 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, smart_bytes, DjangoUnicodeDecodeError
 
 
-
 class RegisterView(generics.GenericAPIView):
     permission_classes = (AllowAny,)
     serializer_class = CreateUserSerializer

@@ -42,40 +42,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
         return JsonResponse({"error": "Please enter valid action (check-in/check-out)"}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    def create(self, request, *args, **kwargs):
-        att_type = request.data['action']
-        user = request.user
-        record = Attendance.objects.filter(employee_id=user.id, check_in__contains=datetime.now().date())
-        if att_type == "check-in":
-            if not record:
-                current_date = datetime.now()
-                check_in = Attendance.objects.create(
-                    employee_id=user.id,
-                    check_in=current_date,
-                    status="ON_TIME"
-                )
-                return JsonResponse({"success": f"employee {att_type} successfully"}, status=status.HTTP_201_CREATED)
-            return JsonResponse({"error": f"Employee {att_type} already today"}, status=status.HTTP_208_ALREADY_REPORTED)
-        return JsonResponse({"error": "Please enter valid action"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    def partial_update(self, request, *args, **kwargs):
-        att_type = request.data['action']
-        user = request.user
-        checked_in = Attendance.objects.filter(employee_id=user.id, check_in__contains=datetime.now().date())
-        if att_type == "check-out":
-            if checked_in.exists():
-                checked_out = Attendance.objects.filter(employee_id=user.id,
-                                                        check_out__contains=datetime.now().date())
-                if not checked_out:
-                    current_date = datetime.now()
-                    check_out = Attendance.objects.update(
-                        check_out=current_date,
-                    )
-                    return JsonResponse({"success": f"Employee has {att_type} successfully"}, status=status.HTTP_200_OK)
-                return JsonResponse({"error": f"Employee has already {att_type}"}, status=status.HTTP_208_ALREADY_REPORTED)
-            return JsonResponse({"error": f"Employee did not check in today"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return JsonResponse({"error": f"Please enter valid action"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-
     def destroy(self, request, *args, **kwargs):
         attendance = self.get_object()
         attendance.is_deleted = True

@@ -14,5 +14,8 @@ class Payroll(BaseModel):
     year = models.CharField(max_length=50)
     released = models.BooleanField()
 
+    class Meta:
+        db_table = "payrolls"
+
     def __str__(self):
         return f"{self.employee.first_name}"

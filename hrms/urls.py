@@ -17,16 +17,17 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
-from rest_framework_swagger.views import get_swagger_view
-schema_view = get_swagger_view(title='HRMS - ViteAce Solutions')
 
 urlpatterns = [
-    path('', schema_view),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('admin/', admin.site.urls),
     path('auth/', include('user.urls')),
-    path('employees/', include('employees.urls')),
-    path('assets/', include('assets.urls')),
-    path('attendance/', include('attendance.urls')),
+    path('', include('attendance.urls')),
+    path('', include('employees.urls')),
+    path('', include('assets.urls')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

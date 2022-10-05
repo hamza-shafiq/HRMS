@@ -19,6 +19,9 @@ class Recruits(BaseModel):
     resume = models.URLField(max_length=200)
     status = models.CharField(max_length=100, choices=CHOICES)
 
+    class Meta:
+        db_table = "recruits"
+
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
 
@@ -29,6 +32,7 @@ class Referrals(BaseModel):
 
     class Meta:
         unique_together = ('recruit', 'referer')
+        db_table = "referrals"
 
     def __str__(self):
         return f'{self.recruit.first_name} {self.referer.first_name}'

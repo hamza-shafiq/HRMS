@@ -6,6 +6,9 @@ class Department(BaseModel):
     department_name = models.CharField(max_length=50)
     description = models.CharField(max_length=250)
 
+    class Meta:
+        db_table = "departments"
+
     def __str__(self):
         return f'{self.department_name} {self.id}'
 
@@ -34,6 +37,9 @@ class Employee(User):
     profile_pic = models.URLField(max_length=200)
     joining_date = models.DateTimeField()
     employee_status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+
+    class Meta:
+        db_table = "employees"
 
     def __str__(self):
         return f"{self.first_name} {self.id}"

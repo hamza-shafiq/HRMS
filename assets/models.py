@@ -14,6 +14,9 @@ class Asset(BaseTitleDescriptionModel):
     asset_type = models.CharField(max_length=50)
     cost = models.FloatField()
 
+    class Meta:
+        db_table = 'assets'
+
     def __str__(self):
         return f'{self.title} {self.id}'
 
@@ -21,6 +24,9 @@ class Asset(BaseTitleDescriptionModel):
 class AssignedAsset(BaseModel):
     asset = models.ForeignKey(to=Asset, on_delete=models.CASCADE, related_name='assignee')
     employee = models.ForeignKey(to=Employee, on_delete=models.CASCADE, related_name="assets")
+
+    class Meta:
+        db_table = "assigned_assets"
 
     def __str__(self):
         return f"{self.asset.title} {self.employee.first_name} {self.id}"
