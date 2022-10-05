@@ -16,6 +16,9 @@ class Attendance(BaseModel):
     check_out = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICE)
 
+    class Meta:
+        db_table = "attendances"
+
     def __str__(self):
         return f"{self.employee.first_name} {self.created}"
 
@@ -27,6 +30,9 @@ class Leaves(BaseModel):
     request_date = models.DateTimeField()
     from_date = models.DateField()
     to_date = models.DateField()
+
+    class Meta:
+        db_table = "leaves"
 
     def __str__(self):
         return f"{self.employee.first_name} {self.created}"

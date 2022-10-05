@@ -26,7 +26,7 @@ urlpatterns = [
     path('redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path('admin/', admin.site.urls),
     path('auth/', include('user.urls')),
-    path('employees/', include('employees.urls')),
-    path('assets/', include('assets.urls')),
+    path('', include('employees.urls')),
+    path('', include('assets.urls')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
