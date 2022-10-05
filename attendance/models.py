@@ -1,5 +1,6 @@
 from django.db import models
-from employees.models import Employee, BaseModel
+from employees.models import Employee
+from user.models import BaseModel
 
 
 class Attendance(BaseModel):
@@ -10,14 +11,16 @@ class Attendance(BaseModel):
         ('LATE_DEPARTURE', 'LATE_DEPARTURE'),
         ('ON_TIME', 'ON_TIME')
     ]
-    employee_id = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    check_in = models.DateTimeField()
-    check_out = models.DateTimeField()
-    date = models.DateField(auto_now_add=True)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendance')
+    check_in = models.DateTimeField(null=True, blank=True)
+    check_out = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICE)
 
+    class Meta:
+        db_table = "attendances"
+
     def __str__(self):
-        return f"{self.employee_id.first_name} {self.date}"
+        return f"{self.employee.first_name} {self.created}"
 
 
 class Leaves(BaseModel):
@@ -28,5 +31,8 @@ class Leaves(BaseModel):
     from_date = models.DateField()
     to_date = models.DateField()
 
+    class Meta:
+        db_table = "leaves"
+
     def __str__(self):
-        return f"{self.employee.first_name} {self.request_date}"
+        return f"{self.employee.first_name} {self.created}"

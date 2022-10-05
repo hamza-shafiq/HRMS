@@ -1,5 +1,6 @@
 from django.db import models
-from employees.models import Employee, BaseModel
+from employees.models import Employee
+from user.models import BaseModel
 
 
 class Payroll(BaseModel):
@@ -12,6 +13,9 @@ class Payroll(BaseModel):
     month = models.CharField(max_length=20)
     year = models.CharField(max_length=50)
     released = models.BooleanField()
+
+    class Meta:
+        db_table = "payrolls"
 
     def __str__(self):
         return f"{self.employee.first_name}"
