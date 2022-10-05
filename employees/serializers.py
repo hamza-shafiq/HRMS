@@ -16,6 +16,7 @@ class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
     assets = serializers.HyperlinkedRelatedField(
         many=True,
         read_only=True,
@@ -26,7 +27,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ['assets', 'username', 'email', 'password', 'first_name', 'last_name', 'phone_number',
+        fields = ['id', 'assets', 'username', 'email', 'password', 'first_name', 'last_name', 'phone_number',
                   'national_id_number', 'emergency_contact_number', 'gender', 'department', 'designation', 'bank',
                   'account_number', 'profile_pic', 'joining_date', 'employee_status', 'is_verified', 'is_employee',
                   'is_active']

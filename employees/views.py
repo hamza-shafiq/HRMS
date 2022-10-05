@@ -25,12 +25,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    view_permissions = {
-        'retrieve': {'admin': True, 'employee': True},
-        'create': {'admin': True},
-        'list': {'admin': True},
-        'update': {'admin': True},
-    }
+    permission_classes = (AllowAny,)
     queryset = Employee.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = EmployeeFilter

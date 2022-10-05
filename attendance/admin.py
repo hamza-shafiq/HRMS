@@ -1,3 +1,5 @@
 from django.contrib import admin
+import attendance.models
 
-# Register your models here.
+admin.site.register(attendance.models.Attendance)
+admin.site.register(attendance.models.Leaves)
