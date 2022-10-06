@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from rest_framework.response import Response
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
@@ -31,22 +32,40 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 Attendance.objects.create(employee_id=user.id, check_in=current_datetime, status="ON_TIME")
                 return JsonResponse({"success": f"employee checked-in successfully!"}, status=status.HTTP_201_CREATED)
 
-            return JsonResponse({"error": f"Employee already checked-in today!"}, status=status.HTTP_208_ALREADY_REPORTED)
+            return JsonResponse({"error": f"Employee already checked-in today!"},
+                                status=status.HTTP_208_ALREADY_REPORTED)
 
         elif action_type == "check-out":
             if not record:
-                return JsonResponse({"error": f"Employee did not check-in today!"}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+                return JsonResponse({"error": f"Employee did not check-in today!"},
+                                    status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-            record.update(check_out=current_datetime)
+            record.check_out = current_datetime
             return JsonResponse({"success": f"employee checked-out successfully!"}, status=status.HTTP_200_OK)
 
-        return JsonResponse({"error": "Please enter valid action (check-in/check-out)"}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return JsonResponse({"error": "Please enter valid action (check-in/check-out)"},
+                            status=status.HTTP_406_NOT_ACCEPTABLE)
 
     def destroy(self, request, *args, **kwargs):
         attendance = self.get_object()
         attendance.is_deleted = True
         attendance.save()
         return Response(data=f'Attendance with id {attendance.id} deleted successfully')
+
+    def list(self, request, *args, **kwargs):
+        date = self.request.query_params.get('date')
+        emp_id = self.request.query_params.get('employee_id')
+        if date and emp_id:
+            try:
+                datetime.strptime(date, '%Y-%m-%d')
+                record = Attendance.objects.filter(check_in__date=date, employee_id=emp_id)
+            except:
+                return JsonResponse({'error': 'Invalid date format or employee id'})
+            serializer = AttendanceSerializer(record, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        queryset = Attendance.objects.all()
+        serializer = AttendanceSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class LeavesViewSet(viewsets.ModelViewSet):
@@ -58,4 +77,4 @@ class LeavesViewSet(viewsets.ModelViewSet):
         leave = self.get_object()
         leave.is_deleted = True
         leave.save()
-        return Response(data=f'Attendance with id {leave.id} deleted successfully')
+        return Response(data=f'Leave with id {leave.id} deleted successfully')
