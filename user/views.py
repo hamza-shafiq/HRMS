@@ -12,6 +12,7 @@ from rest_framework.permissions import AllowAny
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, smart_bytes, DjangoUnicodeDecodeError
+from .tasks import send_email
 
 
 class RegisterView(generics.GenericAPIView):
@@ -34,7 +35,7 @@ class RegisterView(generics.GenericAPIView):
         data = {'email_body': email_body, 'to_email': user.email,
                 'email_subject': 'Verify your email'}
 
-        Utils.send_email(data)
+        send_email.delay(data)
 
         return Response(user_data, status=status.HTTP_201_CREATED)
 
@@ -94,7 +95,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
                 absurl
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
-            Utils.send_email(data)
+            send_email.delay(data)
             return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
         return Response({'error': 'Email does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
