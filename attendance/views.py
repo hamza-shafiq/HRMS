@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 class AttendanceViewSet(viewsets.ModelViewSet):
     view_permissions = {
         'retrieve': {'admin': True, 'employee': True},
-        'create': {'employee': True, 'admin': True},
+        'create': {'admin': True},
         'list': {'admin': True},
         'update': {'employee': True, 'admin': True},
         'partial_update': {'admin': True},
@@ -74,7 +74,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 class LeavesViewSet(viewsets.ModelViewSet):
     view_permissions = {
         'retrieve': {'admin': True, 'employee': True},
-        'create': {'admin': True},
+        'create': {'admin': True, 'employee': True},
         'list': {'admin': True},
         'update': {'admin': True},
         'partial_update': {'admin': True},

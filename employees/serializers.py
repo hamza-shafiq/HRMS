@@ -12,7 +12,7 @@ class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Department
-        fields = '__all__'
+        fields = ["url", "id", "department_name", "description", "employees"]
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
