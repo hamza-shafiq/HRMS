@@ -23,9 +23,7 @@ employees_detail = EmployeeViewSet.as_view({
 })
 
 get_employee_details = EmployeeViewSet.as_view({
-    'get': 'employee_detail',
-    'post': 'employee_detail_with_id'
-
+    'get': 'employee_detail'
 })
 
 urlpatterns = [

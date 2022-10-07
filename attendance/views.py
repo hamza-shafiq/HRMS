@@ -25,26 +25,28 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         action_type = request.data.get("action", None)
         user = request.user
         current_datetime = datetime.now()
-        record = Attendance.objects.filter(employee_id=user.id, check_in__contains=current_datetime.date()).first()
+        if user.is_employee:
+            record = Attendance.objects.filter(employee_id=user.id, check_in__contains=current_datetime.date()).first()
 
-        if action_type == "check-in":
-            if not record:
-                Attendance.objects.create(employee_id=user.id, check_in=current_datetime, status="ON_TIME")
-                return JsonResponse({"success": f"employee checked-in successfully!"}, status=status.HTTP_201_CREATED)
+            if action_type == "check-in":
+                if not record:
+                    Attendance.objects.create(employee_id=user.id, check_in=current_datetime, status="ON_TIME")
+                    return JsonResponse({"success": f"employee checked-in successfully!"}, status=status.HTTP_201_CREATED)
 
-            return JsonResponse({"error": f"Employee already checked-in today!"},
-                                status=status.HTTP_208_ALREADY_REPORTED)
+                return JsonResponse({"error": f"Employee already checked-in today!"},
+                                    status=status.HTTP_208_ALREADY_REPORTED)
 
-        elif action_type == "check-out":
-            if not record:
-                return JsonResponse({"error": f"Employee did not check-in today!"},
-                                    status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            elif action_type == "check-out":
+                if not record:
+                    return JsonResponse({"error": f"Employee did not check-in today!"},
+                                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-            record.check_out = current_datetime
-            return JsonResponse({"success": f"employee checked-out successfully!"}, status=status.HTTP_200_OK)
+                record.check_out = current_datetime
+                return JsonResponse({"success": f"employee checked-out successfully!"}, status=status.HTTP_200_OK)
 
-        return JsonResponse({"error": "Please enter valid action (check-in/check-out)"},
-                            status=status.HTTP_406_NOT_ACCEPTABLE)
+            return JsonResponse({"error": "Please enter valid action (check-in/check-out)"},
+                                status=status.HTTP_406_NOT_ACCEPTABLE)
+        return JsonResponse({'error': 'Only employee can mark attendance'}, status=status.HTTP_401_UNAUTHORIZED)
 
     def destroy(self, request, *args, **kwargs):
         attendance = self.get_object()

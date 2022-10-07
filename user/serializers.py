@@ -71,12 +71,12 @@ class LoginSerializer(serializers.ModelSerializer):
         email = attrs.get('email', '')
         password = attrs.get('password', '')
         user = auth.authenticate(email=email, password=password)
+        if not user:
+            raise AuthenticationFailed("Invalid Credentials, try again")
         if not user.is_active:
             raise AuthenticationFailed("Account disabled, contact admin")
         if not user.is_verified:
             raise AuthenticationFailed("Email is not verified")
-        if not user:
-            raise AuthenticationFailed("Invalid Credentials, try again")
         return {
             'email': user.email,
             'username': user.username,
@@ -139,3 +139,10 @@ class LogoutSerializer(serializers.Serializer):
 
         except TokenError:
             self.fail('bad_token')
+
+
+class UserSerializer(serializers.Serializer):
+    user_id = serializers.CharField()
+
+    class Meta:
+        fields = ['user_id']
