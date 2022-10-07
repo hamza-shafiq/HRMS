@@ -46,7 +46,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
             return JsonResponse({"error": "Please enter valid action (check-in/check-out)"},
                                 status=status.HTTP_406_NOT_ACCEPTABLE)
-        return JsonResponse({'error': 'Only employee can mark attendance'}, status=status.HTTP_401_UNAUTHORIZED)
+        return JsonResponse({'error': 'Only employee can mark attendance'}, status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         attendance = self.get_object()
