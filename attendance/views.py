@@ -13,9 +13,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     view_permissions = {
         'retrieve': {'admin': True, 'employee': True},
         'create': {'employee': True, 'admin': True},
-        'list': {'admin': True, 'employee': True},
+        'list': {'admin': True},
         'update': {'employee': True, 'admin': True},
-        'partial_update': {'employee': True, 'admin': True},
+        'partial_update': {'admin': True},
+        'destroy': {'admin': True},
     }
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
@@ -26,7 +27,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         user = request.user
         current_datetime = datetime.now()
         if user.is_employee:
-            record = Attendance.objects.filter(employee_id=user.id, check_in__contains=current_datetime.date()).first()
+            record = Attendance.objects.filter(employee_id=user.id, check_in__contains=current_datetime.date(), is_deleted=False).first()
 
             if action_type == "check-in":
                 if not record:
@@ -60,7 +61,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if date and emp_id:
             try:
                 datetime.strptime(date, '%Y-%m-%d')
-                record = Attendance.objects.filter(check_in__date=date, employee_id=emp_id)
+                record = Attendance.objects.filter(check_in__date=date, employee_id=emp_id, is_deleted=False)
             except:
                 return JsonResponse({'error': 'Invalid date format or employee id'})
             serializer = AttendanceSerializer(record, many=True)
@@ -71,7 +72,14 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
 
 class LeavesViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    view_permissions = {
+        'retrieve': {'admin': True, 'employee': True},
+        'create': {'admin': True},
+        'list': {'admin': True},
+        'update': {'admin': True},
+        'partial_update': {'admin': True},
+        'destroy': {'admin': True},
+    }
     queryset = Leaves.objects.all()
     serializer_class = LeaveSerializer
 

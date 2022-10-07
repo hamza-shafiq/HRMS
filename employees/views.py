@@ -21,6 +21,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         'create': {'admin': True},
         'list': {'admin': True, 'employee': True},
         'update': {'admin': True},
+        'partial_update': {'admin': True},
         'destroy': {'admin': True},
     }
     queryset = Department.objects.all()
@@ -39,6 +40,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         'create': {'admin': True},
         'list': {'admin': True},
         'update': {'admin': True},
+        'partial_update': {'admin': True},
         'destroy': {'admin': True},
     }
     queryset = Employee.objects.all()
@@ -56,7 +58,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             emp_id = self.request.query_params.get('employee_id')
             if emp_id:
                 try:
-                    record = Employee.objects.filter(id=emp_id)
+                    record = Employee.objects.filter(id=emp_id, is_deleted=False)
                     if record:
                         serializer = EmployeeSerializer(record, many=True, context=serializer_context)
                         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -65,7 +67,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     return JsonResponse({'error': 'Invalid employee id'}, status=status.HTTP_406_NOT_ACCEPTABLE)
             return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
         elif user.is_employee:
-            record = Employee.objects.filter(id=user.id)
+            record = Employee.objects.filter(id=user.id, is_deleted=False)
             if record:
                 serializer = EmployeeSerializer(record, many=True, context=serializer_context)
                 return Response(serializer.data, status=status.HTTP_200_OK)
