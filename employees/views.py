@@ -19,13 +19,22 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         'create': {'admin': True},
         'list': {'admin': True, 'employee': True},
         'update': {'admin': True},
+        'partial_update': {'admin': True},
+        'destroy': {'admin': True},
     }
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    view_permissions = {
+        'retrieve': {'admin': True, 'employee': True},
+        'create': {'admin': True},
+        'list': {'admin': True},
+        'update': {'admin': True},
+        'partial_update': {'admin': True},
+        'destroy': {'admin': True},
+    }
     queryset = Employee.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = EmployeeFilter
