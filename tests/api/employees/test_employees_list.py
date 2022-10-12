@@ -92,9 +92,8 @@ def test_unique_constraint_employees(admin_factory, department_factory, authed_t
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_get_employees_count(admin_factory, employee_factory, authed_token_client_generator):
+def test_get_employees_count(admin_factory, authed_token_client_generator):
     user = admin_factory()
-    employee_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-list'))
     assert len(response.json()) == Employee.objects.all().count()

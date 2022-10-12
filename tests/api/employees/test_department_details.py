@@ -75,16 +75,16 @@ def test_delete_department_non_admin(user_factory, department_factory, authed_to
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
-def test_retrieve_delete_department_invalid_id(admin_factory, department_factory, authed_token_client_generator):
+def test_retrieve_delete_department_invalid_id(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     retrieve_response = client.get(reverse('department-detail', kwargs={'pk': user.id}), format='json')
-    delete_response = client.get(reverse('department-detail', kwargs={'pk': user.id}), format='json')
+    delete_response = client.delete(reverse('department-detail', kwargs={'pk': user.id}), format='json')
     assert retrieve_response.status_code == status.HTTP_404_NOT_FOUND
     assert delete_response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_put_patch_department_invalid_id(admin_factory, department_factory, authed_token_client_generator):
+def test_put_patch_department_invalid_id(admin_factory, authed_token_client_generator):
     user = admin_factory()
     data = {
         "department_name": "Backend",

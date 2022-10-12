@@ -10,6 +10,8 @@ class AssetViewSet(viewsets.ModelViewSet):
         'create': {'admin': True},
         'list': {'admin': True, 'employee': True},
         'update': {'admin': True},
+        'partial_update': {'admin': True},
+        'destroy': {'admin': True},
     }
     queryset = Asset.objects.all()
     serializer_class = AssetSerializer
@@ -21,6 +23,8 @@ class AssignedAssetViewSet(viewsets.ModelViewSet):
         'create': {'admin': True},
         'list': {'admin': True, 'employee': True},
         'update': {'admin': True},
+        'partial_update': {'admin': True},
+        'destroy': {'admin': True},
     }
     queryset = AssignedAsset.objects.all()
     serializer_class = AssignedAssetSerializer

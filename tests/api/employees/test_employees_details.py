@@ -18,6 +18,7 @@ def test_patch_employee(admin_factory, employee_factory, authed_token_client_gen
     }
     client = authed_token_client_generator(user)
     response = client.patch(reverse('employees-detail', kwargs={'pk': employee.id}), data=data, format='json')
+    assert response.status_code == status.HTTP_200_OK
     assert response.json()['national_id_number'] == data['national_id_number']
 
 
@@ -44,7 +45,7 @@ def test_delete_employee(admin_factory, employee_factory, authed_token_client_ge
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
-def test_retrieve_delete_employee_invalid_id(admin_factory, employee_factory, authed_token_client_generator):
+def test_retrieve_delete_employee_invalid_id(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     get_response = client.delete(reverse('employees-detail', kwargs={'pk': user.id}), format='json')
@@ -53,7 +54,7 @@ def test_retrieve_delete_employee_invalid_id(admin_factory, employee_factory, au
     assert delete_response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_patch_employee_invalid_id(admin_factory, employee_factory, authed_token_client_generator):
+def test_patch_employee_invalid_id(admin_factory, authed_token_client_generator):
     user = admin_factory()
     data = {
         "national_id_number": '33242'
@@ -63,7 +64,7 @@ def test_patch_employee_invalid_id(admin_factory, employee_factory, authed_token
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-def test_put_employee_invalid_id(admin_factory, employee_factory, department_factory, authed_token_client_generator):
+def test_put_employee_invalid_id(admin_factory, department_factory, authed_token_client_generator):
     user = admin_factory()
     department =department_factory()
     data = {
