@@ -38,6 +38,13 @@ def test_create_attendances_invalid_status(admin_factory, employee_factory, auth
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
+def test_get_attendances_non_admin(user_factory, authed_token_client_generator):
+    user = user_factory()
+    client = authed_token_client_generator(user)
+    response = client.get(reverse('attendance-list'))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def test_get_attendances_count(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
