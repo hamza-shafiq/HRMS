@@ -14,10 +14,7 @@ def test_get_department(user_factory, department_factory, authed_token_client_ge
 
 def test_create_department(admin_factory, authed_token_client_generator):
     user = admin_factory()
-    data = {
-     "department_name": "python_department",
-     "description": "test_description",
-    }
+    data = {"department_name": "python_department", "description": "test_description"}
     client = authed_token_client_generator(user)
     response = client.post(reverse('department-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED
@@ -26,10 +23,7 @@ def test_create_department(admin_factory, authed_token_client_generator):
 
 def test_create_department_invalid_data(admin_factory, authed_token_client_generator):
     user = admin_factory()
-    data = {
-     "department_name": '',
-     "description": "test_description",
-    }
+    data = {"department_name": '', "description": "test_description"}
     client = authed_token_client_generator(user)
     response = client.post(reverse('department-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -37,10 +31,7 @@ def test_create_department_invalid_data(admin_factory, authed_token_client_gener
 
 def test_create_department_non_admin(user_factory, authed_token_client_generator):
     user = user_factory()
-    data = {
-     "department_name": 'Backend',
-     "description": "test_description",
-    }
+    data = {"department_name": 'Backend', "description": "test_description"}
     client = authed_token_client_generator(user)
     response = client.post(reverse('department-list'), data=data)
     assert response.status_code == status.HTTP_403_FORBIDDEN

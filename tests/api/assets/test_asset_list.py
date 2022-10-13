@@ -23,12 +23,7 @@ def test_get_assets_employee(user_factory, asset_factory, authed_token_client_ge
 
 def test_create_asset(admin_factory, authed_token_client_generator):
     user = admin_factory()
-    data = {
-     "title": "Laptop",
-     "asset_type": "Machine",
-     "asset_model": "WO11",
-     "cost": 5000
-    }
+    data = {"title": "Laptop", "asset_type": "Machine", "asset_model": "WO11", "cost": 5000}
     client = authed_token_client_generator(user)
     response = client.post(reverse('asset-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED

@@ -15,14 +15,14 @@ def test_create_assignee(admin_factory, asset_factory, employee_factory, authed_
     user = admin_factory()
     asset = asset_factory()
     employee = employee_factory()
-    data = {"asset": asset.id, "employee": employee.id }
+    data = {"asset": asset.id, "employee": employee.id}
     client = authed_token_client_generator(user)
     response = client.post(reverse('assigned-asset-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['asset'] == str(data['asset'])
 
 
-def test_create_assignee_incomplete_data(admin_factory, asset_factory, employee_factory, authed_token_client_generator):
+def test_create_assignee_incomplete_data(admin_factory, asset_factory, authed_token_client_generator):
     user = admin_factory()
     asset = asset_factory()
     data = {"asset": asset.id}
@@ -44,7 +44,7 @@ def test_create_assignee_non_admin(user_factory, asset_factory, employee_factory
 def test_create_assignee_invalid_data(admin_factory, asset_factory, authed_token_client_generator):
     user = admin_factory()
     asset = asset_factory()
-    data = {"asset": asset.id, "employee": user.id }
+    data = {"asset": asset.id, "employee": user.id}
     client = authed_token_client_generator(user)
     response = client.post(reverse('assigned-asset-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST

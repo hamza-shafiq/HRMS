@@ -1,8 +1,8 @@
 from rest_framework import generics, status, views, permissions
-from .serializers import CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer
+from .serializers import CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, \
+    ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer
 from rest_framework.response import Response
 from .models import User
-from .utils import Utils
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 import jwt
@@ -35,7 +35,7 @@ class RegisterView(generics.GenericAPIView):
         data = {'email_body': email_body, 'to_email': user.email,
                 'email_subject': 'Verify your email'}
 
-        # send_email.delay(data)
+        send_email.delay(data)
 
         return Response(user_data, status=status.HTTP_201_CREATED)
 
@@ -54,9 +54,9 @@ class VerifyEmail(views.APIView):
                 user.is_verified = True
                 user.save()
             return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureError as identifier:
+        except jwt.ExpiredSignatureError:
             return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError as identifier:
+        except jwt.exceptions.DecodeError:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -75,7 +75,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
     serializer_class = ResetPasswordEmailRequestSerializer
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
+        self.serializer_class(data=request.data)
 
         email = request.data.get('email', '')
 
@@ -90,9 +90,9 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             relativeLink = reverse(
                 'password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
 
-            absurl = 'http://'+current_site + relativeLink
+            absurl = 'http://' + current_site + relativeLink
             email_body = 'Hello, \n Use link below to reset your password  \n' + \
-                absurl
+                         absurl
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
             send_email.delay(data)
@@ -112,13 +112,16 @@ class ResetPasswordEmailVerification(generics.GenericAPIView):
         try:
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token is not verified, Please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'error': 'Token is not verified, Please request a new one'},
+                                status=status.HTTP_401_UNAUTHORIZED)
 
-            return Response({'success': True, 'message': "Credentials valid", 'uidb64': uidb64, 'token':token}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'message': "Credentials valid", 'uidb64': uidb64, 'token': token},
+                            status=status.HTTP_200_OK)
 
-        except DjangoUnicodeDecodeError as identifier:
+        except DjangoUnicodeDecodeError:
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token is not verified, Please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'error': 'Token is not verified, Please request a new one'},
+                                status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SetNewPasswordAPIView(generics.GenericAPIView):

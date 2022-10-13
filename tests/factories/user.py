@@ -1,5 +1,3 @@
-import datetime
-from datetime import datetime
 import factory
 from factory.django import DjangoModelFactory
 from pytest_factoryboy import register
@@ -7,7 +5,7 @@ from pytest_factoryboy import register
 
 @register
 class AdminFactory(DjangoModelFactory):
-    username = factory.LazyAttribute(lambda a: 'user'.format(a).lower())
+    username = factory.LazyAttribute(lambda a: 'user'.lower())
     email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username).lower())
     is_active = True
     is_staff = True
@@ -28,9 +26,9 @@ class AdminFactory(DjangoModelFactory):
 
 @register
 class UserFactory(DjangoModelFactory):
-    username = factory.LazyAttribute(lambda a: 'user'.format(a).lower())
-    email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username).lower())
-    password = factory.LazyAttribute(lambda a: 'paklove'.format(a.username).lower())
+    username = factory.LazyAttribute(lambda a: 'user')
+    email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username))
+    password = factory.LazyAttribute(lambda a: 'paklove')
     is_active = True
     is_verified = False
     is_superuser = False

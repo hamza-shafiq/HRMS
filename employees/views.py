@@ -1,5 +1,4 @@
 from .serializers import DepartmentSerializer, EmployeeSerializer
-from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
 from employees.models import Employee, Department
 from django_filters import rest_framework as filters

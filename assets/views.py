@@ -1,5 +1,4 @@
 from assets.serializers import AssetSerializer, AssignedAssetSerializer
-from rest_framework.permissions import AllowAny
 from rest_framework import viewsets
 from assets.models import Asset, AssignedAsset
 

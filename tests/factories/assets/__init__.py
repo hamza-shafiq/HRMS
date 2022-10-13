@@ -1,2 +1,2 @@
-from .asset import *
-from .assignedAssset import *
+from .asset import * # noqa
+from .assignedAssset import * # noqa
