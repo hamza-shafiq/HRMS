@@ -28,11 +28,11 @@ class AdminFactory(DjangoModelFactory):
 class UserFactory(DjangoModelFactory):
     username = factory.LazyAttribute(lambda a: 'user')
     email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username))
-    password = factory.LazyAttribute(lambda a: 'paklove')
     is_active = True
-    is_verified = False
+    is_verified = True
     is_superuser = False
     is_employee = True
+    is_staff = False
 
     class Meta:
         model = 'user.User'

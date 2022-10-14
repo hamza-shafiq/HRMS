@@ -36,3 +36,17 @@ def authed_token_client_generator(rest_client, user_token_generator):
         return rest_client
 
     return _client_generator
+
+
+@pytest.fixture()
+def celery_eager(settings):
+    settings.CELERY_BROKER_URL = 'memory'
+    settings.CELERY_TASK_ALWAYS_EAGER = True
+
+
+@pytest.fixture()
+def celery_eager_run_on_commit(celery_eager, mocker):
+    def run_on_commit(func, using=None):
+        func()
+
+    mocker.patch('django.db.transaction.on_commit', side_effect=run_on_commit)
