@@ -1,5 +1,4 @@
-from django.http import JsonResponse
-from rest_framework import serializers, status
+from rest_framework import serializers
 from employees.models import Employee
 from recruitments.models import Recruits, Referrals
 
@@ -27,4 +26,3 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
                     self.default_error_messages['Invalid referrer id'])
         recruits = Recruits.objects.create(**validated_data)
         return recruits
-

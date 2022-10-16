@@ -1,4 +1,6 @@
-from rest_framework import serializers
+
+from django.http import JsonResponse
+from rest_framework import serializers, status
 from .models import User
 import re
 from django.contrib import auth
@@ -124,10 +126,6 @@ class SetNewPasswordSerializer(serializers.Serializer):
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
-    default_error_message = {
-        'bad_token': ('Token is invalid or expired')
-    }
-
     def validate(self, attrs):
         self.token = attrs['refresh']
         return attrs
@@ -138,4 +136,5 @@ class LogoutSerializer(serializers.Serializer):
             RefreshToken(self.token).blacklist()
 
         except TokenError:
-            self.fail('bad_token')
+            raise serializers.ValidationError(
+                self.default_error_messages['Token is invalid or expired'])

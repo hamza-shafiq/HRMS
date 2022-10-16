@@ -1,7 +1,6 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
-from rest_framework.permissions import AllowAny
 from rest_framework import viewsets, status
 from attendance.models import Attendance, Leaves
 from datetime import datetime
