@@ -132,3 +132,8 @@ def test_login_non_user(rest_client):
     data = {"email": "invalid@gmail.com", "password": "invalid"}
     response = rest_client.post(reverse('login'), data=data, format='json')
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_logout_empty_token(rest_client):
+    response = rest_client.post(reverse('logout'), data={"refresh": ""},  format='json')
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
