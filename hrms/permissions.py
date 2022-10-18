@@ -15,7 +15,7 @@ class BaseCustomPermission(permissions.BasePermission):
         elif view.action == 'list':
             if user_role == UserRoles.USER:
                 return False
-        elif view.action == 'update':
+        elif view.action in ['update', 'partial_update', 'destroy']:
             if not user_role == UserRoles.ADMIN:
                 return False
         return True

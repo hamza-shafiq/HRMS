@@ -1,9 +1,8 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
-
-from attendance.permissions import AttendancePermission
+from attendance.permissions import AttendancePermission, LeavePermission
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, status
 from attendance.models import Attendance, Leaves
 from datetime import datetime
@@ -11,13 +10,6 @@ from rest_framework.decorators import action
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
-    # view_permissions = {
-    #     'retrieve': {'admin': True, 'employee': True},
-    #     'create': {'employee': True, 'admin': True},
-    #     'list': {'admin': True, 'employee': True},
-    #     'update': {'employee': True, 'admin': True},
-    #     'partial_update': {'employee': True, 'admin': True},
-    # }
     permission_classes = [IsAuthenticated, AttendancePermission]
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
@@ -53,7 +45,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
 
 class LeavesViewSet(viewsets.ModelViewSet):
-    permission_classes = (AllowAny,)
+    permission_classes = [IsAuthenticated, LeavePermission]
     queryset = Leaves.objects.all()
     serializer_class = LeaveSerializer
 
