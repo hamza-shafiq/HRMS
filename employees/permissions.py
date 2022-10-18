@@ -5,15 +5,12 @@ from user.utils import check_user_role, UserRoles
 class DepartmentPermission(BaseCustomPermission):
 
     def has_permission(self, request, view):
-        check_user_role(request.user)
+        user_role = check_user_role(request.user)
+        if view.action == 'list':
+            if user_role == UserRoles.EMPLOYEE:
+                return True
         return super().has_permission(request, view)
 
 
 class EmployeePermission(BaseCustomPermission):
-
-    def has_permission(self, request, view):
-        user_role = check_user_role(request.user)
-        if view.action in ['list']:
-            if user_role == UserRoles.EMPLOYEE:
-                return False
-        return super().has_permission(request, view)
+    pass

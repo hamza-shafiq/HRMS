@@ -1,6 +1,6 @@
-from assets.permissions import AssetsPermission, AssignedAssetPermission
+from assets.permissions import AssetsPermission
 from assets.serializers import AssetSerializer, AssignedAssetSerializer
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from assets.models import Asset, AssignedAsset
 
@@ -12,6 +12,6 @@ class AssetViewSet(viewsets.ModelViewSet):
 
 
 class AssignedAssetViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, AssignedAssetPermission]
+    permission_classes = [IsAuthenticated, AssetsPermission]
     queryset = AssignedAsset.objects.all()
     serializer_class = AssignedAssetSerializer
