@@ -2,7 +2,6 @@ from rest_framework import generics, status, views, permissions
 from .serializers import CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer
 from rest_framework.response import Response
 from .models import User
-from .utils import Utils
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 import jwt
@@ -13,6 +12,9 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, smart_bytes, DjangoUnicodeDecodeError
 from .tasks import send_email
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel('DEBUG')
 
 
 class RegisterView(generics.GenericAPIView):
@@ -36,7 +38,7 @@ class RegisterView(generics.GenericAPIView):
                 'email_subject': 'Verify your email'}
 
         send_email.delay(data)
-
+        logger.info(f"user {user.username} created successfully")
         return Response(user_data, status=status.HTTP_201_CREATED)
 
 
@@ -53,10 +55,13 @@ class VerifyEmail(views.APIView):
             if not user.is_verified:
                 user.is_verified = True
                 user.save()
+            logger.info(f"user {user.username} successfully activated")
             return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureError as identifier:
+        except jwt.ExpiredSignatureError:
+            logger.critical("Activation expired")
             return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError as identifier:
+        except jwt.exceptions.DecodeError:
+            logger.critical("Invalid token")
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
