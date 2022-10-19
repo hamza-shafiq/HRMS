@@ -2,7 +2,6 @@ from rest_framework import generics, status, views, permissions
 from .serializers import CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer
 from rest_framework.response import Response
 from .models import User
-from .utils import Utils
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 import jwt
@@ -54,9 +53,9 @@ class VerifyEmail(views.APIView):
                 user.is_verified = True
                 user.save()
             return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureError as identifier:
+        except jwt.ExpiredSignatureError:
             return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError as identifier:
+        except jwt.exceptions.DecodeError:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -112,13 +111,16 @@ class ResetPasswordEmailVerification(generics.GenericAPIView):
         try:
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token is not verified, Please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'error': 'Token is not verified, Please request a new one'},
+                                status=status.HTTP_401_UNAUTHORIZED)
 
-            return Response({'success': True, 'message': "Credentials valid", 'uidb64': uidb64, 'token':token}, status=status.HTTP_200_OK)
+            return Response({'success': True, 'message': "Credentials valid", 'uidb64': uidb64, 'token': token},
+                            status=status.HTTP_200_OK)
 
-        except DjangoUnicodeDecodeError as identifier:
+        except DjangoUnicodeDecodeError:
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token is not verified, Please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({'error': 'Token is not verified, Please request a new one'},
+                                status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SetNewPasswordAPIView(generics.GenericAPIView):
