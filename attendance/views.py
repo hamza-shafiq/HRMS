@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
-from attendance.permissions import AttendancePermission
+from attendance.permissions import AttendancePermission, LeavesPermission
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, status
@@ -45,7 +45,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
 
 class LeavesViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, AttendancePermission]
+    permission_classes = [IsAuthenticated, LeavesPermission]
     queryset = Leaves.objects.all()
     serializer_class = LeaveSerializer
 
