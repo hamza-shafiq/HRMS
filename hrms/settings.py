@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework',
-    'rest_framework_roles',
+    # 'rest_framework_roles',
     'user.apps.UserConfig',
     'employees.apps.EmployeesConfig',
     'assets.apps.AssetsConfig',
@@ -87,9 +87,9 @@ TEMPLATES = [
     },
 ]
 
-REST_FRAMEWORK_ROLES = {
-  'roles': 'hrms.roles.ROLES',
-}
+# REST_FRAMEWORK_ROLES = {
+#   'roles': 'hrms.roles.ROLES',
+# }
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -183,3 +183,7 @@ EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = os.environ.get('EMAIL_PORT')
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')

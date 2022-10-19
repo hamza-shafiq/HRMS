@@ -2,7 +2,9 @@ from django.http import JsonResponse
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .serializers import DepartmentSerializer, EmployeeSerializer
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, status
+from employees.permissions import DepartmentPermission, EmployeePermission
 from employees.models import Employee, Department
 from django_filters import rest_framework as filters
 
@@ -16,14 +18,7 @@ class EmployeeFilter(filters.FilterSet):
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
-    view_permissions = {
-        'retrieve': {'admin': True, 'employee': True},
-        'create': {'admin': True},
-        'list': {'admin': True, 'employee': True},
-        'update': {'admin': True},
-        'partial_update': {'admin': True},
-        'destroy': {'admin': True},
-    }
+    permission_classes = [IsAuthenticated, DepartmentPermission]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
 
@@ -35,14 +30,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    view_permissions = {
-        'retrieve': {'admin': True, 'employee': True},
-        'create': {'admin': True},
-        'list': {'admin': True},
-        'update': {'admin': True},
-        'partial_update': {'admin': True},
-        'destroy': {'admin': True},
-    }
+    permission_classes = [IsAuthenticated, EmployeePermission]
     queryset = Employee.objects.all()
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = EmployeeFilter

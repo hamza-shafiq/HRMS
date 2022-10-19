@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import RegisterView, VerifyEmail, LoginView, RequestPasswordResetEmail, ResetPasswordEmailVerification, SetNewPasswordAPIView, LogoutView, DeleteUserAccount
+from .views import RegisterView, VerifyEmail, LoginView, RequestPasswordResetEmail, \
+    ResetPasswordEmailVerification, SetNewPasswordAPIView, LogoutView, DeleteUserAccount
 
 
 delete_account = DeleteUserAccount.as_view({
