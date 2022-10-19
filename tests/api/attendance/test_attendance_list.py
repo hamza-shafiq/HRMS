@@ -38,6 +38,15 @@ def test_create_attendances_invalid_status(admin_factory, employee_factory, auth
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
+def test_create_attendance_non_admin(user_factory, employee_factory, authed_token_client_generator):
+    user = user_factory()
+    employee = employee_factory()
+    data = {"employee": employee.id, "check_in": "2022-07-06", "check_out": "2022-07-06", "status": "ON_TIME"}
+    client = authed_token_client_generator(user)
+    response = client.post(reverse('attendance-list'), data=data)
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def test_get_attendances_non_admin(user_factory, authed_token_client_generator):
     user = user_factory()
     client = authed_token_client_generator(user)

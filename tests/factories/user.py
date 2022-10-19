@@ -10,7 +10,7 @@ class AdminFactory(DjangoModelFactory):
     is_active = True
     is_staff = True
     is_verified = True
-    is_superuser = True
+    is_admin = True
 
     class Meta:
         model = 'user.User'

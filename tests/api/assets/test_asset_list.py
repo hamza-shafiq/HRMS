@@ -45,6 +45,13 @@ def test_create_asset_incomplete_data(admin_factory, authed_token_client_generat
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
+def test_get_assets_non_admin(user_factory, authed_token_client_generator):
+    user = user_factory()
+    client = authed_token_client_generator(user)
+    response = client.get(reverse('asset-list'))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
 def test_create_asset_non_admin(user_factory, authed_token_client_generator):
     user = user_factory()
     data = {

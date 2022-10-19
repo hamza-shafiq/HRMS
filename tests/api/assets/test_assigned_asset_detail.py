@@ -80,7 +80,7 @@ def test_put_patch_assignee_invalid_data(admin_factory, assignee_factory, authed
     assert patch_response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_patch_assignee_non_admin(user_factory, assignee_factory, asset_factory, authed_token_client_generator):
+def test_put_patch_assignee_non_admin(user_factory, assignee_factory, asset_factory, authed_token_client_generator):
     user = user_factory()
     assignee = assignee_factory()
     asset = asset_factory()

@@ -45,3 +45,10 @@ def test_get_leave_count(admin_factory, authed_token_client_generator):
     client = authed_token_client_generator(user)
     response = client.get(reverse('leaves-list'))
     assert len(response.json()) == Leaves.objects.all().count()
+
+
+def test_get_leaves_non_admin(user_factory, authed_token_client_generator):
+    user = user_factory()
+    client = authed_token_client_generator(user)
+    response = client.get(reverse('leaves-list'))
+    assert response.status_code == status.HTTP_403_FORBIDDEN

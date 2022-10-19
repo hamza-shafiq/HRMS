@@ -1,6 +1,8 @@
 from django.http import JsonResponse
 from rest_framework.response import Response
+from attendance.permissions import AttendancePermission, LeavesPermission
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, status
 from attendance.models import Attendance, Leaves
 from datetime import datetime
@@ -8,14 +10,7 @@ from rest_framework.decorators import action
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
-    view_permissions = {
-        'retrieve': {'admin': True, 'employee': True},
-        'create': {'employee': True, 'admin': True},
-        'list': {'admin': True},
-        'update': {'employee': True, 'admin': True},
-        'partial_update': {'employee': True, 'admin': True},
-        'destroy': {'admin': True},
-    }
+    permission_classes = [IsAuthenticated, AttendancePermission]
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
@@ -30,7 +25,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             if action_type == "check-in":
                 if not record:
                     Attendance.objects.create(employee_id=user.id, check_in=current_datetime, status="ON_TIME")
-                    return JsonResponse({"success": "employee checked-in successfully!"}, status=status.HTTP_201_CREATED)
+                    return JsonResponse({"success": "employee checked-in successfully!"},
+                                        status=status.HTTP_201_CREATED)
 
                 return JsonResponse({"error": "Employee already checked-in today!"},
                                     status=status.HTTP_208_ALREADY_REPORTED)
@@ -57,14 +53,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
 
 class LeavesViewSet(viewsets.ModelViewSet):
-    view_permissions = {
-        'retrieve': {'admin': True, 'employee': True},
-        'create': {'employee': True, 'admin': True},
-        'list': {'admin': True},
-        'update': {'admin': True},
-        'partial_update': {'admin': True},
-        'destroy': {'admin': True},
-    }
+    permission_classes = [IsAuthenticated, LeavesPermission]
     queryset = Leaves.objects.all()
     serializer_class = LeaveSerializer
 
