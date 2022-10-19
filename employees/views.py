@@ -26,7 +26,8 @@ class DepartmentViewSet(viewsets.ModelViewSet):
         department = self.get_object()
         department.is_deleted = True
         department.save()
-        return JsonResponse({'success': f'Department {department.department_name} deleted successfully'}, status=status.HTTP_200_OK)
+        return JsonResponse({'success': f'Department {department.department_name} deleted successfully'},
+                            status=status.HTTP_200_OK)
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -50,8 +51,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     if record:
                         serializer = EmployeeSerializer(record, many=True, context=serializer_context)
                         return Response(serializer.data, status=status.HTTP_200_OK)
-                    return JsonResponse({'error': f'Employee with id: {emp_id} does not exist'}, status=status.HTTP_404_NOT_FOUND)
-                except Exception as e:
+                    return JsonResponse({'error': f'Employee with id: {emp_id} does not exist'},
+                                        status=status.HTTP_404_NOT_FOUND)
+                except Exception:
                     return JsonResponse({'error': 'Invalid employee id'}, status=status.HTTP_406_NOT_ACCEPTABLE)
             return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
         elif user.is_employee:
@@ -59,7 +61,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             if record:
                 serializer = EmployeeSerializer(record, many=True, context=serializer_context)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-        return JsonResponse({'error': 'Only admin and employee can see any employee details'}, status=status.HTTP_401_UNAUTHORIZED)
+        return JsonResponse({'error': 'Only admin and employee can see any employee details'},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
     def destroy(self, request, *args, **kwargs):
         employee = self.get_object()
@@ -72,4 +75,3 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         queryset = Employee.objects.filter(is_deleted=False)
         serializer = EmployeeSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-

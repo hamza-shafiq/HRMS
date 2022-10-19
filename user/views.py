@@ -1,9 +1,8 @@
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, status, views, permissions, viewsets
-from rest_framework.views import APIView
-
-from .serializers import CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer, UserSerializer
+from .serializers import CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, \
+    ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer, UserSerializer
 from rest_framework.response import Response
 from .models import User
 from django.contrib.sites.shortcuts import get_current_site
@@ -99,7 +98,8 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
             send_email.delay(data)
-            return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
+            return Response({'success': 'We have sent you a link to reset your password'},
+                            status=status.HTTP_200_OK)
         return Response({'error': 'Email does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -168,5 +168,7 @@ class DeleteUserAccount(viewsets.ModelViewSet):
             user.is_deleted = True
             user.is_active = False
             user.save()
-            return JsonResponse({'success': f'User with {user_id} deleted successfully'}, status=status.HTTP_200_OK)
-        return JsonResponse({'error': 'Please provide id of user you want to delete'}, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({'success': f'User with {user_id} deleted successfully'},
+                                status=status.HTTP_200_OK)
+        return JsonResponse({'error': 'Please provide id of user you want to delete'},
+                            status=status.HTTP_400_BAD_REQUEST)
