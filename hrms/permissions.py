@@ -11,18 +11,6 @@ class BaseCustomPermission(permissions.BasePermission):
         elif view.action == 'retrieve':
             if user_role == UserRoles.EMPLOYEE:
                 return True
-        # if view.action == 'create':
-        #     if not user_role == UserRoles.ADMIN:
-        #         return False
-        # elif view.action == 'retrieve':
-        #     if user_role == UserRoles.USER:
-        #         return False
-        # elif view.action == 'list':
-        #     if user_role == UserRoles.USER:
-        #         return False
-        # elif view.action in ['update', 'partial_update', 'destroy']:
-        #     if not user_role == UserRoles.ADMIN:
-        #         return False
         return False
 
     def has_object_permission(self, request, view, obj):
