@@ -1,7 +1,11 @@
 from django.urls import path
 from .views import RegisterView, VerifyEmail, LoginView, RequestPasswordResetEmail, \
-    ResetPasswordEmailVerification, SetNewPasswordAPIView, LogoutView
+    ResetPasswordEmailVerification, SetNewPasswordAPIView, LogoutView, DeleteUserAccount
 
+
+delete_account = DeleteUserAccount.as_view({
+    'delete': 'destroy'
+})
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name="register"),
@@ -14,4 +18,5 @@ urlpatterns = [
     path('password-reset-complete', SetNewPasswordAPIView.as_view(),
          name='password-reset-complete'),
     path('logout/', LogoutView.as_view(), name="logout"),
+    path('delete-account/', delete_account, name="delete-account"),
 ]
