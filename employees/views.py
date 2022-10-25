@@ -72,6 +72,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         return JsonResponse({'success': f'Employee {employee.first_name} {employee.last_name} deleted successfully'}, status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
+        serializer_context = {
+            'request': request,
+        }
         queryset = Employee.objects.filter(is_deleted=False)
-        serializer = EmployeeSerializer(queryset, many=True)
+        serializer = EmployeeSerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data, status=status.HTTP_200_OK)
