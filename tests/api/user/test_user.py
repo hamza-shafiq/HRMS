@@ -22,7 +22,7 @@ def test_logout(user_factory, rest_client, authed_token_client_generator):
     refresh_token = response.json()['tokens'].split("', 'access")[0].split("refresh': '")[1]
     access_token = response.json()['tokens'].split("'access': '")[1].split("'}")[0]
     rest_client.credentials(HTTP_AUTHORIZATION='Bearer {}'.format(str(access_token)))
-    response = rest_client.post(reverse('logout'), data={"refresh": refresh_token},  format='json')
+    response = rest_client.post(reverse('logout'), data={"refresh": refresh_token}, format='json')
     assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
@@ -137,5 +137,5 @@ def test_login_non_user(rest_client):
 
 
 def test_logout_empty_token(rest_client):
-    response = rest_client.post(reverse('logout'), data={"refresh": ""},  format='json')
+    response = rest_client.post(reverse('logout'), data={"refresh": ""}, format='json')
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

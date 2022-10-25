@@ -28,7 +28,6 @@ def test_mark_attendance_invalid_action(employee_factory, authed_token_client_ge
     assert response.status_code == status.HTTP_406_NOT_ACCEPTABLE
 
 
-
 def test_check_in_attendance_already_checked_in(employee_factory, authed_token_client_generator):
     employee = employee_factory()
     data = {"action": "check-in"}

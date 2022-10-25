@@ -8,7 +8,8 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Recruits
-        fields = ['url', 'id', 'first_name', 'last_name', 'email', 'phone_number', 'position', 'resume', 'status', 'referrers']
+        fields = ['url', 'id', 'first_name', 'last_name', 'email', 'phone_number', 'position', 'resume',
+                  'status', 'referrers']
 
     def create(self, validated_data):
         if self.initial_data.get('referrers') is not None:
@@ -21,7 +22,7 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
                     return recruit
                 raise serializers.ValidationError(
                     self.default_error_messages['Employee with this referrer id does not exist'])
-            except Exception as e:
+            except Exception:
                 raise serializers.ValidationError(
                     self.default_error_messages['Invalid referrer id'])
         recruits = Recruits.objects.create(**validated_data)

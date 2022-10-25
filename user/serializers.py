@@ -1,6 +1,4 @@
-
-from django.http import JsonResponse
-from rest_framework import serializers, status
+from rest_framework import serializers
 from .models import User
 import re
 from django.contrib import auth

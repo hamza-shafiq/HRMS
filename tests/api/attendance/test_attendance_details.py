@@ -82,7 +82,7 @@ def test_patch_attendance_invalid_choices(admin_factory, attendance_factory, aut
     data = {"status": "invalid"}
     client = authed_token_client_generator(user)
     response = client.patch(reverse('attendance-detail',
-                                     kwargs={'pk': attendance.id}), data=data, format='json')
+                                    kwargs={'pk': attendance.id}), data=data, format='json')
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
