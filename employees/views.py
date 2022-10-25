@@ -3,7 +3,11 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .serializers import DepartmentSerializer, EmployeeSerializer
 from rest_framework.permissions import IsAuthenticated
+<<<<<<< HEAD
+from rest_framework import viewsets
+=======
 from rest_framework import viewsets, status
+>>>>>>> staging
 from employees.permissions import DepartmentPermission, EmployeePermission
 from employees.models import Employee, Department
 from django_filters import rest_framework as filters
