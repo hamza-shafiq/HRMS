@@ -3,7 +3,6 @@ from attendance.models import Attendance, Leaves
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
-    employee = serializers.CharField()
     status = serializers.CharField(read_only=True)
 
     class Meta:
