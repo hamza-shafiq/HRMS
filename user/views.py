@@ -10,7 +10,7 @@ from django.urls import reverse
 import jwt
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, smart_bytes, DjangoUnicodeDecodeError
@@ -163,7 +163,7 @@ class DeleteUserAccount(viewsets.ModelViewSet):
         if user_id:
             try:
                 user = get_object_or_404(User.objects, pk=user_id)
-            except Exception as e:
+            except Exception:
                 return JsonResponse({'error': 'Invalid user id'}, status=status.HTTP_400_BAD_REQUEST)
             user.is_deleted = True
             user.is_active = False

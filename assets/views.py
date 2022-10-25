@@ -16,7 +16,8 @@ class AssetViewSet(viewsets.ModelViewSet):
         asset = self.get_object()
         asset.is_deleted = True
         asset.save()
-        return JsonResponse({'success': f'Asset with model: {asset.asset_model} deleted successfully'}, status=status.HTTP_200_OK)
+        return JsonResponse({'success': f'Asset with model: {asset.asset_model} deleted successfully'},
+                            status=status.HTTP_200_OK)
 
 
 class AssignedAssetViewSet(viewsets.ModelViewSet):
@@ -30,4 +31,4 @@ class AssignedAssetViewSet(viewsets.ModelViewSet):
         assigned_asset = self.get_object()
         assigned_asset.is_deleted = True
         assigned_asset.save()
-        return JsonResponse({'success': f'Asset has been removed'}, status=status.HTTP_200_OK)
+        return JsonResponse({'success': 'Asset has been removed'}, status=status.HTTP_200_OK)

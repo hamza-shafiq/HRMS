@@ -3,11 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .serializers import DepartmentSerializer, EmployeeSerializer
 from rest_framework.permissions import IsAuthenticated
-<<<<<<< HEAD
-from rest_framework import viewsets
-=======
 from rest_framework import viewsets, status
->>>>>>> staging
 from employees.permissions import DepartmentPermission, EmployeePermission
 from employees.models import Employee, Department
 from django_filters import rest_framework as filters
@@ -41,7 +37,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     filterset_class = EmployeeFilter
     serializer_class = EmployeeSerializer
 
-    @action(detail=False, url_path="get_employee")
+    @action(detail=False, url_path="get_employee", methods=['get'])
     def employee_detail(self, request):
         user = request.user
         serializer_context = {
@@ -73,7 +69,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         employee.is_deleted = True
         employee.is_active = False
         employee.save()
-        return JsonResponse({'success': f'Employee {employee.first_name} {employee.last_name} deleted successfully'}, status=status.HTTP_200_OK)
+        return JsonResponse({'success': f'Employee {employee.first_name} {employee.last_name} deleted successfully'},
+                            status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
         serializer_context = {
