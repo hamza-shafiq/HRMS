@@ -12,7 +12,7 @@ class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Department
-        fields = '__all__'
+        fields = ["url", "id", "department_name", "description", "employees"]
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -29,8 +29,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = ['id', 'assets', 'username', 'email', 'password', 'first_name', 'last_name', 'phone_number',
                   'national_id_number', 'emergency_contact_number', 'gender', 'department', 'designation', 'bank',
-                  'account_number', 'profile_pic', 'joining_date', 'employee_status', 'is_verified', 'is_employee',
-                  'is_active']
+                  'account_number', 'profile_pic', 'joining_date', 'employee_status', 'is_verified', 'is_active']
 
     def validate_password(self, value):
         if value:

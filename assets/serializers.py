@@ -11,14 +11,14 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Asset
-        fields = '__all__'
+        fields = ["url", "assignee", "id", "title", "description", "asset_model", "asset_type", "cost"]
 
 
 class AssignedAssetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssignedAsset
-        fields = '__all__'
+        fields = ["id", "asset", "employee"]
 
     def create(self, validated_data):
         return AssignedAsset.objects.create(**validated_data)

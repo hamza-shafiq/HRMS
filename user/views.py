@@ -1,6 +1,8 @@
-from rest_framework import generics, status, views, permissions
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, status, views, permissions, viewsets
 from .serializers import CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, \
-    ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer
+    ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, LogoutSerializer, UserSerializer
 from rest_framework.response import Response
 from .models import User
 from django.contrib.sites.shortcuts import get_current_site
@@ -8,7 +10,7 @@ from django.urls import reverse
 import jwt
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import smart_str, smart_bytes, DjangoUnicodeDecodeError
@@ -96,7 +98,8 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
             send_email.delay(data)
-            return Response({'success': 'We have sent you a link to reset your password'}, status=status.HTTP_200_OK)
+            return Response({'success': 'We have sent you a link to reset your password'},
+                            status=status.HTTP_200_OK)
         return Response({'error': 'Email does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -146,3 +149,26 @@ class LogoutView(generics.GenericAPIView):
         serializer.save()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DeleteUserAccount(viewsets.ModelViewSet):
+    view_permissions = {
+        'update': {'admin': True},
+    }
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        user_id = self.request.data.get('user_id', '')
+        if user_id:
+            try:
+                user = get_object_or_404(User.objects, pk=user_id)
+            except Exception as e:
+                return JsonResponse({'error': 'Invalid user id'}, status=status.HTTP_400_BAD_REQUEST)
+            user.is_deleted = True
+            user.is_active = False
+            user.save()
+            return JsonResponse({'success': f'User with {user_id} deleted successfully'},
+                                status=status.HTTP_200_OK)
+        return JsonResponse({'error': 'Please provide id of user you want to delete'},
+                            status=status.HTTP_400_BAD_REQUEST)

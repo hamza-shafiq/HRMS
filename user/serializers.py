@@ -136,3 +136,10 @@ class LogoutSerializer(serializers.Serializer):
         except TokenError:
             raise serializers.ValidationError(
                 self.default_error_messages['Token is invalid or expired'])
+
+
+class UserSerializer(serializers.Serializer):
+    user_id = serializers.CharField()
+
+    class Meta:
+        fields = ['user_id']
