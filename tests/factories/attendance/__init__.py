@@ -1,2 +1,2 @@
-from .attendance import * # noqa
-from .leaves import * # noqa
+from .attendance import *  # noqa
+from .leaves import *  # noqa

@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import RegisterView, VerifyEmail, LoginView, RequestPasswordResetEmail, \
-    ResetPasswordEmailVerification, SetNewPasswordAPIView, LogoutView, DeleteUserAccount
 
+from .views import (
+    DeleteUserAccount, LoginView, LogoutView, RegisterView, RequestPasswordResetEmail, ResetPasswordEmailVerification,
+    SetNewPasswordAPIView, VerifyEmail
+)
 
 delete_account = DeleteUserAccount.as_view({
     'delete': 'destroy'

@@ -1,5 +1,5 @@
 from hrms.permissions import BaseCustomPermission
-from user.utils import check_user_role, UserRoles
+from user.utils import UserRoles, check_user_role
 
 
 class AttendancePermission(BaseCustomPermission):

@@ -1,4 +1,5 @@
 from django.urls import path
+
 from employees.views import DepartmentViewSet, EmployeeViewSet
 
 department_list = DepartmentViewSet.as_view({

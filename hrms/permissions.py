@@ -1,5 +1,6 @@
 from rest_framework import permissions
-from user.utils import check_user_role, UserRoles
+
+from user.utils import UserRoles, check_user_role
 
 
 class BaseCustomPermission(permissions.BasePermission):

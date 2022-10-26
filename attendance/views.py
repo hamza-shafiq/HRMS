@@ -1,12 +1,14 @@
+from datetime import datetime
+
 from django.http import JsonResponse
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from attendance.models import Attendance, Leaves
 from attendance.permissions import AttendancePermission, LeavesPermission
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import viewsets, status
-from attendance.models import Attendance, Leaves
-from datetime import datetime
-from rest_framework.decorators import action
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -45,12 +47,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         return JsonResponse({"error": "Only employee can mark the attendance"},
                             status=status.HTTP_403_FORBIDDEN)
 
-    def destroy(self, request, *args, **kwargs):
-        attendance = self.get_object()
-        attendance.is_deleted = True
-        attendance.save()
-        return Response(data=f'Attendance with id {attendance.id} deleted successfully')
-
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')
         emp_id = self.request.query_params.get('employee_id')
@@ -71,9 +67,3 @@ class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
     queryset = Leaves.objects.all()
     serializer_class = LeaveSerializer
-
-    def destroy(self, request, *args, **kwargs):
-        leave = self.get_object()
-        leave.is_deleted = True
-        leave.save()
-        return Response(data=f'Leave with id {leave.id} deleted successfully')

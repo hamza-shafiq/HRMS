@@ -2,7 +2,9 @@ import factory
 from factory.django import DjangoModelFactory
 from faker import Factory as FakerFactory
 from pytest_factoryboy import register
+
 from .department import DepartmentFactory
+
 faker = FakerFactory.create()
 
 

@@ -1,6 +1,6 @@
 from django.urls import path
-from assets.views import AssetViewSet, AssignedAssetViewSet
 
+from assets.views import AssetViewSet, AssignedAssetViewSet
 
 asset_list = AssetViewSet.as_view({
     'get': 'list',

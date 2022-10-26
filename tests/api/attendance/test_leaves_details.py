@@ -37,7 +37,7 @@ def test_delete_leave(admin_factory, leaves_factory, authed_token_client_generat
     leave = leaves_factory()
     client = authed_token_client_generator(user)
     response = client.delete(reverse('leaves-detail', kwargs={'pk': leave.id}), format='json')
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
 
 
 def test_retrieve_delete_leave_invalid_id(admin_factory, authed_token_client_generator):

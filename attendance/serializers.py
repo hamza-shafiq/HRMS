@@ -1,9 +1,9 @@
 from rest_framework import serializers
+
 from attendance.models import Attendance, Leaves
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
-    status = serializers.CharField(read_only=True)
 
     class Meta:
         model = Attendance

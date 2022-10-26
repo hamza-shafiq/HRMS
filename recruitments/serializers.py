@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from employees.models import Employee
 from recruitments.models import Recruits, Referrals
 
