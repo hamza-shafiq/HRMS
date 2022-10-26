@@ -1,7 +1,12 @@
 from django.contrib.auth.models import BaseUserManager
+from django_softdelete.models import DeletedManager, GlobalManager, SoftDeleteManager
 
 
-class UserManager(BaseUserManager):
+class SoftDeleteUserManager(SoftDeleteManager, DeletedManager, GlobalManager):
+    pass
+
+
+class UserManager(BaseUserManager, SoftDeleteUserManager):
 
     def create_user(self, username, email, password=None):
         if username is None:

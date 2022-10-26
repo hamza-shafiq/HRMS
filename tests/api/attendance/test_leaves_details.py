@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
+from attendance.models import Leaves
+
 
 def test_retrieve_leave(admin_factory, leaves_factory, authed_token_client_generator):
     user = admin_factory()
@@ -38,6 +40,11 @@ def test_delete_leave(admin_factory, leaves_factory, authed_token_client_generat
     client = authed_token_client_generator(user)
     response = client.delete(reverse('leaves-detail', kwargs={'pk': leave.id}), format='json')
     assert response.status_code == status.HTTP_204_NO_CONTENT
+    leave.refresh_from_db()
+    assert leave.is_deleted
+    assert Leaves.global_objects.count() == 1
+    assert Leaves.deleted_objects.count() == 1
+    assert Leaves.objects.count() == 0
 
 
 def test_retrieve_delete_leave_invalid_id(admin_factory, authed_token_client_generator):

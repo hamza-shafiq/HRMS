@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
+from assets.models import AssignedAsset
+
 
 def test_retrieve_assignee(admin_factory, assignee_factory, authed_token_client_generator):
     user = admin_factory()
@@ -37,6 +39,11 @@ def test_delete_assignee(admin_factory, assignee_factory, authed_token_client_ge
     client = authed_token_client_generator(user)
     response = client.delete(reverse('assigned-asset-detail', kwargs={'pk': assignee.id}), format='json')
     assert response.status_code == status.HTTP_204_NO_CONTENT
+    assignee.refresh_from_db()
+    assert assignee.is_deleted
+    assert AssignedAsset.global_objects.count() == 1
+    assert AssignedAsset.deleted_objects.count() == 1
+    assert AssignedAsset.objects.count() == 0
 
 
 def test_retrieve_delete_assignee_invalid_id(admin_factory, authed_token_client_generator):

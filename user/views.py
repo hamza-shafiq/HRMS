@@ -2,15 +2,15 @@ import jwt
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.encoding import DjangoUnicodeDecodeError, smart_bytes, smart_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from rest_framework import generics, permissions, status, views, viewsets
-from rest_framework.permissions import AllowAny
+from rest_framework import generics, mixins, permissions, status, views
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from hrms.permissions import BaseCustomPermission
 
 from .models import User
 from .serializers import (
@@ -154,24 +154,13 @@ class LogoutView(generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class DeleteUserAccount(viewsets.ModelViewSet):
-    view_permissions = {
-        'update': {'admin': True},
-    }
+class UserAccountViewSet(mixins.DestroyModelMixin, generics.GenericAPIView):
+    permission_classes = [IsAuthenticated, BaseCustomPermission]
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    def destroy(self, request, *args, **kwargs):
-        user_id = self.request.data.get('user_id', '')
-        if user_id:
-            try:
-                user = get_object_or_404(User.objects, pk=user_id)
-            except Exception:
-                return JsonResponse({'error': 'Invalid user id'}, status=status.HTTP_400_BAD_REQUEST)
-            user.is_deleted = True
-            user.is_active = False
-            user.save()
-            return JsonResponse({'success': f'User with {user_id} deleted successfully'},
-                                status=status.HTTP_200_OK)
-        return JsonResponse({'error': 'Please provide id of user you want to delete'},
-                            status=status.HTTP_400_BAD_REQUEST)
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_active = False
+        instance.save()
+        return super(UserAccountViewSet, self).destroy(self, request, *args, **kwargs)
