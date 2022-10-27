@@ -147,7 +147,7 @@ def test_delete_user(rest_client, user_factory, admin_factory, authed_token_clie
     admin = admin_factory()
     user = user_factory()
     client = authed_token_client_generator(admin)
-    response = client.delete(reverse('delete-account', kwargs={'pk': user.id}), format='json')
+    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}), format='json')
     assert response.status_code == status.HTTP_204_NO_CONTENT
     user.refresh_from_db()
     admin.refresh_from_db()
@@ -155,3 +155,19 @@ def test_delete_user(rest_client, user_factory, admin_factory, authed_token_clie
     assert User.deleted_objects.count() == 1
     assert User.global_objects.count() == 2
     assert User.objects.count() == 1
+
+
+def test_delete_user_non_admin(rest_client, user_factory, authed_token_client_generator):
+    user = user_factory()
+    client = authed_token_client_generator(user)
+    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}))
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_delete_user_not_exist(rest_client, user_factory, admin_factory, authed_token_client_generator):
+    admin = admin_factory()
+    user = user_factory()
+    client = authed_token_client_generator(admin)
+    client.delete(reverse('account-detail', kwargs={'pk': user.id}))
+    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}))
+    assert response.status_code == status.HTTP_404_NOT_FOUND

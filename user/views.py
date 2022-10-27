@@ -5,7 +5,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from django.utils.encoding import DjangoUnicodeDecodeError, smart_bytes, smart_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from rest_framework import generics, mixins, permissions, status, views
+from rest_framework import generics, mixins, permissions, status, views, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -154,7 +154,7 @@ class LogoutView(generics.GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class UserAccountViewSet(mixins.DestroyModelMixin, generics.GenericAPIView):
+class UserAccountViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated, BaseCustomPermission]
     queryset = User.objects.all()
     serializer_class = UserSerializer

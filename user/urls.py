@@ -1,13 +1,13 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework import routers
 
 from .views import (
     LoginView, LogoutView, RegisterView, RequestPasswordResetEmail, ResetPasswordEmailVerification,
     SetNewPasswordAPIView, UserAccountViewSet, VerifyEmail
 )
 
-# delete_account = DeleteUserAccount.as_view({
-#     'delete': 'destroy'
-# })
+router = routers.DefaultRouter()
+router.register(r'account', UserAccountViewSet, basename='account')
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name="register"),
@@ -20,5 +20,5 @@ urlpatterns = [
     path('password-reset-complete', SetNewPasswordAPIView.as_view(),
          name='password-reset-complete'),
     path('logout/', LogoutView.as_view(), name="logout"),
-    path('delete-account/<str:pk>/', UserAccountViewSet.as_view(), name="delete-account"),
+    path('', include(router.urls)),
 ]
