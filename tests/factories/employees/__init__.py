@@ -1,2 +1,2 @@
-from .department import * # noqa
-from .employees import * # noqa
+from .department import *  # noqa
+from .employees import *  # noqa

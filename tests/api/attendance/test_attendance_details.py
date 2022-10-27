@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
+from attendance.models import Attendance
+
 
 def test_retrieve_attendance(admin_factory, attendance_factory, authed_token_client_generator):
     user = admin_factory()
@@ -44,7 +46,12 @@ def test_delete_attendance(admin_factory, attendance_factory, authed_token_clien
     attendance = attendance_factory()
     client = authed_token_client_generator(user)
     response = client.delete(reverse('attendance-detail', kwargs={'pk': attendance.id}), format='json')
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    attendance.refresh_from_db()
+    assert attendance.is_deleted
+    assert Attendance.global_objects.count() == 1
+    assert Attendance.deleted_objects.count() == 1
+    assert Attendance.objects.count() == 0
 
 
 def test_retrieve_delete_attendance_invalid_id(admin_factory, authed_token_client_generator):

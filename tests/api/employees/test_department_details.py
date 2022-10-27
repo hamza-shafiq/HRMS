@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
+from employees.models import Department
+
 
 def test_retrieve_department(admin_factory, department_factory, authed_token_client_generator):
     user = admin_factory()
@@ -42,6 +44,11 @@ def test_delete_department(admin_factory, department_factory, authed_token_clien
     client = authed_token_client_generator(user)
     response = client.delete(reverse('department-detail', kwargs={'pk': department.id}), format='json')
     assert response.status_code == status.HTTP_204_NO_CONTENT
+    department.refresh_from_db()
+    assert department.is_deleted
+    assert Department.global_objects.count() == 1
+    assert Department.deleted_objects.count() == 1
+    assert Department.objects.count() == 0
 
 
 def test_put_department_non_admin(user_factory, department_factory, authed_token_client_generator):

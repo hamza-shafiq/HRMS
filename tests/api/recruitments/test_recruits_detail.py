@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
+from recruitments.models import Recruits
+
 
 def test_retrieve_recruit(admin_factory, recruit_factory, authed_token_client_generator):
     user = admin_factory()
@@ -38,7 +40,12 @@ def test_delete_recruit(admin_factory, recruit_factory, authed_token_client_gene
     recruit = recruit_factory()
     client = authed_token_client_generator(user)
     response = client.delete(reverse('recruits-detail', kwargs={'pk': recruit.id}), format='json')
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    recruit.refresh_from_db()
+    assert recruit.is_deleted
+    assert Recruits.global_objects.count() == 1
+    assert Recruits.deleted_objects.count() == 1
+    assert Recruits.objects.count() == 0
 
 
 def test_put_patch_recruit_invalid_status(admin_factory, employee_factory, recruit_factory,

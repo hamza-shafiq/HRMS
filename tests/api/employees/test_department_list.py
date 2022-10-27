@@ -1,5 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
+
 from employees.models import Department
 
 
@@ -8,8 +9,8 @@ def test_get_department(admin_factory, department_factory, authed_token_client_g
     department = department_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('department-list'))
-    assert response.json()[0]['department_name'] == department.department_name
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()['results'][0]['department_name'] == department.department_name
 
 
 def test_create_department(admin_factory, authed_token_client_generator):
@@ -49,4 +50,4 @@ def test_get_department_count(admin_factory, department_factory, authed_token_cl
     department_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('department-list'))
-    assert len(response.json()) == Department.objects.all().count()
+    assert response.json()['count'] == Department.objects.all().count()

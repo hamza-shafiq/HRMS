@@ -1,6 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
-from employees.models import Employee, Department
+
+from employees.models import Department, Employee
 
 
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):

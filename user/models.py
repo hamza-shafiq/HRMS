@@ -1,10 +1,12 @@
-from django.db import models
+import uuid
+
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
-from .manager import UserManager
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from django_softdelete.models import SoftDeleteModel
-import uuid
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .manager import UserManager
 
 
 class BaseModel(TimeStampedModel, SoftDeleteModel):

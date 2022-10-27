@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
+from employees.models import Employee
+
 
 def test_retrieve_employee(admin_factory, employee_factory, authed_token_client_generator):
     user = admin_factory()
@@ -42,6 +44,11 @@ def test_delete_employee(admin_factory, employee_factory, authed_token_client_ge
     client = authed_token_client_generator(user)
     response = client.delete(reverse('employees-detail', kwargs={'pk': employee.id}), format='json')
     assert response.status_code == status.HTTP_204_NO_CONTENT
+    employee.refresh_from_db()
+    assert employee.is_deleted
+    assert Employee.global_objects.count() == 1
+    assert Employee.deleted_objects.count() == 1
+    assert Employee.objects.count() == 0
 
 
 def test_retrieve_delete_employee_invalid_id(admin_factory, authed_token_client_generator):

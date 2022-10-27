@@ -1,12 +1,14 @@
 from django.http import JsonResponse
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from .serializers import DepartmentSerializer, EmployeeSerializer
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import viewsets, status
-from employees.permissions import DepartmentPermission, EmployeePermission
-from employees.models import Employee, Department
 from django_filters import rest_framework as filters
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from employees.models import Department, Employee
+from employees.permissions import DepartmentPermission, EmployeePermission
+
+from .serializers import DepartmentSerializer, EmployeeSerializer
 
 
 class EmployeeFilter(filters.FilterSet):
@@ -21,13 +23,6 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, DepartmentPermission]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-
-    def destroy(self, request, *args, **kwargs):
-        department = self.get_object()
-        department.is_deleted = True
-        department.save()
-        return JsonResponse({'success': f'Department {department.department_name} deleted successfully'},
-                            status=status.HTTP_200_OK)
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -63,14 +58,6 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_200_OK)
         return JsonResponse({'error': 'Only admin and employee can see any employee details'},
                             status=status.HTTP_401_UNAUTHORIZED)
-
-    def destroy(self, request, *args, **kwargs):
-        employee = self.get_object()
-        employee.is_deleted = True
-        employee.is_active = False
-        employee.save()
-        return JsonResponse({'success': f'Employee {employee.first_name} {employee.last_name} deleted successfully'},
-                            status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
         serializer_context = {

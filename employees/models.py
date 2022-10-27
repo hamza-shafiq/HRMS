@@ -1,5 +1,6 @@
 from django.db import models
-from user.models import User, BaseModel
+
+from user.models import BaseModel, User
 
 
 class Department(BaseModel):

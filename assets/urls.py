@@ -1,7 +1,7 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from assets.views import AssetViewSet, AssignedAssetViewSet
 
+from assets.views import AssetViewSet, AssignedAssetViewSet
 
 router = DefaultRouter()
 router.register(r'assets', AssetViewSet, basename="asset")

@@ -1,5 +1,6 @@
 from django.urls import reverse
 from rest_framework import status
+
 from attendance.models import Leaves
 
 
@@ -9,7 +10,7 @@ def test_get_leaves_admin(admin_factory, leaves_factory, authed_token_client_gen
     client = authed_token_client_generator(user)
     response = client.get(reverse('leaves-list'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]['leave_type'] == leaves.leave_type
+    assert response.json()['results'][0]['leave_type'] == leaves.leave_type
 
 
 def test_create_leave(admin_factory, employee_factory, authed_token_client_generator):
@@ -44,7 +45,7 @@ def test_get_leave_count(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('leaves-list'))
-    assert len(response.json()) == Leaves.objects.all().count()
+    assert response.json()['count'] == Leaves.objects.all().count()
 
 
 def test_get_leaves_non_admin(user_factory, authed_token_client_generator):

@@ -1,7 +1,7 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from employees.views import DepartmentViewSet, EmployeeViewSet
 
+from employees.views import DepartmentViewSet, EmployeeViewSet
 
 router = DefaultRouter()
 router.register(r'department', DepartmentViewSet, basename="department")
