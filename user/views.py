@@ -103,7 +103,7 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             send_email.delay(data)
             return Response({'success': 'We have sent you a link to reset your password'},
                             status=status.HTTP_200_OK)
-        return Response({'error':'Email does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Email does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ResetPasswordEmailVerification(generics.GenericAPIView):
