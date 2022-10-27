@@ -5,7 +5,7 @@ on:
     branches: [ "staging" ]
   pull_request:
     branches: [ "staging" ]
-    jobs: [ 'build-test' ]
+    build-test:
 
 jobs:
   build-test:
