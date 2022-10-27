@@ -160,7 +160,7 @@ def test_delete_user(rest_client, user_factory, admin_factory, authed_token_clie
 def test_delete_user_non_admin(rest_client, user_factory, authed_token_client_generator):
     user = user_factory()
     client = authed_token_client_generator(user)
-    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}))
+    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}), format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
@@ -169,5 +169,5 @@ def test_delete_user_not_exist(rest_client, user_factory, admin_factory, authed_
     user = user_factory()
     client = authed_token_client_generator(admin)
     client.delete(reverse('account-detail', kwargs={'pk': user.id}))
-    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}))
+    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}), format='json')
     assert response.status_code == status.HTTP_404_NOT_FOUND
