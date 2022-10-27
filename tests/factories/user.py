@@ -5,8 +5,8 @@ from pytest_factoryboy import register
 
 @register
 class AdminFactory(DjangoModelFactory):
-    username = factory.LazyAttribute(lambda a: 'user'.lower())
-    email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username).lower())
+    username = factory.LazyAttribute(lambda a: 'admin'.lower())
+    email = factory.LazyAttribute(lambda a: '{}@admin.com'.format(a.username).lower())
     is_active = True
     is_staff = True
     is_verified = True

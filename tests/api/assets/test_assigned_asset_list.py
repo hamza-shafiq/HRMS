@@ -61,4 +61,4 @@ def test_get_assignee_count(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('assigned-asset-list'))
-    assert len(response.json()) == AssignedAsset.objects.all().count()
+    assert response.json()['count'] == AssignedAsset.objects.all().count()

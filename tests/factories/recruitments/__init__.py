@@ -1,1 +1,1 @@
-from .recruits import * # noqa
+from .recruits import *  # noqa

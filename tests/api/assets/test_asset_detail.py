@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
+from assets.models import Asset
+
 
 def test_retrieve_asset(admin_factory, asset_factory, authed_token_client_generator):
     user = admin_factory()
@@ -44,6 +46,11 @@ def test_delete_asset(admin_factory, asset_factory, authed_token_client_generato
     client = authed_token_client_generator(user)
     response = client.delete(reverse('asset-detail', kwargs={'pk': asset.id}), format='json')
     assert response.status_code == status.HTTP_204_NO_CONTENT
+    asset.refresh_from_db()
+    assert asset.is_deleted
+    assert Asset.global_objects.count() == 1
+    assert Asset.deleted_objects.count() == 1
+    assert Asset.objects.count() == 0
 
 
 def test_put_asset_non_admin(user_factory, asset_factory, authed_token_client_generator):

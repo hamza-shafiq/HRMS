@@ -1,4 +1,5 @@
 from django.urls import path
+
 from attendance.views import AttendanceViewSet, LeavesViewSet
 
 attendance_list = AttendanceViewSet.as_view({

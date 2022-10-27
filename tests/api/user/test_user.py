@@ -1,6 +1,8 @@
 from django.urls import reverse
 from rest_framework import status
 
+from user.models import User
+
 
 def test_register_user(rest_client, celery_eager_run_on_commit, mailoutbox):
     data = {"email": "gondal@gmail.com", "username": "shahroze23", "password": "paklove"}
@@ -139,3 +141,33 @@ def test_login_non_user(rest_client):
 def test_logout_empty_token(rest_client):
     response = rest_client.post(reverse('logout'), data={"refresh": ""}, format='json')
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_delete_user(rest_client, user_factory, admin_factory, authed_token_client_generator):
+    admin = admin_factory()
+    user = user_factory()
+    client = authed_token_client_generator(admin)
+    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}), format='json')
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    user.refresh_from_db()
+    admin.refresh_from_db()
+    assert user.is_deleted
+    assert User.deleted_objects.count() == 1
+    assert User.global_objects.count() == 2
+    assert User.objects.count() == 1
+
+
+def test_delete_user_non_admin(rest_client, user_factory, authed_token_client_generator):
+    user = user_factory()
+    client = authed_token_client_generator(user)
+    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}), format='json')
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+
+def test_delete_user_not_exist(rest_client, user_factory, admin_factory, authed_token_client_generator):
+    admin = admin_factory()
+    user = user_factory()
+    client = authed_token_client_generator(admin)
+    client.delete(reverse('account-detail', kwargs={'pk': user.id}))
+    response = client.delete(reverse('account-detail', kwargs={'pk': user.id}), format='json')
+    assert response.status_code == status.HTTP_404_NOT_FOUND

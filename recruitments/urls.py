@@ -1,4 +1,5 @@
 from django.urls import path
+
 from recruitments.views import RecruitsViewSet
 
 recruits_list = RecruitsViewSet.as_view({
