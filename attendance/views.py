@@ -16,7 +16,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
 
-    @action(detail=False, url_path="mark-attendance")
+    @action(detail=False, url_path="mark-attendance", methods=['post'])
     def mark_attendance(self, request):
         action_type = request.data.get("action", None)
         user = request.user

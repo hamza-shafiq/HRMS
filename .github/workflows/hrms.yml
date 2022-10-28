@@ -3,6 +3,8 @@ name: HRMS CI
 on:
   push:
     branches: [ "staging" ]
+  pull_request:
+    branches: [ "staging" ]
 
 jobs:
   build-test:
@@ -35,7 +37,11 @@ jobs:
     - name: Run Tests
       env:
         SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      run: python manage.py test
+      run: pytest
+    - name: Run tox
+      env:
+        SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      run: tox
 
   deploy:
     needs: build-test
