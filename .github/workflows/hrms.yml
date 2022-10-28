@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-test:
-    if: github.actor!= 'pull_request'
+    if: ${{ github.actor != 'pull_request' }}
     runs-on: ubuntu-latest
     services:
       postgres:
