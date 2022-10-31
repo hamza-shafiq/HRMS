@@ -29,7 +29,7 @@ git clone https://github.com/hamza-shafiq/HRMS.git
 ```
 * Install the required dependencies through pip
 ```
-pip install -r requorements.txt
+pip install -r requirements.txt
 ```
 * Connect psql through terminal & create new database, db user & grant access on dataabse.
 
