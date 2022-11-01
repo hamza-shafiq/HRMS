@@ -13,14 +13,14 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated, BaseCustomPermission]
 
     def list(self, request, *args, **kwargs):
-        total_department = Department.objects.all().count()
-        total_employees = Employee.objects.all().count()
+        total_department = Department.objects.count()
+        total_employees = Employee.objects.count()
         present_employees = Employee.objects.filter(employee_status="WORKING", is_active=True).count()
-        total_assets = Asset.objects.all().count()
-        assignee = AssignedAsset.objects.all().count()
-        total_recruits = Recruits.objects.all().count()
+        total_assets = Asset.objects.count()
+        assignee = AssignedAsset.objects.count()
+        total_recruits = Recruits.objects.count()
         pending_recruits = Recruits.objects.filter(status="PENDING").count()
-        attendees = Attendance.objects.filter(check_in=datetime.now().date()).count()
+        attendees = Attendance.objects.filter(check_in__date=datetime.now().date()).count()
         data = {"total departments": total_department, "total employees": total_employees,
                 "present employees": present_employees, "total assets": total_assets,
                 "total assignee": assignee, "total recruits": total_recruits,
