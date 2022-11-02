@@ -12,10 +12,9 @@ def test_retrieve_attendance(admin_factory, attendance_factory, authed_token_cli
     assert response.status_code == status.HTTP_200_OK
 
 
-def test_retrieve_attendance_employee(user_factory, attendance_factory, authed_token_client_generator):
-    user = user_factory()
+def test_retrieve_attendance_employee(attendance_factory, authed_token_client_generator):
     attendance = attendance_factory()
-    client = authed_token_client_generator(user)
+    client = authed_token_client_generator(attendance.employee)
     response = client.get(reverse('attendance-detail', kwargs={'pk': attendance.id}), format='json')
     assert response.status_code == status.HTTP_200_OK
 

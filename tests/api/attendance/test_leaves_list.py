@@ -24,6 +24,16 @@ def test_create_leave(admin_factory, employee_factory, authed_token_client_gener
     assert response.json()['leave_type'] == data['leave_type']
 
 
+def test_create_leaves_employee(employee_factory, authed_token_client_generator):
+    user = employee_factory()
+    data = {"employee": user.id, "leave_type": "casual", "reason": "urgent work",
+            "request_date": "2022-07-02", "from_date": "2022-07-03", "to_date": "2022-07-04"}
+    client = authed_token_client_generator(user)
+    response = client.post(reverse('leaves-list'), data=data)
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.json()['leave_type'] == data['leave_type']
+
+
 def test_create_leave_invalid_data(admin_factory, authed_token_client_generator):
     user = admin_factory()
     data = {"employee": user.id, "leave_type": "casual", "reason": "urgent work",

@@ -31,7 +31,7 @@ class UserFactory(DjangoModelFactory):
     is_active = True
     is_verified = True
     is_superuser = False
-    is_employee = True
+    is_employee = False
     is_staff = False
 
     class Meta:
