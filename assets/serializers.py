@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from assets.models import Asset, AssignedAsset
 
@@ -22,4 +23,7 @@ class AssignedAssetSerializer(serializers.ModelSerializer):
         fields = ["id", "asset", "employee"]
 
     def create(self, validated_data):
-        return AssignedAsset.objects.create(**validated_data)
+        record = AssignedAsset.objects.filter(asset=validated_data['asset'])
+        if record:
+            raise ValidationError('This asset is already assigned to someone')
+        return super().create(validated_data)
