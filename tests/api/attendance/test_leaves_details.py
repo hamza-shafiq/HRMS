@@ -10,6 +10,7 @@ def test_retrieve_leave(admin_factory, leaves_factory, authed_token_client_gener
     client = authed_token_client_generator(user)
     response = client.patch(reverse('leaves-detail', kwargs={'pk': leave.id}), format='json')
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()['id'] == str(leave.id)
 
 
 def test_patch_leave(admin_factory, leaves_factory, authed_token_client_generator):
@@ -53,7 +54,9 @@ def test_retrieve_delete_leave_invalid_id(admin_factory, authed_token_client_gen
     get_response = client.delete(reverse('leaves-detail', kwargs={'pk': user.id}), format='json')
     delete_response = client.delete(reverse('leaves-detail', kwargs={'pk': user.id}), format='json')
     assert get_response.status_code == status.HTTP_404_NOT_FOUND
+    assert get_response.json()['detail'] == 'Not found.'
     assert delete_response.status_code == status.HTTP_404_NOT_FOUND
+    assert delete_response.json()['detail'] == 'Not found.'
 
 
 def test_patch_leave_invalid_id(admin_factory, authed_token_client_generator):
@@ -64,6 +67,7 @@ def test_patch_leave_invalid_id(admin_factory, authed_token_client_generator):
     client = authed_token_client_generator(user)
     response = client.patch(reverse('leaves-detail', kwargs={'pk': user.id}), data=data, format='json')
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json()['detail'] == 'Not found.'
 
 
 def test_put_leave_invalid_id(admin_factory, leaves_factory, authed_token_client_generator):
@@ -74,6 +78,7 @@ def test_put_leave_invalid_id(admin_factory, leaves_factory, authed_token_client
     client = authed_token_client_generator(user)
     response = client.put(reverse('leaves-detail', kwargs={'pk': user.id}), data=data, format='json')
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json()['detail'] == 'Not found.'
 
 
 def test_delete_leave_non_admin(user_factory, leaves_factory, authed_token_client_generator):
@@ -82,6 +87,7 @@ def test_delete_leave_non_admin(user_factory, leaves_factory, authed_token_clien
     client = authed_token_client_generator(user)
     response = client.delete(reverse('leaves-detail', kwargs={'pk': leave.id}), format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_patch_leave_non_admin(user_factory, leaves_factory, authed_token_client_generator):
@@ -92,6 +98,7 @@ def test_patch_leave_non_admin(user_factory, leaves_factory, authed_token_client
     client = authed_token_client_generator(user)
     response = client.patch(reverse('leaves-detail', kwargs={'pk': leave.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_put_leave_non_admin(user_factory, leaves_factory, authed_token_client_generator):
@@ -102,3 +109,4 @@ def test_put_leave_non_admin(user_factory, leaves_factory, authed_token_client_g
     client = authed_token_client_generator(user)
     response = client.put(reverse('leaves-detail', kwargs={'pk': leave.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'

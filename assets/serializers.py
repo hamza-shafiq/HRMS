@@ -20,6 +20,3 @@ class AssignedAssetSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignedAsset
         fields = ["id", "asset", "employee"]
-
-    def create(self, validated_data):
-        return AssignedAsset.objects.create(**validated_data)

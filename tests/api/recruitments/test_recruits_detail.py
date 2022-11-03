@@ -10,6 +10,7 @@ def test_retrieve_recruit(admin_factory, recruit_factory, authed_token_client_ge
     client = authed_token_client_generator(user)
     response = client.get(reverse('recruits-detail', kwargs={'pk': recruit.id}), format='json')
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()['id'] == str(recruit.id)
 
 
 def test_put_recruit(admin_factory, recruit_factory, employee_factory, authed_token_client_generator):
@@ -59,7 +60,9 @@ def test_put_patch_recruit_invalid_status(admin_factory, employee_factory, recru
     put_response = client.put(reverse('recruits-detail', kwargs={'pk': recruit.id}), data=data, format='json')
     patch_response = client.patch(reverse('recruits-detail', kwargs={'pk': recruit.id}), data=data, format='json')
     assert put_response.status_code == status.HTTP_400_BAD_REQUEST
+    assert put_response.json()['status'][0] == '"invalid" is not a valid choice.'
     assert patch_response.status_code == status.HTTP_400_BAD_REQUEST
+    assert patch_response.json()['status'][0] == '"invalid" is not a valid choice.'
 
 
 def test_put_patch_recruit_non_admin(user_factory, recruit_factory, employee_factory, authed_token_client_generator):
@@ -72,7 +75,9 @@ def test_put_patch_recruit_non_admin(user_factory, recruit_factory, employee_fac
     put_response = client.put(reverse('recruits-detail', kwargs={'pk': recruit.id}), data=data, format='json')
     patch_response = client.patch(reverse('recruits-detail', kwargs={'pk': recruit.id}), data=data, format='json')
     assert put_response.status_code == status.HTTP_403_FORBIDDEN
+    assert put_response.json()['detail'] == 'You do not have permission to perform this action.'
     assert patch_response.status_code == status.HTTP_403_FORBIDDEN
+    assert patch_response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_delete_recruit_non_admin(user_factory, recruit_factory, authed_token_client_generator):
@@ -81,6 +86,7 @@ def test_delete_recruit_non_admin(user_factory, recruit_factory, authed_token_cl
     client = authed_token_client_generator(user)
     response = client.delete(reverse('recruits-detail', kwargs={'pk': recruit.id}), format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_retrieve_delete_recruit_invalid_id(admin_factory, authed_token_client_generator):
@@ -89,7 +95,9 @@ def test_retrieve_delete_recruit_invalid_id(admin_factory, authed_token_client_g
     retrieve_response = client.get(reverse('recruits-detail', kwargs={'pk': user.id}), format='json')
     delete_response = client.delete(reverse('recruits-detail', kwargs={'pk': user.id}), format='json')
     assert retrieve_response.status_code == status.HTTP_404_NOT_FOUND
+    assert retrieve_response.json()['detail'] == 'Not found.'
     assert delete_response.status_code == status.HTTP_404_NOT_FOUND
+    assert delete_response.json()['detail'] == 'Not found.'
 
 
 def test_put_patch_recruit_invalid_id(admin_factory, employee_factory, authed_token_client_generator):
@@ -101,4 +109,6 @@ def test_put_patch_recruit_invalid_id(admin_factory, employee_factory, authed_to
     put_response = client.put(reverse('recruits-detail', kwargs={'pk': user.id}), data=data, format='json')
     patch_response = client.patch(reverse('recruits-detail', kwargs={'pk': user.id}), data=data, format='json')
     assert put_response.status_code == status.HTTP_404_NOT_FOUND
+    assert put_response.json()['detail'] == 'Not found.'
     assert patch_response.status_code == status.HTTP_404_NOT_FOUND
+    assert patch_response.json()['detail'] == 'Not found.'

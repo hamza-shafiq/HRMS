@@ -38,7 +38,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        if user.is_superuser:
+        if user.is_admin:
             emp_id = self.request.query_params.get('employee_id')
             if emp_id:
                 try:
@@ -48,16 +48,16 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                         return Response(serializer.data, status=status.HTTP_200_OK)
                     return JsonResponse({'error': f'Employee with id: {emp_id} does not exist'},
                                         status=status.HTTP_404_NOT_FOUND)
-                except Exception:
-                    return JsonResponse({'error': 'Invalid employee id'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                except:
+                    return JsonResponse({'error': 'Invalid employee id'}, status=status.HTTP_400_BAD_REQUEST)
             return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
         elif user.is_employee:
             record = Employee.objects.filter(id=user.id, is_deleted=False)
-            if record:
-                serializer = EmployeeSerializer(record, many=True, context=serializer_context)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-        return JsonResponse({'error': 'Only admin and employee can see any employee details'},
-                            status=status.HTTP_401_UNAUTHORIZED)
+            serializer = EmployeeSerializer(record, many=True, context=serializer_context)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse({'error': 'user except admin and employee is not allowed to '
+                                      'to perform filter'},
+                            status=status.HTTP_403_FORBIDDEN)
 
     def list(self, request, *args, **kwargs):
         serializer_context = {

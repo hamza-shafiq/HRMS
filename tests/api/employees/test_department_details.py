@@ -61,6 +61,7 @@ def test_put_department_non_admin(user_factory, department_factory, authed_token
     client = authed_token_client_generator(user)
     response = client.put(reverse('department-detail', kwargs={'pk': department.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_patch_department_non_admin(user_factory, department_factory, authed_token_client_generator):
@@ -72,6 +73,7 @@ def test_patch_department_non_admin(user_factory, department_factory, authed_tok
     client = authed_token_client_generator(user)
     response = client.patch(reverse('department-detail', kwargs={'pk': department.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_delete_department_non_admin(user_factory, department_factory, authed_token_client_generator):
@@ -80,6 +82,7 @@ def test_delete_department_non_admin(user_factory, department_factory, authed_to
     client = authed_token_client_generator(user)
     response = client.delete(reverse('department-detail', kwargs={'pk': department.id}), format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_retrieve_delete_department_invalid_id(admin_factory, authed_token_client_generator):
@@ -88,7 +91,9 @@ def test_retrieve_delete_department_invalid_id(admin_factory, authed_token_clien
     retrieve_response = client.get(reverse('department-detail', kwargs={'pk': user.id}), format='json')
     delete_response = client.delete(reverse('department-detail', kwargs={'pk': user.id}), format='json')
     assert retrieve_response.status_code == status.HTTP_404_NOT_FOUND
+    assert retrieve_response.json()['detail'] == 'Not found.'
     assert delete_response.status_code == status.HTTP_404_NOT_FOUND
+    assert retrieve_response.json()['detail'] == 'Not found.'
 
 
 def test_put_patch_department_invalid_id(admin_factory, authed_token_client_generator):
@@ -101,4 +106,6 @@ def test_put_patch_department_invalid_id(admin_factory, authed_token_client_gene
     put_response = client.put(reverse('department-detail', kwargs={'pk': user.id}), data=data, format='json')
     patch_response = client.patch(reverse('department-detail', kwargs={'pk': user.id}), data=data, format='json')
     assert put_response.status_code == status.HTTP_404_NOT_FOUND
+    assert put_response.json()['detail'] == 'Not found.'
     assert patch_response.status_code == status.HTTP_404_NOT_FOUND
+    assert patch_response.json()['detail'] == 'Not found.'
