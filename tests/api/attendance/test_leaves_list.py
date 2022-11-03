@@ -41,6 +41,7 @@ def test_create_leave_invalid_data(admin_factory, authed_token_client_generator)
     client = authed_token_client_generator(user)
     response = client.post(reverse('leaves-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['employee'][0] == f'Invalid pk "{user.id}" - object does not exist.'
 
 
 def test_create_leave_incomplete_data(admin_factory, authed_token_client_generator):

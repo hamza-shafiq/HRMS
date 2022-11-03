@@ -96,6 +96,7 @@ def test_patch_attendance_invalid_choices(admin_factory, attendance_factory, aut
     response = client.patch(reverse('attendance-detail',
                                     kwargs={'pk': attendance.id}), data=data, format='json')
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['status'][0] == '"invalid" is not a valid choice.'
 
 
 def test_put_attendance_invalid_choices(admin_factory, attendance_factory,
@@ -107,6 +108,7 @@ def test_put_attendance_invalid_choices(admin_factory, attendance_factory,
     client = authed_token_client_generator(user)
     response = client.put(reverse('attendance-detail', kwargs={'pk': attendance.id}), data=data, format='json')
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['status'][0] == '"invalid" is not a valid choice.'
 
 
 def test_put_patch_attendance_non_admin(user_factory, attendance_factory, authed_token_client_generator):
