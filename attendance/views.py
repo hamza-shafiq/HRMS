@@ -1,9 +1,9 @@
 from datetime import datetime
 
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -55,8 +55,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             try:
                 datetime.strptime(date, '%Y-%m-%d')
                 record = Attendance.objects.filter(check_in__date=date, employee_id=emp_id, is_deleted=False)
-            except:
-                raise ValidationError('Invalid date format or employee id')
+            except ValidationError:
+                raise ValidationError('Invalid employee id')
+            except ValueError:
+                raise ValueError('Invalid date format')
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         queryset = Attendance.objects.all()

@@ -1,3 +1,5 @@
+import pytest
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from rest_framework import status
 
@@ -21,6 +23,6 @@ def test_filter_recruits_does_not_exist(admin_factory, authed_token_client_gener
 def test_filter_recruits_invalid_id(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
-    response = client.get(reverse('recruits-list') + "?recruit_id=" + str('invalid'))
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()[0] == 'Invalid Recruit id'
+    with pytest.raises(ValidationError) as e:
+        client.get(reverse('recruits-list') + "?recruit_id=" + str('invalid'))
+    assert e.value.message == 'Invalid Recruit id'

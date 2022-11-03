@@ -1,8 +1,8 @@
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -49,7 +49,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                         return Response(serializer.data, status=status.HTTP_200_OK)
                     return JsonResponse({'error': f'Employee with id: {emp_id} does not exist'},
                                         status=status.HTTP_404_NOT_FOUND)
-                except:
+                except ValidationError:
                     raise ValidationError('Invalid employee id')
             return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
         elif user.is_employee:

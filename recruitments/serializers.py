@@ -1,5 +1,5 @@
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from employees.models import Employee
 from recruitments.models import Recruits, Referrals
@@ -23,7 +23,7 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
                     Referrals.objects.create(referer=emp, recruit=recruit)
                     return recruit
                 raise ValidationError('Employee with this referrer id does not exist')
-            except:
+            except ValidationError:
                 raise ValidationError('Invalid referrer id')
         recruits = Recruits.objects.create(**validated_data)
         return recruits

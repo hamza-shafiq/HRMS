@@ -1,3 +1,5 @@
+import pytest
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from rest_framework import status
 
@@ -14,9 +16,9 @@ def test_filter_employees(admin_factory, employee_factory, authed_token_client_g
 def test_filter_employees_invalid_id(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
-    response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str('invalid'))
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()[0] == 'Invalid employee id'
+    with pytest.raises(ValidationError) as e:
+        client.get(reverse('employees-employee-detail') + "?employee_id=" + str('invalid'))
+    assert e.value.message == 'Invalid employee id'
 
 
 def test_filter_non_existing_employee(admin_factory, authed_token_client_generator):

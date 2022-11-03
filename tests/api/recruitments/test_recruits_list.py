@@ -1,3 +1,5 @@
+import pytest
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from rest_framework import status
 
@@ -50,8 +52,9 @@ def test_create_recruit_with_invalid_referrer(admin_factory, authed_token_client
     data = {"referrers": "invalid", "first_name": "usama", "last_name": "tayyab", "email": 'g@gmail.com',
             "phone_number": '242525', "position": "dev", "status": "IN_PROCESS", "resume": "https://g.com"}
     client = authed_token_client_generator(user)
-    response = client.post(reverse('recruits-list'), data=data)
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    with pytest.raises(ValidationError) as e:
+        client.post(reverse('recruits-list'), data=data)
+    assert e.value.message == 'Invalid referrer id'
 
 
 def test_get_recruits_non_admin(user_factory, authed_token_client_generator):
