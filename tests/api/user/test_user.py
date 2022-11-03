@@ -138,6 +138,24 @@ def test_login_non_user(rest_client):
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
+def test_login_with_non_active_user(user_factory, rest_client):
+    user = user_factory(password="paklove")
+    user.is_active = False
+    user.save()
+    data = {"email": user.email, "password": "paklove"}
+    response = rest_client.post(reverse('login'), data=data, format='json')
+    assert response.json()['detail'] == 'Invalid Credentials, try again'
+
+
+def test_login_with_non_email_not_verified(user_factory, rest_client):
+    user = user_factory(password="paklove")
+    user.is_verified = False
+    user.save()
+    data = {"email": user.email, "password": "paklove"}
+    response = rest_client.post(reverse('login'), data=data, format='json')
+    assert response.json()['detail'] == 'Email is not verified'
+
+
 def test_logout_empty_token(rest_client):
     response = rest_client.post(reverse('logout'), data={"refresh": ""}, format='json')
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
