@@ -125,7 +125,7 @@ class SetNewPasswordSerializer(serializers.Serializer):
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
     default_error_messages = {
-        'bad token': 'Token is expired on invalid'
+        'bad token': 'Token is expired or invalid'
     }
 
     def validate(self, attrs):

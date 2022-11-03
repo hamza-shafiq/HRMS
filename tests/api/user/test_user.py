@@ -143,6 +143,16 @@ def test_logout_empty_token(rest_client):
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
 
+def test_logout_invalid(user_factory, rest_client, authed_token_client_generator):
+    user = user_factory(password="paklove")
+    data = {"email": user.email, "password": "paklove"}
+    response = rest_client.post(reverse('login'), data=data, format='json')
+    access_token = response.json()['tokens'].split("'access': '")[1].split("'}")[0]
+    rest_client.credentials(HTTP_AUTHORIZATION='Bearer {}'.format(str(access_token)))
+    response = rest_client.post(reverse('logout'), data={"refresh": 'invalid'}, format='json')
+    assert response.data[0] == 'Token is expired or invalid'
+
+
 def test_delete_user(rest_client, user_factory, admin_factory, authed_token_client_generator):
     admin = admin_factory()
     user = user_factory()
