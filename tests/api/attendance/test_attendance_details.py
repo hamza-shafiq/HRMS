@@ -10,14 +10,15 @@ def test_retrieve_attendance(admin_factory, attendance_factory, authed_token_cli
     client = authed_token_client_generator(user)
     response = client.patch(reverse('attendance-detail', kwargs={'pk': attendance.id}), format='json')
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()['id'] == str(attendance.id)
 
 
-def test_retrieve_attendance_employee(user_factory, attendance_factory, authed_token_client_generator):
-    user = user_factory()
+def test_retrieve_attendance_employee(attendance_factory, authed_token_client_generator):
     attendance = attendance_factory()
-    client = authed_token_client_generator(user)
+    client = authed_token_client_generator(attendance.employee)
     response = client.get(reverse('attendance-detail', kwargs={'pk': attendance.id}), format='json')
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()['id'] == str(attendance.id)
 
 
 def test_patch_attendance(admin_factory, attendance_factory, authed_token_client_generator):
@@ -60,7 +61,9 @@ def test_retrieve_delete_attendance_invalid_id(admin_factory, authed_token_clien
     get_response = client.delete(reverse('attendance-detail', kwargs={'pk': user.id}), format='json')
     delete_response = client.delete(reverse('attendance-detail', kwargs={'pk': user.id}), format='json')
     assert get_response.status_code == status.HTTP_404_NOT_FOUND
+    assert get_response.json()['detail'] == 'Not found.'
     assert delete_response.status_code == status.HTTP_404_NOT_FOUND
+    assert delete_response.json()['detail'] == 'Not found.'
 
 
 def test_patch_attendance_invalid_id(admin_factory, authed_token_client_generator):
@@ -71,6 +74,7 @@ def test_patch_attendance_invalid_id(admin_factory, authed_token_client_generato
     client = authed_token_client_generator(user)
     response = client.patch(reverse('attendance-detail', kwargs={'pk': user.id}), data=data, format='json')
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json()['detail'] == 'Not found.'
 
 
 def test_put_attendance_invalid_id(admin_factory, attendance_factory, authed_token_client_generator):
@@ -81,6 +85,7 @@ def test_put_attendance_invalid_id(admin_factory, attendance_factory, authed_tok
     client = authed_token_client_generator(user)
     response = client.put(reverse('attendance-detail', kwargs={'pk': user.id}), data=data, format='json')
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json()['detail'] == 'Not found.'
 
 
 def test_patch_attendance_invalid_choices(admin_factory, attendance_factory, authed_token_client_generator):
@@ -104,7 +109,7 @@ def test_put_attendance_invalid_choices(admin_factory, attendance_factory,
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
-def test_put_patch_attendance_non(user_factory, attendance_factory, employee_factory, authed_token_client_generator):
+def test_put_patch_attendance_non_admin(user_factory, attendance_factory, authed_token_client_generator):
     user = user_factory()
     attendance = attendance_factory()
     data = {"employee": attendance.employee_id, "check_in": "2022-07-06", "check_out": "2022-07-05",
@@ -113,7 +118,9 @@ def test_put_patch_attendance_non(user_factory, attendance_factory, employee_fac
     put_response = client.put(reverse('attendance-detail', kwargs={'pk': attendance.id}), data=data, format='json')
     patch_response = client.patch(reverse('attendance-detail', kwargs={'pk': attendance.id}), data=data, format='json')
     assert put_response.status_code == status.HTTP_403_FORBIDDEN
+    assert put_response.json()['detail'] == 'You do not have permission to perform this action.'
     assert patch_response.status_code == status.HTTP_403_FORBIDDEN
+    assert patch_response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_delete_attendance_non_admin(user_factory, attendance_factory, authed_token_client_generator):
@@ -122,3 +129,4 @@ def test_delete_attendance_non_admin(user_factory, attendance_factory, authed_to
     client = authed_token_client_generator(user)
     response = client.delete(reverse('attendance-detail', kwargs={'pk': attendance.id}), format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'

@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
-from django.utils.encoding import DjangoUnicodeDecodeError, smart_bytes, smart_str
+from django.utils.encoding import smart_bytes, smart_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, mixins, permissions, status, views, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -115,19 +115,12 @@ class ResetPasswordEmailVerification(generics.GenericAPIView):
         id = smart_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(id=id)
 
-        try:
+        if not PasswordResetTokenGenerator().check_token(user, token):
+            return Response({'error': 'Token is not verified, Please request a new one'},
+                            status=status.HTTP_401_UNAUTHORIZED)
 
-            if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token is not verified, Please request a new one'},
-                                status=status.HTTP_401_UNAUTHORIZED)
-
-            return Response({'success': True, 'message': "Credentials valid", 'uidb64': uidb64, 'token': token},
-                            status=status.HTTP_200_OK)
-
-        except DjangoUnicodeDecodeError:
-            if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token is not verified, Please request a new one'},
-                                status=status.HTTP_401_UNAUTHORIZED)
+        return Response({'success': True, 'message': "Credentials valid", 'uidb64': uidb64, 'token': token},
+                        status=status.HTTP_200_OK)
 
 
 class SetNewPasswordAPIView(generics.GenericAPIView):
@@ -159,8 +152,12 @@ class UserAccountViewSet(mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.is_active = False
-        instance.save()
-        return super(UserAccountViewSet, self).destroy(self, request, *args, **kwargs)
+    def destroy(self, request, *args, **kwargs):
+        id = request.parser_context['kwargs']['pk']
+        record = User.objects.filter(id=id)
+        if record:
+            instance = User.objects.get(id=id)
+            instance.is_active = False
+            instance.save()
+            return super(UserAccountViewSet, self).destroy(self, request, *args, **kwargs)
+        return Response({'error': 'User with id does not exist'}, status=status.HTTP_404_NOT_FOUND)

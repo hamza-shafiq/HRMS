@@ -15,7 +15,7 @@ class RecruitsViewSet(viewsets.ModelViewSet):
     serializer_class = RecruitsSerializer
 
     def list(self, request, *args, **kwargs):
-        recruit_id = self.request.query_params.get('id')
+        recruit_id = self.request.query_params.get('recruit_id')
         serializer_context = {
             'request': request,
         }
@@ -23,9 +23,12 @@ class RecruitsViewSet(viewsets.ModelViewSet):
             try:
                 record = Recruits.objects.filter(id=recruit_id, is_deleted=False)
             except:
-                return JsonResponse({'error': 'Invalid Recruit id'}, status=status.HTTP_406_NOT_ACCEPTABLE)
-            serializer = RecruitsSerializer(record, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+                return JsonResponse({'error': 'Invalid Recruit id'}, status=status.HTTP_400_BAD_REQUEST)
+            if record:
+                serializer = RecruitsSerializer(record, many=True, context=serializer_context)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return JsonResponse({'error': f'Recruit with id: {recruit_id} does not exist'},
+                                status=status.HTTP_404_NOT_FOUND)
         queryset = Recruits.objects.all()
         serializer = RecruitsSerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data, status=status.HTTP_200_OK)

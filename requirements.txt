@@ -26,3 +26,5 @@ pytest-django==4.5.2
 pytest-factoryboy==2.5.0
 pytest-mock==3.10.0
 tox==3.26.0
+coverage==6.5.0
+

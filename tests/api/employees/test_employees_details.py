@@ -10,6 +10,7 @@ def test_retrieve_employee(admin_factory, employee_factory, authed_token_client_
     client = authed_token_client_generator(user)
     response = client.patch(reverse('employees-detail', kwargs={'pk': employee.id}), format='json')
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()['id'] == str(employee.id)
 
 
 def test_patch_employee(admin_factory, employee_factory, authed_token_client_generator):
@@ -57,7 +58,9 @@ def test_retrieve_delete_employee_invalid_id(admin_factory, authed_token_client_
     get_response = client.delete(reverse('employees-detail', kwargs={'pk': user.id}), format='json')
     delete_response = client.delete(reverse('employees-detail', kwargs={'pk': user.id}), format='json')
     assert get_response.status_code == status.HTTP_404_NOT_FOUND
+    assert get_response.json()['detail'] == 'Not found.'
     assert delete_response.status_code == status.HTTP_404_NOT_FOUND
+    assert delete_response.json()['detail'] == 'Not found.'
 
 
 def test_patch_employee_invalid_id(admin_factory, authed_token_client_generator):
@@ -68,6 +71,7 @@ def test_patch_employee_invalid_id(admin_factory, authed_token_client_generator)
     client = authed_token_client_generator(user)
     response = client.patch(reverse('employees-detail', kwargs={'pk': user.id}), data=data, format='json')
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json()['detail'] == 'Not found.'
 
 
 def test_put_employee_invalid_id(admin_factory, department_factory, authed_token_client_generator):
@@ -82,6 +86,7 @@ def test_put_employee_invalid_id(admin_factory, department_factory, authed_token
     client = authed_token_client_generator(user)
     response = client.put(reverse('employees-detail', kwargs={'pk': user.id}), data=data, format='json')
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json()['detail'] == 'Not found.'
 
 
 def test_patch_employee_invalid_choices(admin_factory, employee_factory, authed_token_client_generator):
@@ -97,7 +102,9 @@ def test_patch_employee_invalid_choices(admin_factory, employee_factory, authed_
     response1 = client.patch(reverse('employees-detail', kwargs={'pk': employee.id}), data=gender_data, format='json')
     response2 = client.patch(reverse('employees-detail', kwargs={'pk': employee.id}), data=status_data, format='json')
     assert response1.status_code == status.HTTP_400_BAD_REQUEST
+    assert response1.json()['gender'][0] == '"invalid" is not a valid choice.'
     assert response2.status_code == status.HTTP_400_BAD_REQUEST
+    assert response2.json()['employee_status'][0] == '"invalid" is not a valid choice.'
 
 
 def test_put_employee_invalid_choices(admin_factory, employee_factory, department_factory,
@@ -114,6 +121,7 @@ def test_put_employee_invalid_choices(admin_factory, employee_factory, departmen
     client = authed_token_client_generator(user)
     response = client.put(reverse('employees-detail', kwargs={'pk': employee.id}), data=data, format='json')
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['gender'][0] == '"invalid" is not a valid choice.'
 
 
 def test_patch_employee_non_admin(user_factory, employee_factory, authed_token_client_generator):
@@ -123,6 +131,7 @@ def test_patch_employee_non_admin(user_factory, employee_factory, authed_token_c
     client = authed_token_client_generator(user)
     response = client.patch(reverse('employees-detail', kwargs={'pk': employee.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_put_employee_non_admin(user_factory, employee_factory, department_factory, authed_token_client_generator):
@@ -138,6 +147,7 @@ def test_put_employee_non_admin(user_factory, employee_factory, department_facto
     client = authed_token_client_generator(user)
     response = client.put(reverse('employees-detail', kwargs={'pk': employee.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_delete_employee_non_admin(user_factory, employee_factory, authed_token_client_generator):
@@ -146,3 +156,4 @@ def test_delete_employee_non_admin(user_factory, employee_factory, authed_token_
     client = authed_token_client_generator(user)
     response = client.delete(reverse('employees-detail', kwargs={'pk': employee.id}), format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'

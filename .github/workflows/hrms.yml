@@ -34,14 +34,14 @@ jobs:
       env:
         SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       run: python manage.py migrate
-    - name: Run Tests
-      env:
-        SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      run: pytest
     - name: Run tox
       env:
         SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       run: tox
+    - name: Run Tests
+      env:
+        SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      run: pytest
 
   deploy:
     needs: build-test

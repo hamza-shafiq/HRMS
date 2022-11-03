@@ -36,6 +36,3 @@ class EmployeeSerializer(serializers.ModelSerializer):
         if value:
             return make_password(value)
         return value
-
-    def create(self, validated_data):
-        return Employee.objects.create(**validated_data)

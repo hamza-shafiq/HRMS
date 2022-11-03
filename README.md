@@ -29,7 +29,7 @@ git clone https://github.com/hamza-shafiq/HRMS.git
 ```
 * Install the required dependencies through pip
 ```
-pip install -r requorements.txt
+pip install -r requirements.txt
 ```
 * Connect psql through terminal & create new database, db user & grant access on dataabse.
 
@@ -50,3 +50,11 @@ python manage.py createsuperuser
 ```
 python manage.py runserver
 ```
+
+### Test coverage
+
+To run the tests, check your test coverage, and generate an HTML coverage report:
+
+    $ coverage run -m pytest
+    $ coverage html
+    $ open htmlcov/index.html
