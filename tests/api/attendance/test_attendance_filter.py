@@ -16,7 +16,7 @@ def test_filter_attendance_invalid_format(admin_factory, employee_factory, authe
     client = authed_token_client_generator(user)
     response = client.get(reverse('attendance-list') + "?employee_id={}&date={}".format(employee.id, '2012-'))
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()['error'] == 'Invalid date format or employee id'
+    assert response.json()[0] == 'Invalid date format or employee id'
 
 
 def test_filter_attendance_invalid_employee_id(admin_factory, employee_factory, authed_token_client_generator):
@@ -24,4 +24,4 @@ def test_filter_attendance_invalid_employee_id(admin_factory, employee_factory, 
     client = authed_token_client_generator(user)
     response = client.get(reverse('attendance-list') + "?employee_id={}&date={}".format("invalid", '2012-03-23'))
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()['error'] == 'Invalid date format or employee id'
+    assert response.json()[0] == 'Invalid date format or employee id'

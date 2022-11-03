@@ -16,7 +16,7 @@ def test_filter_employees_invalid_id(admin_factory, authed_token_client_generato
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str('invalid'))
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()['error'] == 'Invalid employee id'
+    assert response.json()[0] == 'Invalid employee id'
 
 
 def test_filter_non_existing_employee(admin_factory, authed_token_client_generator):

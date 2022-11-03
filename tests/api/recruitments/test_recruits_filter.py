@@ -23,4 +23,4 @@ def test_filter_recruits_invalid_id(admin_factory, authed_token_client_generator
     client = authed_token_client_generator(user)
     response = client.get(reverse('recruits-list') + "?recruit_id=" + str('invalid'))
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()['error'] == 'Invalid Recruit id'
+    assert response.json()[0] == 'Invalid Recruit id'

@@ -23,7 +23,7 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
                     Referrals.objects.create(referer=emp, recruit=recruit)
                     return recruit
                 raise ValidationError('Employee with this referrer id does not exist')
-            except Exception:
+            except:
                 raise ValidationError('Invalid referrer id')
         recruits = Recruits.objects.create(**validated_data)
         return recruits
