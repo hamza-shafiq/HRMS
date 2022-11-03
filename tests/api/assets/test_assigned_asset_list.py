@@ -33,6 +33,7 @@ def test_assign_asset_already_assigned(admin_factory, asset_factory, employee_fa
     client.post(reverse('assigned-asset-list'), data=data)
     response = client.post(reverse('assigned-asset-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()[0] == 'This asset is already assigned to someone'
 
 
 def test_create_assignee_incomplete_data(admin_factory, asset_factory, authed_token_client_generator):
@@ -71,6 +72,7 @@ def test_create_assignee_invalid_data(admin_factory, asset_factory, authed_token
     client = authed_token_client_generator(user)
     response = client.post(reverse('assigned-asset-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['employee'][0] == f'Invalid pk "{user.id}" - object does not exist.'
 
 
 def test_get_assignee_count(admin_factory, authed_token_client_generator):

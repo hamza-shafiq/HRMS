@@ -26,6 +26,7 @@ def test_filter_non_existing_employee(admin_factory, authed_token_client_generat
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str(user.id))
     assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert response.json()['error'] == f'Employee with id: {user.id} does not exist'
 
 
 def test_filter_with_empty_data(admin_factory, authed_token_client_generator):

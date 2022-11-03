@@ -28,6 +28,7 @@ def test_create_department_invalid_data(admin_factory, authed_token_client_gener
     client = authed_token_client_generator(user)
     response = client.post(reverse('department-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['department_name'][0] == 'This field may not be blank.'
 
 
 def test_get_department_non_admin(user_factory, authed_token_client_generator):
