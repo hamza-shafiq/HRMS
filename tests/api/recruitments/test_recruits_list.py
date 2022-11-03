@@ -32,6 +32,7 @@ def test_create_recruit_invalid_data(admin_factory, employee_factory, authed_tok
     client = authed_token_client_generator(user)
     response = client.post(reverse('recruits-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['status'][0] == '"invalid" is not a valid choice.'
 
 
 def test_create_recruit_incomplete_data(admin_factory, authed_token_client_generator):
@@ -41,6 +42,7 @@ def test_create_recruit_incomplete_data(admin_factory, authed_token_client_gener
     client = authed_token_client_generator(user)
     response = client.post(reverse('recruits-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['first_name'][0] == 'This field is required.'
 
 
 def test_get_recruits_non_admin(user_factory, authed_token_client_generator):
@@ -48,6 +50,7 @@ def test_get_recruits_non_admin(user_factory, authed_token_client_generator):
     client = authed_token_client_generator(user)
     response = client.get(reverse('recruits-list'))
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_create_recruit_non_admin(user_factory, employee_factory, authed_token_client_generator):
@@ -58,6 +61,7 @@ def test_create_recruit_non_admin(user_factory, employee_factory, authed_token_c
     client = authed_token_client_generator(user)
     response = client.post(reverse('recruits-list'), data=data)
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_get_recruit_count(admin_factory, authed_token_client_generator):

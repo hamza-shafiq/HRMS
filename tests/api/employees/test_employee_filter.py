@@ -8,6 +8,7 @@ def test_filter_employees(admin_factory, employee_factory, authed_token_client_g
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str(employee.id))
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()[0]['id'] == str(employee.id)
 
 
 def test_filter_employees_invalid_id(admin_factory, authed_token_client_generator):
@@ -15,6 +16,7 @@ def test_filter_employees_invalid_id(admin_factory, authed_token_client_generato
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str('invalid'))
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['error'] == 'Invalid employee id'
 
 
 def test_filter_non_existing_employee(admin_factory, authed_token_client_generator):
@@ -36,6 +38,7 @@ def test_filter_employee_own_detail(employee_factory, authed_token_client_genera
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail'))
     assert response.status_code == status.HTTP_200_OK
+    assert response.json()[0]['id'] == str(user.id)
 
 
 def test_filter_employee_with_user(user_factory, authed_token_client_generator):
@@ -43,3 +46,4 @@ def test_filter_employee_with_user(user_factory, authed_token_client_generator):
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail'))
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'

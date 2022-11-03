@@ -35,6 +35,7 @@ def test_get_department_non_admin(user_factory, authed_token_client_generator):
     client = authed_token_client_generator(user)
     response = client.get(reverse('department-list'))
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_create_department_non_admin(user_factory, authed_token_client_generator):
@@ -43,6 +44,7 @@ def test_create_department_non_admin(user_factory, authed_token_client_generator
     client = authed_token_client_generator(user)
     response = client.post(reverse('department-list'), data=data)
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_get_department_count(admin_factory, department_factory, authed_token_client_generator):

@@ -33,6 +33,7 @@ def test_create_employees_incomplete_data(admin_factory, authed_token_client_gen
     client = authed_token_client_generator(user)
     response = client.post(reverse('employees-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['username'][0] == 'This field is required.'
 
 
 def test_get_employees_non_admin(user_factory, authed_token_client_generator):
@@ -40,6 +41,7 @@ def test_get_employees_non_admin(user_factory, authed_token_client_generator):
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-list'))
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_create_employees_non_admin(user_factory, authed_token_client_generator):
@@ -51,6 +53,7 @@ def test_create_employees_non_admin(user_factory, authed_token_client_generator)
     client = authed_token_client_generator(user)
     response = client.post(reverse('employees-list'), data=data)
     assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
 def test_create_employees_invalid_status(admin_factory, department_factory, authed_token_client_generator):
@@ -64,6 +67,7 @@ def test_create_employees_invalid_status(admin_factory, department_factory, auth
     client = authed_token_client_generator(user)
     response = client.post(reverse('employees-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['employee_status'][0] == '"invalid" is not a valid choice.'
 
 
 def test_create_employees_invalid_gender(admin_factory, department_factory, authed_token_client_generator):
@@ -78,6 +82,7 @@ def test_create_employees_invalid_gender(admin_factory, department_factory, auth
     client = authed_token_client_generator(user)
     response = client.post(reverse('employees-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['gender'][0] == '"invalid" is not a valid choice.'
 
 
 def test_unique_constraint_employees(admin_factory, department_factory, authed_token_client_generator):
@@ -93,6 +98,8 @@ def test_unique_constraint_employees(admin_factory, department_factory, authed_t
     client.post(reverse('employees-list'), data=data)
     response = client.post(reverse('employees-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()['username'][0] == 'user with this username already exists.'
+    assert response.json()['email'][0] == 'user with this email already exists.'
 
 
 def test_get_employees_count(admin_factory, authed_token_client_generator):
