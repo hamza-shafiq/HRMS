@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -22,8 +23,8 @@ class RecruitsViewSet(viewsets.ModelViewSet):
         if recruit_id:
             try:
                 record = Recruits.objects.filter(id=recruit_id, is_deleted=False)
-            except:
-                return JsonResponse({'error': 'Invalid Recruit id'}, status=status.HTTP_400_BAD_REQUEST)
+            except ValidationError:
+                raise ValidationError('Invalid Recruit id')
             if record:
                 serializer = RecruitsSerializer(record, many=True, context=serializer_context)
                 return Response(serializer.data, status=status.HTTP_200_OK)

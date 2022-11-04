@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
@@ -48,8 +49,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                         return Response(serializer.data, status=status.HTTP_200_OK)
                     return JsonResponse({'error': f'Employee with id: {emp_id} does not exist'},
                                         status=status.HTTP_404_NOT_FOUND)
-                except:
-                    return JsonResponse({'error': 'Invalid employee id'}, status=status.HTTP_400_BAD_REQUEST)
+                except ValidationError:
+                    raise ValidationError('Invalid employee id')
             return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
         elif user.is_employee:
             record = Employee.objects.filter(id=user.id, is_deleted=False)

@@ -29,5 +29,6 @@ urlpatterns = [
     path('', include('attendance.urls')),
     path('', include('employees.urls')),
     path('', include('assets.urls')),
+    path('', include('dashboard.urls')),
 
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
