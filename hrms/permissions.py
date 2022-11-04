@@ -15,5 +15,7 @@ class BaseCustomPermission(permissions.BasePermission):
         return False
 
     def has_object_permission(self, request, view, obj):
-        """ nothing to do here, we already checked everything, so ignore """
-        return True
+        user_role = check_user_role(request.user)
+        if user_role == UserRoles.ADMIN or obj.employee == request.user.employee:
+            return True
+        return False
