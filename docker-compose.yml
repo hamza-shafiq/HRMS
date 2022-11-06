@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    env_file:
+      - ./hrms/.env
+    volumes:
+      - /hrms_data/db:/var/lib/postgresql/data
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./hrms/.env
+    depends_on:
+      - db
+      - redis
+
+#  celery:
+#    image: ibmcom/celery-ppc64le
+#    command: python -m celery -A hrms worker
+#    volumes:
+#      - /hrms_data/celery:/opt/celery
+#    depends_on:
+#      - web
+#      - redis
