@@ -5,8 +5,8 @@ services:
     image: postgres
     env_file:
       - ./hrms/.env
-    volumes:
-      - /hrms_data/db:/var/lib/postgresql/data
+#    volumes:
+#      - /hrms_data/db:/var/lib/postgresql/data
 
   redis:
     container_name: redis
