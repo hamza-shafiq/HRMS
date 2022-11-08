@@ -31,18 +31,16 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, url_path="employees", methods=['get'])
     def employees(self, request, pk=None):
-        # if validate_uuid4(pk):
-        #     return Response(pk, status=status.HTTP_200_OK)
-        # if uuid.UUID(str(pk)):
-        #     department = Department.objects.filter(pk=pk)
-        department = Department.objects.filter(pk=pk)
-        department = department.get(pk=pk)
+        try:
+            department = Department.objects.filter(pk=pk).first()
+        except ValidationError:
+            return JsonResponse({'detail': 'Invalid department id'}, status=status.HTTP_404_NOT_FOUND)
         if department:
             employees = Employee.objects.filter(department=department)
             emp_serializer = EmployeeSerializer(employees, many=True, context={'request': request})
             return Response(emp_serializer.data, status=status.HTTP_200_OK)
-        return JsonResponse({'detail': 'Department with this id does not exist'},
-                            status.HTTP_404_NOT_FOUND)
+        return Response({'detail': 'Department with this id does not exist'},
+                        status.HTTP_404_NOT_FOUND)
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -90,7 +88,10 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, url_path="assets", methods=['get'])
     def assets(self, request, pk=None):
-        employee = Employee.objects.filter(pk=pk)
+        try:
+            employee = Employee.objects.filter(pk=pk)
+        except ValidationError:
+            return Response({'detail': 'Invalid employee id'})
         if employee:
             employee = Employee.objects.get(pk=pk)
             assignee = AssignedAsset.objects.filter(employee=employee)
@@ -101,7 +102,10 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, url_path="leaves", methods=['get'])
     def leaves(self, request, pk=None):
-        employee = Employee.objects.filter(pk=pk)
+        try:
+            employee = Employee.objects.filter(pk=pk).first()
+        except ValidationError:
+            return Response({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
         if employee:
             employee = Employee.objects.get(pk=pk)
             leaves = Leaves.objects.filter(employee=employee)
@@ -115,7 +119,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         employee = Employee.objects.filter(pk=pk)
         if employee:
             employee = Employee.objects.get(pk=pk)
-            attendance = A.objects.filter(employee=employee)
+            attendance = Attendance.objects.filter(employee=employee)
             serializer = AttendanceSerializer(attendance, many=True, context={'request': request})
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({'detail': 'Employee with this id does not exist'},
