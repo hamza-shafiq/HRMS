@@ -8,7 +8,7 @@ def test_retrieve_attendance(admin_factory, attendance_factory, authed_token_cli
     user = admin_factory()
     attendance = attendance_factory()
     client = authed_token_client_generator(user)
-    response = client.patch(reverse('attendance-detail', kwargs={'pk': attendance.id}), format='json')
+    response = client.get(reverse('attendance-detail', kwargs={'pk': attendance.id}), format='json')
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['id'] == str(attendance.id)
 
