@@ -24,7 +24,8 @@ class RecruitsViewSet(viewsets.ModelViewSet):
             try:
                 record = Recruits.objects.filter(id=recruit_id, is_deleted=False)
             except ValidationError:
-                raise ValidationError('Invalid Recruit id')
+                return JsonResponse({'detail': 'Invalid Recruit id'},
+                                    status=status.HTTP_404_NOT_FOUND)
             if record:
                 serializer = RecruitsSerializer(record, many=True, context=serializer_context)
                 return Response(serializer.data, status=status.HTTP_200_OK)

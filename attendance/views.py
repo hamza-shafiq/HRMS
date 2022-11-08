@@ -56,9 +56,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 datetime.strptime(date, '%Y-%m-%d')
                 record = Attendance.objects.filter(check_in__date=date, employee_id=emp_id, is_deleted=False)
             except ValidationError:
-                raise ValidationError('Invalid employee id')
+                return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             except ValueError:
-                raise ValueError('Invalid date format')
+                return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         queryset = Attendance.objects.all()
