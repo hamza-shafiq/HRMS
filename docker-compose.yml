@@ -10,7 +10,7 @@ services:
     ports:
       - '8000:8000'
     env_file:
-      - ./hrms/.env
+      - .env.stg
     depends_on:
       - db
       - redis
@@ -29,7 +29,7 @@ services:
     volumes:
       - ./data/db:/var/lib/postgresql/data/
     env_file:
-      - ./hrms/.env
+      - .env.stg
 
   redis:
     container_name: redis
