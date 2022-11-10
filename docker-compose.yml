@@ -1,0 +1,38 @@
+version: '3.10'
+
+services:
+  web:
+    build: .
+    image: master-image:1
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    ports:
+      - '8000:8000'
+    env_file:
+      - .env.stg
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    image: master-image:1
+    command: python -m celery -A hrms worker
+    volumes:
+      - ./data/celery:/app
+    depends_on:
+      - web
+      - redis
+
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - ./data/db:/var/lib/postgresql/data/
+    env_file:
+      - .env.stg
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    ports:
+      - '6379:6379'

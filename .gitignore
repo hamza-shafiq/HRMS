@@ -103,6 +103,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.env.stg
 hrms/.env
 .venv
 env/
