@@ -7,10 +7,12 @@ from recruitments.models import Recruits
 from hrms.permissions import BaseCustomPermission
 from attendance.models import Attendance
 from datetime import datetime
+from employees.serializers import EmployeeSerializer
 
 
 class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated, BaseCustomPermission]
+    serializer_class = EmployeeSerializer
 
     def list(self, request, *args, **kwargs):
         total_department = Department.objects.count()

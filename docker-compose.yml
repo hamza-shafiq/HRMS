@@ -1,59 +1,38 @@
-version: '3'
+version: '3.10'
 
 services:
-  db:
-    image: postgres
-    volumes:
-      - ./data/db:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
   web:
     build: .
-    command: bash -c "python manage.py migrate && python manage.py runserver 127.0.0.1:8080"
+    image: master-image:1
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8080"
     volumes:
       - .:/app
     ports:
-      - "8080:8080"
-    environment:
-      - POSTGRES_NAME=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - '8080:8080'
+    env_file:
+      - ./hrms/.env
     depends_on:
       - db
       - redis
-#  web:
-#    build: .
-#    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-#    volumes:
-#      - .:/app
-#    ports:
-#      - 8000:8000
-#    env_file:
-#      - ./hrms/.env
-#    depends_on:
-#      - db
-#      - redis
-#
-#  celery:
-#    image: master-image:1
-#    command: python -m celery -A hrms worker
-#    volumes:
-#      - ./celery/data:./app
-#    depends_on:
-#      - web
-#      - redis
 
-#  db:
-#    image: postgres:13.0-alpine
-#    volumes:
-#      - ./data/db:/var/lib/postgresql/data/
-#    env_file:
-#      - ./hrms/.env
+  celery:
+    image: master-image:1
+    command: python -m celery -A hrms worker
+    volumes:
+      - ./data/celery:/app
+    depends_on:
+      - web
+      - redis
+
+  db:
+    image: postgres:13.0-alpine
+    volumes:
+      - ./data/db:/var/lib/postgresql/data/
+    env_file:
+      - ./hrms/.env
 
   redis:
     container_name: redis
     image: redis:alpine
     ports:
-      - 6379:6379
+      - '6379:6379'
