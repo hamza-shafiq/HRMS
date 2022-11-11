@@ -54,7 +54,31 @@ python manage.py runserver
 ### Test coverage
 
 To run the tests, check your test coverage, and generate an HTML coverage report:
+```
+coverage run -m pytest
+coverage html
+open htmlcov/index.html
+```
 
-    $ coverage run -m pytest
-    $ coverage html
-    $ open htmlcov/index.html
+### Docker Setup
+Login and Pull image from docker hub
+```
+- sudo docker login 
+- docker pull username/hub_repository:tag
+```
+
+Run container with image id:
+```
+docker run -t -d <image-id> 
+```
+
+Build docker image with tag and name
+```
+docker build -t image_name:tag . 
+```
+
+Tag and push image to docker hub repository
+```
+- docker tag image:tag username/hub_repository:tag
+- docker push username/hub_repository:tag
+```
