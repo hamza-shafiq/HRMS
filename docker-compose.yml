@@ -28,6 +28,8 @@ services:
     image: postgres:13.0-alpine
     volumes:
       - ./data/db:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_PASSWORD: postgres
     env_file:
       - .env.stg
 
