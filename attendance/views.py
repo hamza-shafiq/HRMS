@@ -28,25 +28,37 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             if action_type == "check-in":
                 if not record:
                     Attendance.objects.create(employee_id=user.id, check_in=current_datetime, status="ON_TIME")
-                    return JsonResponse({"success": "employee checked-in successfully!"},
+                    return JsonResponse({"success": "Employee checked-in successfully!"},
                                         status=status.HTTP_201_CREATED)
 
-                return JsonResponse({"error": "Employee already checked-in today!"},
+                return JsonResponse({"detail": "Employee already checked-in today!"},
                                     status=status.HTTP_208_ALREADY_REPORTED)
 
             elif action_type == "check-out":
                 if not record:
-                    return JsonResponse({"error": "Employee did not check-in today!"},
+                    return JsonResponse({"detail": "Employee did not check-in today!"},
                                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
                 record.check_out = current_datetime
                 record.save()
-                return JsonResponse({"success": "employee checked-out successfully!"}, status=status.HTTP_200_OK)
+                return JsonResponse({"success": "Employee checked-out successfully!"}, status=status.HTTP_200_OK)
 
             return JsonResponse({"error": "Please enter valid action (check-in/check-out)"},
                                 status=status.HTTP_406_NOT_ACCEPTABLE)
         return JsonResponse({"error": "Only employee can mark the attendance"},
                             status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=False, url_path="check-today-attendance", methods=['get'])
+    def check_today_attendance(self, request):
+        user = request.user
+        serializer_context = {
+            'request': request,
+        }
+        attendance = Attendance.objects.filter(employee=user.id, check_in__date=datetime.now().date())
+        if attendance:
+            serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
+            return Response(serializer.data[0], status=status.HTTP_200_OK)
+        return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_404_NOT_FOUND)
 
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')

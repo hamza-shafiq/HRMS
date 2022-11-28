@@ -6,7 +6,7 @@ class AttendancePermission(BaseCustomPermission):
 
     def has_permission(self, request, view):
         user_role = check_user_role(request.user)
-        if view.action == 'mark_attendance':
+        if view.action == 'mark_attendance' or view.action == 'check_today_attendance':
             if user_role == UserRoles.EMPLOYEE:
                 return True
         return super().has_permission(request, view)
