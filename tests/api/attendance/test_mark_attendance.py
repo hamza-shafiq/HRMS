@@ -8,7 +8,7 @@ def test_mark_attendance_check_in(employee_factory, authed_token_client_generato
     client = authed_token_client_generator(employee)
     response = client.post(reverse('attendance-mark-attendance'), data=data)
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json()['success'] == 'employee checked-in successfully!'
+    assert response.json()['success'] == 'Employee checked-in successfully!'
 
 
 def test_mark_attendance_check_out(employee_factory, authed_token_client_generator):
@@ -19,7 +19,7 @@ def test_mark_attendance_check_out(employee_factory, authed_token_client_generat
     data = {"action": "check-out"}
     response = client.post(reverse('attendance-mark-attendance'), data=data)
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()['success'] == 'employee checked-out successfully!'
+    assert response.json()['success'] == 'Employee checked-out successfully!'
 
 
 def test_mark_attendance_invalid_action(employee_factory, authed_token_client_generator):
@@ -39,7 +39,7 @@ def test_check_in_attendance_already_checked_in(employee_factory, authed_token_c
     data = {"action": "check-in"}
     response = client.post(reverse('attendance-mark-attendance'), data=data)
     assert response.status_code == status.HTTP_208_ALREADY_REPORTED
-    assert response.json()['error'] == 'Employee already checked-in today!'
+    assert response.json()['detail'] == 'Employee already checked-in today!'
 
 
 def test_check_out_attendance_not_checked_in(employee_factory, authed_token_client_generator):
@@ -48,7 +48,7 @@ def test_check_out_attendance_not_checked_in(employee_factory, authed_token_clie
     client = authed_token_client_generator(employee)
     response = client.post(reverse('attendance-mark-attendance'), data=data)
     assert response.status_code == status.HTTP_405_METHOD_NOT_ALLOWED
-    assert response.json()['error'] == 'Employee did not check-in today!'
+    assert response.json()['detail'] == 'Employee did not check-in today!'
 
 
 def test_mark_attendance_non_employee(admin_factory, authed_token_client_generator):
