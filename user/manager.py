@@ -6,7 +6,7 @@ class SoftDeleteUserManager(SoftDeleteManager, DeletedManager, GlobalManager):
     pass
 
 
-class UserManager(BaseUserManager, SoftDeleteUserManager):
+class UserManager(BaseUserManager):
 
     def create_user(self, username, email, password=None):
         if username is None:
