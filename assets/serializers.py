@@ -18,7 +18,8 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
     def to_representation(self, instance):
         ret = super(AssetSerializer, self).to_representation(instance)
         if instance.assignee.all():
-            ret["assignee_name"] = str(instance.assignee.all().get().employee.first_name + " " + instance.assignee.all().get().employee.last_name)
+            ret["assignee_name"] = str(instance.assignee.all().get().employee.first_name + " " +
+                                       instance.assignee.all().get().employee.last_name)
         return ret
 
 
