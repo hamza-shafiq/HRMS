@@ -11,7 +11,7 @@ class Department(BaseModel):
         db_table = "departments"
 
     def __str__(self):
-        return f'{self.department_name} {self.id}'
+        return f'{self.department_name}'
 
 
 class Employee(User):
@@ -35,8 +35,8 @@ class Employee(User):
     designation = models.CharField(max_length=50)
     bank = models.CharField(max_length=50)
     account_number = models.TextField(max_length=50)
-    profile_pic = models.URLField(max_length=200)
-    joining_date = models.DateTimeField()
+    profile_pic = models.CharField(max_length=200)
+    joining_date = models.CharField(max_length=50)
     employee_status = models.CharField(max_length=50, choices=STATUS_CHOICES)
 
     class Meta:

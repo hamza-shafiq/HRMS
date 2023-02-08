@@ -2,6 +2,7 @@ import jwt
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
 from django.urls import reverse
 from django.utils.encoding import smart_bytes, smart_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -40,7 +41,12 @@ class RegisterView(generics.GenericAPIView):
         data = {'email_body': email_body, 'to_email': user.email,
                 'email_subject': 'Verify your email'}
 
-        send_email.delay(data)
+        # send_email.delay(data)
+
+        # send email
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+        email.send()
 
         return Response(user_data, status=status.HTTP_201_CREATED)
 

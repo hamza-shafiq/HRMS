@@ -8,6 +8,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
+from user.utils import check_user_role
+
 from .models import User
 
 regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
@@ -63,10 +65,11 @@ class LoginSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=68, min_length=6, write_only=True)
     username = serializers.CharField(max_length=255, min_length=3, read_only=True)
     tokens = serializers.CharField(max_length=255, min_length=3, read_only=True)
+    role = serializers.CharField(max_length=255, min_length=3, read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'password', 'username', 'tokens']
+        fields = ['id', 'email', 'password', 'username', 'tokens', 'role']
 
     def validate(self, attrs):
         email = attrs.get('email', '')
@@ -82,7 +85,8 @@ class LoginSerializer(serializers.ModelSerializer):
             'id': user.pk,
             'email': user.email,
             'username': user.username,
-            'tokens': user.tokens
+            'tokens': user.tokens,
+            'role': check_user_role(user),
         }
 
 

@@ -17,7 +17,8 @@ class Recruits(BaseModel):
     email = models.EmailField()
     phone_number = models.TextField(max_length=20)
     position = models.CharField(max_length=20)
-    resume = models.URLField(max_length=200)
+    # resume = models.URLField(max_length=200)
+    resume = models.FileField(upload_to='media', verbose_name="resume pdf")
     status = models.CharField(max_length=100, choices=CHOICES)
 
     class Meta:
@@ -25,6 +26,9 @@ class Recruits(BaseModel):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'
+
+    def __unicode__(self):
+        return self.resume
 
 
 class Referrals(BaseModel):
@@ -36,4 +40,4 @@ class Referrals(BaseModel):
         db_table = "referrals"
 
     def __str__(self):
-        return f'{self.recruit.first_name} {self.referer.first_name}'
+        return f'{self.referer.first_name} {self.referer.last_name}'

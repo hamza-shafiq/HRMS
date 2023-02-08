@@ -32,6 +32,13 @@ class EmployeeSerializer(serializers.ModelSerializer):
                   'national_id_number', 'emergency_contact_number', 'gender', 'department', 'designation', 'bank',
                   'account_number', 'profile_pic', 'joining_date', 'employee_status', 'is_verified', 'is_active']
 
+    def to_representation(self, instance):
+        ret = super(EmployeeSerializer, self).to_representation(instance)
+        del ret['department']
+        ret['department_id'] = str(instance.department_id)
+        ret['department'] = str(instance.department)
+        return ret
+
     def validate_password(self, value):
         if value:
             return make_password(value)
