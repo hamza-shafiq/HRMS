@@ -13,7 +13,7 @@ class RecruitFactory(DjangoModelFactory):
     email = factory.Sequence(lambda x: 'user@gmail.com')
     phone_number = factory.Sequence(lambda x: '030463600')
     position = factory.Sequence(lambda x: 'Developer')
-    resume = factory.Sequence(lambda x: 'https://google.com')
+    resume = factory.Sequence(lambda x: 'git.pdf')
     status = factory.Sequence(lambda x: 'IN_PROCESS')
 
     class Meta:

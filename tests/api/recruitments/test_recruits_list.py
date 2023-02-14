@@ -1,3 +1,5 @@
+import tempfile
+
 import pytest
 from django.core.exceptions import ValidationError
 from django.urls import reverse
@@ -15,13 +17,22 @@ def test_get_recruits(admin_factory, recruit_factory, authed_token_client_genera
     assert response.json()[0]['first_name'] == recruits.first_name
 
 
+def temp_file():
+    file = tempfile.NamedTemporaryFile(mode='w+b')
+    file.write(b'test file')
+    file.seek(0)
+    return file
+
+
 def test_create_recruit(admin_factory, employee_factory, authed_token_client_generator):
     user = admin_factory()
     employee = employee_factory()
+    file = temp_file()
     data = {"referrers": employee.id, "first_name": "usama", "last_name": "tayyab", "email": 'g@gmail.com',
-            "phone_number": '242525', "position": "dev", "status": "IN_PROCESS", "resume": "https://g.com"}
+            "phone_number": '242525', "position": "dev", "status": "IN_PROCESS", "resume": file}
     client = authed_token_client_generator(user)
     response = client.post(reverse('recruits-list'), data=data)
+    file.close()
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['first_name'] == data['first_name']
 
@@ -49,11 +60,13 @@ def test_create_recruit_incomplete_data(admin_factory, authed_token_client_gener
 
 def test_create_recruit_with_invalid_referrer(admin_factory, authed_token_client_generator):
     user = admin_factory()
+    file = temp_file()
     data = {"referrers": "invalid", "first_name": "usama", "last_name": "tayyab", "email": 'g@gmail.com',
-            "phone_number": '242525', "position": "dev", "status": "IN_PROCESS", "resume": "https://g.com"}
+            "phone_number": '242525', "position": "dev", "status": "IN_PROCESS", "resume": file}
     client = authed_token_client_generator(user)
     with pytest.raises(ValidationError) as e:
         client.post(reverse('recruits-list'), data=data)
+    file.close()
     assert e.value.message == 'Invalid referrer id'
 
 

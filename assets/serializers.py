@@ -20,6 +20,8 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
         if instance.assignee.all():
             ret["assignee_name"] = str(instance.assignee.all().get().employee.first_name + " " +
                                        instance.assignee.all().get().employee.last_name)
+            ret["assignee_id"] = str(instance.assignee.all().get().employee_id)
+            ret["assign_asset_id"] = str(instance.assignee.all().get().id)
         return ret
 
 

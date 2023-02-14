@@ -30,7 +30,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_404_NOT_FOUND)
 
-
     @action(detail=False, url_path="mark-attendance", methods=['post'])
     def mark_attendance(self, request):
         action_type = request.data.get("action", None)
