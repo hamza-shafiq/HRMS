@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from rest_framework import serializers
 
 from attendance.models import Attendance, Leaves
@@ -10,7 +12,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super(AttendanceSerializer, self).to_representation(instance)
-        ret['employee_name'] = str(instance.employee.first_name + " " + instance.employee.last_name)
+        ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
+                                   str(instance.employee.last_name).capitalize())
         ret['date_time_check_in'] = str(str(instance.check_in.day).zfill(2) + "-"
                                         + str(instance.check_in.month).zfill(2) + "-"
                                         + str(instance.check_in.year).zfill(2) + " / " +
@@ -46,4 +49,29 @@ class AttendanceSerializer(serializers.ModelSerializer):
 class LeaveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Leaves
-        fields = ['id', 'employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date']
+        fields = ['id', 'employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status']
+
+    @staticmethod
+    def difference_date(from_date, to_date):
+        date1 = datetime.strptime(from_date, '%Y-%m-%d')
+        date2 = datetime.strptime(to_date, '%Y-%m-%d')
+
+        delta = date2 - date1
+        return delta.days
+
+    def to_representation(self, instance):
+        ret = super(LeaveSerializer, self).to_representation(instance)
+
+        ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
+                                   str(instance.employee.last_name).capitalize())
+        ret.pop('request_date')
+
+        ret['request_date'] = str(str(instance.request_date.day).zfill(2) + "-" +
+                                  str(instance.request_date.month).zfill(2) + "-" +
+                                  str(instance.request_date.year).zfill(2))
+
+        difference = self.difference_date(instance.from_date, instance.to_date)
+
+        ret['number_of_days'] = str(difference + 1)
+
+        return ret

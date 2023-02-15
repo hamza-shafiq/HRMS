@@ -25,12 +25,26 @@ class Attendance(BaseModel):
 
 
 class Leaves(BaseModel):
+    STATUS_CHOICE = [
+        ('PENDING', 'PENDING'),
+        ('REJECTED', 'REJECTED'),
+        ('APPROVED', 'APPROVED'),
+    ]
+
+    LEAVE_CHOICES = [
+        ('SICK_LEAVE', 'SICK_LEAVE'),
+        ('CASUAL_LEAVE', 'CASUAL_LEAVE'),
+        ('MATERNITY_LEAVE', 'MATERNITY_LEAVE'),
+        ('PATERNITY_LEAVE', 'PATERNITY_LEAVE'),
+        ('MARRIAGE_LEAVE', 'MARRIAGE_LEAVE'),
+    ]
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="leaves")
-    leave_type = models.CharField(max_length=50)
+    leave_type = models.CharField(max_length=50, choices=LEAVE_CHOICES)
     reason = models.TextField(max_length=500)
     request_date = models.DateTimeField()
-    from_date = models.DateField()
-    to_date = models.DateField()
+    from_date = models.CharField(max_length=50)
+    to_date = models.CharField(max_length=50)
+    status = models.CharField(default='PENDING', max_length=50, choices=STATUS_CHOICE)
 
     class Meta:
         db_table = "leaves"

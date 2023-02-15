@@ -95,3 +95,16 @@ class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
     queryset = Leaves.objects.all()
     serializer_class = LeaveSerializer
+
+    @action(detail=False, url_name="get_leave", methods=['Get'])
+    def get_leave(self, request):
+        user = request.user
+        serializer_context = {
+            'request': request,
+        }
+        leaves = Leaves.objects.filter(employee=user.id)
+        if leaves:
+            serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse({'detail': 'You do not have any leave data'}, status=status.HTTP_204_NO_CONTENT)
+

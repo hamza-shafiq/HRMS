@@ -27,8 +27,8 @@ def test_patch_leave(admin_factory, leaves_factory, authed_token_client_generato
 def test_put_leave(admin_factory, leaves_factory, authed_token_client_generator):
     user = admin_factory()
     leave = leaves_factory()
-    data = {"employee": leave.employee_id, "leave_type": "casual", "reason": "urgent work",
-            "request_date": "2022-07-02", "from_date": "2022-07-03", "to_date": "2022-07-04"}
+    data = {"employee": leave.employee_id, "leave_type": "CASUAL_LEAVE", "reason": "urgent work",
+            "request_date": "2022-07-02", "from_date": "2022-07-03", "to_date": "2022-07-04", 'status': "PENDING"}
     client = authed_token_client_generator(user)
     response = client.put(reverse('leaves-detail', kwargs={'pk': leave.id}), data=data, format='json')
     assert response.status_code == status.HTTP_200_OK
