@@ -18,7 +18,8 @@ from .serializers import (
     CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, LogoutSerializer,
     ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, UserSerializer
 )
-from .tasks import send_email
+
+# from .tasks import send_email
 
 
 class RegisterView(generics.GenericAPIView):
@@ -106,7 +107,12 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
                          absurl
             data = {'email_body': email_body, 'to_email': user.email,
                     'email_subject': 'Reset your passsword'}
-            send_email.delay(data)
+            # send_email.delay(data)
+
+            # send email
+            email = EmailMessage(
+                subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+            email.send()
             return Response({'success': 'We have sent you a link to reset your password'},
                             status=status.HTTP_200_OK)
         return Response({'error': 'Email does not exist'}, status=status.HTTP_404_NOT_FOUND)

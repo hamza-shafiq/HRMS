@@ -28,7 +28,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if attendance:
             serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, url_path="mark-attendance", methods=['post'])
     def mark_attendance(self, request):
@@ -70,7 +70,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if attendance:
             serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
             return Response(serializer.data[0], status=status.HTTP_200_OK)
-        return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_204_NO_CONTENT)
 
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')

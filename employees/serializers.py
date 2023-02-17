@@ -2,6 +2,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
 from employees.models import Department, Employee
+from user.tasks import generate_and_send_employee_credentials
 
 
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
@@ -14,6 +15,11 @@ class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Department
         fields = ["url", "id", "department_name", "description", "employees"]
+
+    def to_representation(self, instance):
+        ret = super(DepartmentSerializer, self).to_representation(instance)
+        ret['employees_count'] = str(instance.employees.filter(employee_status='WORKING').count())
+        return ret
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -41,5 +47,10 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     def validate_password(self, value):
         if value:
+            email_body = 'Hi ' + self.initial_data['username'] + \
+                         ' Here is your password \n' + value
+            data = {'email_body': email_body, 'to_email': self.initial_data['email'],
+                    'email_subject': 'Password'}
+            generate_and_send_employee_credentials(data)
             return make_password(value)
         return value
