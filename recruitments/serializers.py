@@ -28,13 +28,18 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
         recruits = Recruits.objects.create(**validated_data)
         return recruits
 
-    def update(self, instance, validated_data):  # put call for the update recruiter table as well as referrals table
+    def update(self, instance, validated_data):
         referrers = Employee.objects.filter(id=validated_data.get('referrers')).first()
 
         if referrers:
-            validated_data.pop('referrers')  # pop referrers bcz recruiter has no column named like that
-            super().update(instance, validated_data)  # update the recruiter table which has no referral column
-            instance.referrers.filter(recruit=instance).update(referer=referrers)  # update the referrals table
+            validated_data.pop('referrers')
+            super().update(instance, validated_data)
+            if len(instance.referrers.filter(recruit=instance)) == 0:
+                Referrals.objects.create(recruit=instance, referer=referrers)
+            else:
+                instance.referrers.filter(recruit=instance).update(referer=referrers)
+        if not referrers:
+            super().update(instance, validated_data)
         return instance
 
     def to_representation(self, instance):

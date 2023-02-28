@@ -16,5 +16,5 @@ def test_get_today_attendance_no_data(employee_factory, authed_token_client_gene
     user = employee_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('attendance-check-today-attendance'))
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert response.status_code == status.HTTP_200_OK
     # assert response.json()['detail'] == 'You did not check-in today'

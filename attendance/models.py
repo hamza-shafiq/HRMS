@@ -42,8 +42,8 @@ class Leaves(BaseModel):
     leave_type = models.CharField(max_length=50, choices=LEAVE_CHOICES)
     reason = models.TextField(max_length=500)
     request_date = models.DateTimeField()
-    from_date = models.CharField(max_length=50)
-    to_date = models.CharField(max_length=50)
+    from_date = models.DateField()
+    to_date = models.DateField()
     status = models.CharField(default='PENDING', max_length=50, choices=STATUS_CHOICE)
 
     class Meta:

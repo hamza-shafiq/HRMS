@@ -13,15 +13,14 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Asset
-        fields = ["url", "assignee", "id", "title", "description", "asset_model", "asset_type", "cost"]
+        fields = ["url", "assignee", "id", "title", "description", "asset_model", "asset_type", "cost", "asset_image"]
 
     def to_representation(self, instance):
         ret = super(AssetSerializer, self).to_representation(instance)
         if instance.assignee.all():
-            ret["assignee_name"] = str(instance.assignee.all().get().employee.first_name + " " +
-                                       instance.assignee.all().get().employee.last_name)
-            ret["assignee_id"] = str(instance.assignee.all().get().employee_id)
-            ret["assign_asset_id"] = str(instance.assignee.all().get().id)
+            ret["assignee_name"] = str(instance.assignee.get().employee.get_full_name)
+            ret["assignee_id"] = str(instance.assignee.get().employee_id)
+            ret["assign_asset_id"] = str(instance.assignee.get().id)
         return ret
 
 

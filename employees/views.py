@@ -65,6 +65,17 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
+        department_id = self.request.query_params.get('dept_id')
+        if department_id:
+            try:
+                record = Employee.objects.filter(department_id=department_id, is_deleted=False)
+            except ValidationError:
+                return JsonResponse({'detail': 'Invalid department id'}, status=status.HTTP_404_NOT_FOUND)
+            except ValueError:
+                return JsonResponse({'error': 'Invalid format'}, status=status.HTTP_400_BAD_REQUEST)
+            serializer = EmployeeSerializer(record, many=True, context=serializer_context)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         queryset = Employee.objects.filter(is_deleted=False)
         serializer = EmployeeSerializer(queryset, many=True, context=serializer_context)
         return Response(serializer.data, status=status.HTTP_200_OK)

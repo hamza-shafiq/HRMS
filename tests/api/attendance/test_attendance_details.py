@@ -34,7 +34,8 @@ def test_patch_attendance(admin_factory, attendance_factory, authed_token_client
 def test_put_attendance(admin_factory, attendance_factory, employee_factory, authed_token_client_generator):
     user = admin_factory()
     attendance = attendance_factory()
-    data = {"employee": attendance.employee_id, "check_in": "2022-07-06", "check_out": "2022-07-05",
+    data = {"employee": attendance.employee_id, "check_in": "2022-07-06 12:12:12.05+00:00",
+            "check_out": "2022-07-05 12:12:12.05+00:00",
             "status": "EARLY_ARRIVAL"}
     client = authed_token_client_generator(user)
     response = client.put(reverse('attendance-detail', kwargs={'pk': attendance.id}), data=data, format='json')

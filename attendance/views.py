@@ -2,7 +2,6 @@ from datetime import datetime
 
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -24,7 +23,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        attendance = Attendance.objects.filter(employee=user.id)
+        attendance = Attendance.objects.filter(employee=user.id).order_by('-check_in__date')
         if attendance:
             serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -70,23 +69,30 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if attendance:
             serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
             return Response(serializer.data[0], status=status.HTTP_200_OK)
-        return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_204_NO_CONTENT)
+        return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')
-        # emp_id = self.request.query_params.get('employee_id')
-        # if date or emp_id:  # change operator for filtering for date only
-        if date:
+        emp_id = self.request.query_params.get('employee_id')
+        if date or emp_id:
             try:
-                datetime.strptime(date, '%Y-%m-%d')
-                record = Attendance.objects.filter(check_in__date=date, is_deleted=False)
+                if date:
+                    datetime.strptime(date, '%Y-%m-%d')
+                    record = Attendance.objects.filter(check_in__date=date,
+                                                       is_deleted=False).order_by('-check_in__date')
+                if emp_id:
+                    if date:
+                        record = record.filter(employee_id=emp_id).order_by('-check_in__date')
+                    else:
+                        record = Attendance.objects.filter(employee_id=emp_id,
+                                                           is_deleted=False).order_by('-check_in__date')
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             except ValueError:
                 return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        queryset = Attendance.objects.all()
+        queryset = Attendance.objects.all().order_by('-check_in__date')
         serializer = AttendanceSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

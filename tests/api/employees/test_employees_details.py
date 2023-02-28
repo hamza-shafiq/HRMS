@@ -1,7 +1,16 @@
+import tempfile
+
 from django.urls import reverse
 from rest_framework import status
 
 from employees.models import Employee
+
+
+def temp_file():
+    file = tempfile.NamedTemporaryFile(mode='w+b')
+    file.write(b'test file')
+    file.seek(0)
+    return file
 
 
 def test_retrieve_employee(admin_factory, employee_factory, authed_token_client_generator):
@@ -27,14 +36,17 @@ def test_put_employee(admin_factory, employee_factory, department_factory, authe
     user = admin_factory()
     employee = employee_factory()
     department = department_factory()
+    file = temp_file()
     data = {
         "first_name": 'Kamran', "last_name": 'Babar', "phone_number": +92304636946, "national_id_number": '2341223488',
         "emergency_contact_number": 934233800, "gender": "MALE", "department": department.id,
-        "designation": "Developer", "bank": "Habib", "account_number": 324244, "profile_pic": "http://asfasf.asd",
-        "joining_date": "1990-06-20 08:03", "employee_status": "WORKING", "username": 'Tayyab123',
+        "designation": "Developer", "bank": "Habib", "account_number": 324244, "profile_pic": file,
+        "joining_date": "1990-06-20", "employee_status": "WORKING", "username": 'Tayyab123',
         "email": 'usama@gmail.com', "password": "paklove"}
+
     client = authed_token_client_generator(user)
-    response = client.put(reverse('employees-detail', kwargs={'pk': employee.id}), data=data, format='json')
+    response = client.put(reverse('employees-detail', kwargs={'pk': employee.id}), data=data)
+    file.close()
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['gender'] == data['gender']
 

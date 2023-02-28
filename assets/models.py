@@ -14,6 +14,7 @@ class Asset(BaseTitleDescriptionModel):
     asset_model = models.CharField(max_length=50)
     asset_type = models.CharField(max_length=50)
     cost = models.FloatField()
+    asset_image = models.FileField(upload_to='asset', verbose_name='asset img', default="null")
 
     class Meta:
         db_table = 'assets'

@@ -18,9 +18,10 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         emp = self.request.query_params.get('emp')
-        if emp:  # emp attendance filter
+        if emp:
             try:
-                record = Attendance.objects.filter(employee_id=emp, is_deleted=False)
+                month = datetime.now().month
+                record = Attendance.objects.filter(employee_id=emp, check_in__month=month,  is_deleted=False)
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             serializer = AttendanceSerializer(record, many=True)

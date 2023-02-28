@@ -1,7 +1,16 @@
+import tempfile
+
 from django.urls import reverse
 from rest_framework import status
 
 from employees.models import Employee
+
+
+def temp_file():
+    file = tempfile.NamedTemporaryFile(mode='w+b')
+    file.write(b'test file')
+    file.seek(0)
+    return file
 
 
 def test_get_employees(admin_factory, employee_factory, authed_token_client_generator):
@@ -16,13 +25,15 @@ def test_get_employees(admin_factory, employee_factory, authed_token_client_gene
 def test_create_employees(admin_factory, department_factory, authed_token_client_generator):
     user = admin_factory()
     department = department_factory()
+    file = temp_file()
     data = {"first_name": 'Usama', "last_name": 'Tariq', "phone_number": +923046369800, "national_id_number": 33,
             "emergency_contact_number": 934233800, "gender": "MALE", "department": department.id,
             "designation": "Developer", "bank": "Habib", "account_number": 324244,
-            "profile_pic": "http://asfasf.asd", "joining_date": "1990-06-20 08:03", "employee_status": "WORKING",
+            "profile_pic": file, "joining_date": "1990-06-20", "employee_status": "WORKING",
             "username": 'usama123', "email": 'usama@gmail.com', "password": "paklove"}
     client = authed_token_client_generator(user)
     response = client.post(reverse('employees-list'), data=data)
+    file.close()
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['username'] == data['username']
 
@@ -88,16 +99,18 @@ def test_create_employees_invalid_gender(admin_factory, department_factory, auth
 def test_unique_constraint_employees(admin_factory, department_factory, authed_token_client_generator):
     user = admin_factory()
     department = department_factory()
+    file = temp_file()
     data = {"first_name": 'Usama', "last_name": 'Tariq', "phone_number": +923046369800,
             "national_id_number": 33, "emergency_contact_number": 934233800, "gender": "MALE",
             "department": department.id, "designation": "Developer", "bank": "Habib", "account_number": 324244,
-            "profile_pic": "http://asfasf.asd", "joining_date": "1990-06-20 08:03",
+            "profile_pic": file, "joining_date": "1990-06-20",
             "employee_status": "WORKING", "username": 'usama123', "email": 'usama@gmail.com',
             "password": "paklove"}
     client = authed_token_client_generator(user)
     client.post(reverse('employees-list'), data=data)
     response = client.post(reverse('employees-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
+    file.close()
     assert response.json()['username'][0] == 'user with this username already exists.'
     assert response.json()['email'][0] == 'user with this email already exists.'
 

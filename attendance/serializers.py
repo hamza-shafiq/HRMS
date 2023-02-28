@@ -14,29 +14,22 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ret = super(AttendanceSerializer, self).to_representation(instance)
         ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
                                    str(instance.employee.last_name).capitalize())
-        ret['time_check_in'] = str(str(instance.check_in.hour + 5).zfill(2) + ":" +
-                                   str(instance.check_in.minute).zfill(2) +
-                                   ":" + str(instance.check_in.second).zfill(2))
+        dt = datetime.strptime(str(instance.check_in), '%Y-%m-%d %H:%M:%S.%f+00:00')
+        ret['time_check_in'] = str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" + str(dt.second).zfill(2)
+        ret['check_in_date'] = dt.date()
 
-        ret['check_in_date'] = str(str(instance.check_in.day).zfill(2) + "-" + str(instance.check_in.month).zfill(2)
-                                   + "-" + str(instance.check_in.year))
-
-        ret['check in time'] = str(str(instance.check_in.hour + 5).zfill(2) +
-                                   str(instance.check_in.minute).zfill(2) + str(instance.check_in.second).zfill(2))
+        ret['check in time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
 
         if instance.check_out is None or instance.check_out is False:
             pass
         else:
-            ret['time_check_out'] = str(str(instance.check_out.hour + 5).zfill(2) + ":" +
-                                        str(instance.check_out.minute).zfill(2) +
-                                        ":" + str(instance.check_out.second).zfill(2))
+            dt = datetime.strptime(str(instance.check_out), '%Y-%m-%d %H:%M:%S.%f+00:00')
+            ret['time_check_out'] = str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" + str(
+                dt.second).zfill(2)
 
-            ret['check_out_date'] = str(str(instance.check_out.day) + "-" + str(instance.check_out.month) + "-"
-                                        + str(instance.check_out.year))
+            ret['check_out_date'] = dt.date()
 
-            ret['check out time'] = str(str(instance.check_out.hour + 5).zfill(2) +
-                                        str(instance.check_out.minute).zfill(2) +
-                                        str(instance.check_out.second).zfill(2))
+            ret['check out time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
         return ret
 
 
@@ -56,15 +49,14 @@ class LeaveSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super(LeaveSerializer, self).to_representation(instance)
 
-        ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
-                                   str(instance.employee.last_name).capitalize())
+        ret['employee_name'] = str(instance.employee.get_full_name)
         ret.pop('request_date')
 
         ret['request_date'] = str(str(instance.request_date.day).zfill(2) + "-" +
                                   str(instance.request_date.month).zfill(2) + "-" +
                                   str(instance.request_date.year).zfill(2))
 
-        difference = self.difference_date(instance.from_date, instance.to_date)
+        difference = self.difference_date(str(instance.from_date), str(instance.to_date))
 
         ret['number_of_days'] = str(difference + 1)
 

@@ -16,7 +16,8 @@ def test_get_attendances(admin_factory, attendance_factory, authed_token_client_
 def test_create_attendance(admin_factory, employee_factory, authed_token_client_generator):
     user = admin_factory()
     employee = employee_factory()
-    data = {"employee": employee.id, "check_in": "2022-07-06", "check_out": "2022-07-06", "status": "ON_TIME"}
+    data = {"employee": employee.id, "check_in": "2022-07-06 12:12:12.05+00:00",
+            "check_out": "2022-07-06 12:12:12.05+00:00", "status": "ON_TIME"}
     client = authed_token_client_generator(user)
     response = client.post(reverse('attendance-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED
