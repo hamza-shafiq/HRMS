@@ -3,17 +3,19 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import ValidationError
 from rest_framework import viewsets, status, mixins
 from assets.models import Asset, AssignedAsset
+from rest_framework.decorators import action
 from employees.models import Employee, Department
+from finance.models import Payroll
 from recruitments.models import Recruits
-from hrms.permissions import BaseCustomPermission
 from attendance.models import Attendance, Leaves
-from datetime import datetime
+from datetime import datetime, timedelta
 from employees.serializers import EmployeeSerializer
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
+from dashboard.permissions import DashboardPermission
 
 
 class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [IsAuthenticated, BaseCustomPermission]
+    permission_classes = [IsAuthenticated, DashboardPermission]
     serializer_class = EmployeeSerializer
 
     def list(self, request, *args, **kwargs):
@@ -50,3 +52,34 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 "pending_recruits": pending_recruits, "total_attendees": attendees, "emp_attendance": emp_attendance,
                 "leave_data": seria}
         return JsonResponse(status=status.HTTP_200_OK, data=data)
+
+    @staticmethod
+    def working_days():
+
+        date = datetime.now()
+
+        next_month = date.replace(day=28) + timedelta(days=4)
+        res = next_month - timedelta(days=next_month.day)
+        test_date1, test_date2 = datetime(date.year, date.month, 1), datetime(date.year, date.month, res.day)
+
+        dates = (test_date1 + timedelta(idx + 1)
+                 for idx in range((test_date2 - test_date1).days))
+
+        res = sum(1 for day in dates if day.weekday() < 5)
+        return res
+
+    @action(detail=False, url_path="employee_dashboard", methods=['get'])
+    def employee_dashboard(self, request):
+        user = request.user
+        month = datetime.now().month
+        attendees = Attendance.objects.filter(employee_id=user.id, check_in__month=month).count()
+        leaves_rejected = Leaves.objects.filter(status='REJECTED', employee_id=user.id).count()
+        leaves_accepted = Leaves.objects.filter(status='APPROVED', employee_id=user.id).count()
+        total_leaves_applied = Leaves.objects.filter(employee_id=user.id).count()
+        working_days = self.working_days()
+        total_absents = working_days - attendees
+        data = {"employee_present_for_current_month": attendees, "leaves_rejected": leaves_rejected,
+                "leaves_approved": leaves_accepted, "total_leaves_applied": total_leaves_applied,
+                'total_working_days': working_days, 'total_absents': total_absents}
+        return JsonResponse(status=status.HTTP_200_OK, data=data)
+

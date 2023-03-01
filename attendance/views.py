@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.core.exceptions import ValidationError
+from django_filters import rest_framework as filters
 from django.http import JsonResponse
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -101,6 +102,8 @@ class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
     queryset = Leaves.objects.all()
     serializer_class = LeaveSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ['employee_id', "status"]
 
     @action(detail=False, url_name="get_leave", methods=['Get'])
     def get_leave(self, request):
