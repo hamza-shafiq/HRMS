@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -17,7 +17,6 @@ class AssetViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        asset = []
         choice = self.request.query_params.get('choice')
         if choice == 'ASSIGNED':
             assign = list(AssignedAsset.objects.filter(is_deleted=False).values_list('asset', flat=True))

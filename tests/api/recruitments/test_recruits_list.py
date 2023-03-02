@@ -14,7 +14,7 @@ def test_get_recruits(admin_factory, recruit_factory, authed_token_client_genera
     client = authed_token_client_generator(user)
     response = client.get(reverse('recruits-list'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]['first_name'] == recruits.first_name
+    assert response.json()['results'][0]['first_name'] == recruits.first_name
 
 
 def temp_file():
@@ -93,4 +93,4 @@ def test_get_recruit_count(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('recruits-list'))
-    assert len(response.json()) == Recruits.objects.all().count()
+    assert response.json()['count'] == Recruits.objects.all().count()

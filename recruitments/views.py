@@ -1,11 +1,9 @@
-from django.core.exceptions import ValidationError
-from django.http import JsonResponse
-from rest_framework import status, viewsets
+from django_filters import rest_framework as filters
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
 from recruitments.models import Recruits
-from django_filters import rest_framework as filters
+
 from .permissions import RecruitsPermission
 from .serializers import RecruitsSerializer
 

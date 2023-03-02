@@ -10,7 +10,7 @@ def test_get_assets(admin_factory, asset_factory, authed_token_client_generator)
     client = authed_token_client_generator(user)
     response = client.get(reverse('asset-list'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()['results'][0]['id'] == str(asset.id)
+    assert response.json()[0]['id'] == str(asset.id)
 
 
 def test_create_asset(admin_factory, authed_token_client_generator):
@@ -74,4 +74,4 @@ def test_get_asset_count(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('asset-list'))
-    assert response.json()['count'] == Asset.objects.all().count()
+    assert len(response.json()) == Asset.objects.all().count()
