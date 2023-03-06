@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
@@ -100,10 +101,29 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
 class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
-    queryset = Leaves.objects.all()
+    queryset = Leaves.objects.all().order_by('-created')
     serializer_class = LeaveSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['employee_id', "status"]
+
+    @staticmethod
+    def remaining_leaves_per_month(user_id, request):
+        remaining_count = settings.MAX_LEAVES
+        date = datetime.now()
+        serializer_context = {
+            'request': request,
+        }
+        current_month = date.month
+        current_year = date.year
+        leaves = Leaves.objects.filter(employee=user_id,
+                                       request_date__month=current_month,
+                                       request_date__year=current_year).exclude(status='REJECTED')
+        serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
+        data = serializer.data
+        for remaining in data:
+            days = remaining['number_of_days']
+            remaining_count = remaining_count - int(days)
+        return remaining_count
 
     @action(detail=False, url_name="get_leave", methods=['Get'])
     def get_leave(self, request):
@@ -111,9 +131,10 @@ class LeavesViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        leaves = Leaves.objects.filter(employee=user.id)
+        leaves = Leaves.objects.filter(employee=user.id).order_by('-created')
+        count = self.remaining_leaves_per_month(user.id, request)
         if leaves:
             serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(({"data": serializer.data, "count": count}), status=status.HTTP_200_OK)
         return JsonResponse({'detail': 'You do not have any leave data'}, status=status.HTTP_204_NO_CONTENT)
 

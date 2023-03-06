@@ -12,7 +12,7 @@ from finance.serializers import PayRollSerializer
 
 class PayRollViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, PayrollPermission]
-    queryset = Payroll.objects.all()
+    queryset = Payroll.objects.all().order_by('-created')
     serializer_class = PayRollSerializer
     filter_backends = (filters.DjangoFilterBackend,)
 
@@ -24,7 +24,7 @@ class PayRollViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        payroll = Payroll.objects.filter(employee=user.id)
+        payroll = Payroll.objects.filter(employee=user.id, is_deleted=False).order_by('-created')
         if payroll:
             serializer = PayRollSerializer(payroll, many=True, context=serializer_context)
             return Response(serializer.data, status=status.HTTP_200_OK)
