@@ -46,6 +46,6 @@ class PayRollSerializer(serializers.ModelSerializer):
             data = {'email_body': email_body, 'to_email': user_email,
                     'email_subject': 'Payroll Released'}
 
-        generate_and_send_employee_credentials(data)
+        send_email.delay(data)
         super().update(instance, validated_data)
         return instance
