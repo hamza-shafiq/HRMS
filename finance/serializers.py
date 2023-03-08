@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from finance.models import Payroll
-from user.tasks import generate_and_send_employee_credentials
+from user.tasks import send_email
 
 
 class PayRollSerializer(serializers.ModelSerializer):
@@ -22,7 +22,8 @@ class PayRollSerializer(serializers.ModelSerializer):
                      'You can now view it at your dashboard.'
         data = {'email_body': email_body, 'to_email': user_email,
                 'email_subject': 'Payroll Generated'}
-        generate_and_send_employee_credentials(data)
+        # generate_and_send_employee_credentials(data)
+        send_email.delay(data)
 
         response = Payroll.objects.create(**validated_data)
 

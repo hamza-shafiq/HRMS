@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
 from employees.models import Department, Employee
-from user.tasks import generate_and_send_employee_credentials
+from user.tasks import send_email
 
 
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
@@ -53,6 +53,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
                          ' Here is your password for HRMS Portal \n' + value
             data = {'email_body': email_body, 'to_email': self.initial_data['email'],
                     'email_subject': 'Password'}
-            generate_and_send_employee_credentials(data)
+            # generate_and_send_employee_credentials(data)
+            send_email.delay(data)
             return make_password(value)
         return value

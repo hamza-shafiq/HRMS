@@ -118,11 +118,12 @@ class LeavesViewSet(viewsets.ModelViewSet):
         leaves = Leaves.objects.filter(employee=user_id,
                                        request_date__month=current_month,
                                        request_date__year=current_year).exclude(status='REJECTED')
-        serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
-        data = serializer.data
-        for remaining in data:
-            days = remaining['number_of_days']
-            remaining_count = remaining_count - int(days)
+        if leaves:
+            serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
+            data = serializer.data
+            for remaining in data:
+                days = remaining['number_of_days']
+                remaining_count = remaining_count - int(days)
         return remaining_count
 
     @action(detail=False, url_name="get_leave", methods=['Get'])
@@ -136,5 +137,5 @@ class LeavesViewSet(viewsets.ModelViewSet):
         if leaves:
             serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
             return Response(({"data": serializer.data, "count": count}), status=status.HTTP_200_OK)
-        return JsonResponse({'detail': 'You do not have any leave data'}, status=status.HTTP_204_NO_CONTENT)
+        return Response(({"count": count}), status=status.HTTP_200_OK)
 
