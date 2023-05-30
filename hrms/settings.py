@@ -28,7 +28,7 @@ SECRET_KEY = env('SECRET_KEY')
 CLIENT_URL = os.environ.get('CLIENT_URL', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = os.environ.get('DEBUG', True)
 
 ALLOWED_HOSTS = ["*"]
 
