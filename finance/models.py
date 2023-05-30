@@ -4,13 +4,27 @@ from user.models import BaseModel
 
 
 class Payroll(BaseModel):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="payroll")
+    MONTH_OPTIONS = [
+        ('JANUARY', 'JANUARY'),
+        ('FEBRUARY', 'FEBRUARY'),
+        ('MARCH', 'MARCH'),
+        ('APRIL', 'APRIL'),
+        ('MAY', 'MAY'),
+        ('JUNE', 'JUNE'),
+        ('JULY', 'JULY'),
+        ('AUGUST', 'AUGUST'),
+        ('SEPTEMBER', 'SEPTEMBER'),
+        ('OCTOBER', 'OCTOBER'),
+        ('NOVEMBER', 'NOVEMBER'),
+        ('DECEMBER', 'DECEMBER'),
+    ]
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="payrolls")
     basic_salary = models.FloatField()
     bonus = models.FloatField()
     reimbursement = models.FloatField()
     travel_allowance = models.FloatField()
     tax_deduction = models.FloatField()
-    month = models.CharField(max_length=20)
+    month = models.CharField(max_length=20, choices=MONTH_OPTIONS)
     year = models.CharField(max_length=50)
     released = models.BooleanField()
 
@@ -18,4 +32,4 @@ class Payroll(BaseModel):
         db_table = "payrolls"
 
     def __str__(self):
-        return f"{self.employee.first_name}"
+        return f"{self.employee.first_name + ' ' + self.employee.last_name}"

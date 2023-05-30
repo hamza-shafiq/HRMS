@@ -16,8 +16,8 @@ def test_get_leaves_admin(admin_factory, leaves_factory, authed_token_client_gen
 def test_create_leave(admin_factory, employee_factory, authed_token_client_generator):
     user = admin_factory()
     employee = employee_factory()
-    data = {"employee": employee.id, "leave_type": "casual", "reason": "urgent work",
-            "request_date": "2022-07-02", "from_date": "2022-07-03", "to_date": "2022-07-04"}
+    data = {"employee": employee.id, "leave_type": "CASUAL_LEAVE", "reason": "urgent work",
+            "request_date": "2022-07-02", "from_date": "2022-07-03", "to_date": "2022-07-04", 'status': 'PENDING'}
     client = authed_token_client_generator(user)
     response = client.post(reverse('leaves-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED
@@ -26,8 +26,8 @@ def test_create_leave(admin_factory, employee_factory, authed_token_client_gener
 
 def test_create_leaves_employee(employee_factory, authed_token_client_generator):
     user = employee_factory()
-    data = {"employee": user.id, "leave_type": "casual", "reason": "urgent work",
-            "request_date": "2022-07-02", "from_date": "2022-07-03", "to_date": "2022-07-04"}
+    data = {"employee": user.id, "leave_type": "CASUAL_LEAVE", "reason": "urgent work",
+            "request_date": "2022-07-02", "from_date": "2022-07-03", "to_date": "2022-07-04", 'status': 'PENDING'}
     client = authed_token_client_generator(user)
     response = client.post(reverse('leaves-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED

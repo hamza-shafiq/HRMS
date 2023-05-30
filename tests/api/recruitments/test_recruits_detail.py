@@ -1,3 +1,5 @@
+import tempfile
+
 from django.urls import reverse
 from rest_framework import status
 
@@ -13,21 +15,31 @@ def test_retrieve_recruit(admin_factory, recruit_factory, authed_token_client_ge
     assert response.json()['id'] == str(recruit.id)
 
 
+def temp_file():
+    file = tempfile.NamedTemporaryFile(mode='w+b')
+    file.write(b'test file')
+    file.seek(0)
+    return file
+
+
 def test_put_recruit(admin_factory, recruit_factory, employee_factory, authed_token_client_generator):
     user = admin_factory()
-    recruit = recruit_factory()
+    file = temp_file()  # function that will create temp file for to check test case
+    recruit = recruit_factory(first_name="Sajid", last_name="tayyab")
     employee = employee_factory()
     data = {"referrer": employee.id, "first_name": "Sajid", "last_name": "tayyab", "email": 'g@gmail.com',
-            "phone_number": '242525', "position": "dev", "status": "IN_PROCESS", "resume": "https://g.com"}
+            "phone_number": '242525', "position": "dev", "status": "IN_PROCESS",
+            "resume": file}
     client = authed_token_client_generator(user)
-    response = client.put(reverse('recruits-detail', kwargs={'pk': recruit.id}), data=data, format='json')
+    response = client.put(reverse('recruits-detail', kwargs={'pk': recruit.id}), data=data)
+    file.close()  # this will delete the temp file created before using temp_file
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['first_name'] == data['first_name']
 
 
 def test_patch_recruit(admin_factory, recruit_factory, authed_token_client_generator):
     user = admin_factory()
-    recruit = recruit_factory()
+    recruit = recruit_factory(first_name="Sajid", last_name='tayyab')
     data = {"first_name": "Sajid", "last_name": "tayyab", "email": 'g@gmail.com',
             "phone_number": '242525'}
     client = authed_token_client_generator(user)

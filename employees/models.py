@@ -11,7 +11,7 @@ class Department(BaseModel):
         db_table = "departments"
 
     def __str__(self):
-        return f'{self.department_name} {self.id}'
+        return f'{self.department_name}'
 
 
 class Employee(User):
@@ -35,9 +35,15 @@ class Employee(User):
     designation = models.CharField(max_length=50)
     bank = models.CharField(max_length=50)
     account_number = models.TextField(max_length=50)
-    profile_pic = models.URLField(max_length=200)
-    joining_date = models.DateTimeField()
+    profile_pic = models.FileField(upload_to='images', verbose_name="profile img", blank=True, null=True)
+    joining_date = models.DateField()
     employee_status = models.CharField(max_length=50, choices=STATUS_CHOICES)
+
+    @property
+    def get_full_name(self):
+        if self.first_name or self.last_name:
+            return ("%s %s" % (self.first_name.capitalize(), self.last_name.capitalize())).strip()
+        return self.user.email
 
     class Meta:
         db_table = "employees"

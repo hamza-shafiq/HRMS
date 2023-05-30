@@ -11,13 +11,15 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from hrms.permissions import BaseCustomPermission
+from user.tasks import send_email
 
 from .models import User
 from .serializers import (
     CreateUserSerializer, EmailVerificationSerializer, LoginSerializer, LogoutSerializer,
     ResetPasswordEmailRequestSerializer, SetNewPasswordSerializer, UserSerializer
 )
-from .tasks import send_email
+
+# from .tasks import send_email
 
 
 class RegisterView(generics.GenericAPIView):
@@ -41,6 +43,11 @@ class RegisterView(generics.GenericAPIView):
                 'email_subject': 'Verify your email'}
 
         send_email.delay(data)
+
+        # send email
+        # email = EmailMessage(
+        #     subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+        # email.send()
 
         return Response(user_data, status=status.HTTP_201_CREATED)
 
@@ -90,17 +97,19 @@ class RequestPasswordResetEmail(generics.GenericAPIView):
             user = User.objects.get(email=email)
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
-            current_site = get_current_site(
-                request=request).domain
             relativeLink = reverse(
                 'password-reset-confirm', kwargs={'uidb64': uidb64, 'token': token})
-
-            absurl = 'http://' + current_site + relativeLink
-            email_body = 'Hello, \n Use link below to reset your password  \n' + \
-                         absurl
+            abs_url = settings.CLIENT_URL + relativeLink
+            email_body = 'Hi, \n Use link below to reset your password  \n' + \
+                         abs_url
             data = {'email_body': email_body, 'to_email': user.email,
-                    'email_subject': 'Reset your passsword'}
+                    'email_subject': 'Reset your password'}
             send_email.delay(data)
+
+            # # send email
+            # email = EmailMessage(
+            #     subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+            # email.send()
             return Response({'success': 'We have sent you a link to reset your password'},
                             status=status.HTTP_200_OK)
         return Response({'error': 'Email does not exist'}, status=status.HTTP_404_NOT_FOUND)
