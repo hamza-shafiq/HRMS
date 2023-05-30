@@ -22,7 +22,8 @@ def test_get_employees(admin_factory, employee_factory, authed_token_client_gene
     assert response.json()[0]['national_id_number'] == employee.national_id_number
 
 
-def test_create_employees(admin_factory, department_factory, authed_token_client_generator):
+def test_create_employees(admin_factory, department_factory, authed_token_client_generator, celery_eager_run_on_commit,
+                          mailoutbox):
     user = admin_factory()
     department = department_factory()
     file = temp_file()
@@ -67,7 +68,8 @@ def test_create_employees_non_admin(user_factory, authed_token_client_generator)
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
-def test_create_employees_invalid_status(admin_factory, department_factory, authed_token_client_generator):
+def test_create_employees_invalid_status(admin_factory, department_factory, authed_token_client_generator,
+                                         celery_eager_run_on_commit, mailoutbox):
     user = admin_factory()
     department = department_factory()
     data = {"first_name": 'Usama', "last_name": 'Tariq', "phone_number": +923046369800,
@@ -81,7 +83,8 @@ def test_create_employees_invalid_status(admin_factory, department_factory, auth
     assert response.json()['employee_status'][0] == '"invalid" is not a valid choice.'
 
 
-def test_create_employees_invalid_gender(admin_factory, department_factory, authed_token_client_generator):
+def test_create_employees_invalid_gender(admin_factory, department_factory, authed_token_client_generator,
+                                         celery_eager_run_on_commit, mailoutbox):
     user = admin_factory()
     department = department_factory()
     data = {"first_name": 'Usama', "last_name": 'Tariq', "phone_number": +923046369800,
@@ -96,7 +99,8 @@ def test_create_employees_invalid_gender(admin_factory, department_factory, auth
     assert response.json()['gender'][0] == '"invalid" is not a valid choice.'
 
 
-def test_unique_constraint_employees(admin_factory, department_factory, authed_token_client_generator):
+def test_unique_constraint_employees(admin_factory, department_factory, authed_token_client_generator,
+                                     celery_eager_run_on_commit, mailoutbox):
     user = admin_factory()
     department = department_factory()
     file = temp_file()
