@@ -16,7 +16,7 @@ services:
       - redis
 
   celery:
-    image: master-image:1
+    image: master-image:3
     command: celery -A hrms worker
     env_file: .env
     depends_on:
