@@ -24,7 +24,8 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
+
+SECRET_KEY = os.environ.get('SECRET_KEY')
 CLIENT_URL = os.environ.get('CLIENT_URL', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -181,15 +182,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_USE_TLS = os.environ.get('EMAIL_TLS', '')
-EMAIL_HOST = os.environ.get('EMAIL_HOST', '')
-EMAIL_PORT = os.environ.get('EMAIL_PORT', '')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+
+EMAIL_USE_TLS = os.environ.get('EMAIL_TLS')
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 
-# CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', '')
-# CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', '')
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
 MAX_LEAVES = 15
 
 CORS_ORIGIN_ALLOW_ALL = True

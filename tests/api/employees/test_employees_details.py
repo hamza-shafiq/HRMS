@@ -32,7 +32,8 @@ def test_patch_employee(admin_factory, employee_factory, authed_token_client_gen
     assert response.json()['national_id_number'] == data['national_id_number']
 
 
-def test_put_employee(admin_factory, employee_factory, department_factory, authed_token_client_generator):
+def test_put_employee(admin_factory, employee_factory, department_factory, celery_eager_run_on_commit,
+                      authed_token_client_generator, mailoutbox):
     user = admin_factory()
     employee = employee_factory()
     department = department_factory()
@@ -47,6 +48,7 @@ def test_put_employee(admin_factory, employee_factory, department_factory, authe
     client = authed_token_client_generator(user)
     response = client.put(reverse('employees-detail', kwargs={'pk': employee.id}), data=data)
     file.close()
+    assert len(mailoutbox) == 1
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['gender'] == data['gender']
 
@@ -119,8 +121,8 @@ def test_patch_employee_invalid_choices(admin_factory, employee_factory, authed_
     assert response2.json()['employee_status'][0] == '"invalid" is not a valid choice.'
 
 
-def test_put_employee_invalid_choices(admin_factory, employee_factory, department_factory,
-                                      authed_token_client_generator):
+def test_put_employee_invalid_choices(admin_factory, employee_factory, department_factory, celery_eager_run_on_commit,
+                                      authed_token_client_generator, mailoutbox):
     user = admin_factory()
     employee = employee_factory()
     department = department_factory()
