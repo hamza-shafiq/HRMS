@@ -2,9 +2,12 @@
 from django.core import mail
 from django.urls import reverse
 from rest_framework import status
+
 from finance.models import Payroll
 
-def test_payroll_serializer_create(admin_factory, employee_factory, authed_token_client_generator, mailoutbox, celery_eager_run_on_commit):
+
+def test_payroll_serializer_create(admin_factory, employee_factory,
+                                   authed_token_client_generator, mailoutbox, celery_eager_run_on_commit):
     employee = employee_factory(email='employee@gmail.com')
     user = admin_factory()
     client = authed_token_client_generator(user)

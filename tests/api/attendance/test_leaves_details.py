@@ -1,7 +1,10 @@
 import datetime
+
 from django.urls import reverse
 from rest_framework import status
+
 from attendance.models import Leaves
+
 
 def test_retrieve_leave(admin_factory, leaves_factory, authed_token_client_generator):
     user = admin_factory()
@@ -117,8 +120,8 @@ def test_update_leave_status(admin_factory, leaves_factory, employee_factory, au
         "status": "APPROVED"
     }
     employee = employee_factory()
-    leave = leaves_factory(employee=employee, from_date=datetime.datetime.now(), to_date=datetime.datetime.now()+
-                                                                                datetime.timedelta(days=2))
+    leave = leaves_factory(employee=employee, from_date=datetime.datetime.now(),
+                           to_date=datetime.datetime.now() + datetime.timedelta(days=2))
     client = authed_token_client_generator(user)
     response = client.patch(reverse('leaves-detail', kwargs={'pk': leave.id}), data=data, format='json')
     assert response.status_code == status.HTTP_200_OK
