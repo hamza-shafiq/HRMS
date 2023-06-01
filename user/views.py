@@ -44,11 +44,9 @@ class RegisterView(generics.GenericAPIView):
                 'email_subject': 'Verify your email'}
 
         send_email.delay(data)
-
-        # send email
-        # email = EmailMessage(
-        #     subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
-        # email.send()
+        email = EmailMessage(
+            subject=data['email_subject'], body=data['email_body'], to=[data['to_email']])
+        email.send()
 
         return Response(user_data, status=status.HTTP_201_CREATED)
 

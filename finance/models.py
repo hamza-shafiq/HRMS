@@ -20,13 +20,13 @@ class Payroll(BaseModel):
     ]
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="payrolls")
     basic_salary = models.FloatField()
-    bonus = models.FloatField()
-    reimbursement = models.FloatField()
-    travel_allowance = models.FloatField()
-    tax_deduction = models.FloatField()
+    bonus = models.FloatField(default=0)
+    reimbursement = models.FloatField(default=0)
+    travel_allowance = models.FloatField(default=0)
+    tax_deduction = models.FloatField(default=0)
     month = models.CharField(max_length=20, choices=MONTH_OPTIONS)
     year = models.CharField(max_length=50)
-    released = models.BooleanField()
+    released = models.BooleanField(default=False)
 
     class Meta:
         db_table = "payrolls"

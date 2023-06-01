@@ -1,10 +1,7 @@
 import datetime
 from django.urls import reverse
 from rest_framework import status
-
 from attendance.models import Leaves
-from employees.models import Employee
-
 
 def test_retrieve_leave(admin_factory, leaves_factory, authed_token_client_generator):
     user = admin_factory()
@@ -114,7 +111,7 @@ def test_put_leave_non_admin(user_factory, leaves_factory, authed_token_client_g
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
-def test_update_leave_status(admin_factory,leaves_factory, employee_factory, authed_token_client_generator):
+def test_update_leave_status(admin_factory, leaves_factory, employee_factory, authed_token_client_generator):
     user = admin_factory()
     data = {
         "status": "APPROVED"
@@ -130,3 +127,4 @@ def test_update_leave_status(admin_factory,leaves_factory, employee_factory, aut
     assert result['number_of_days'] == '3'
     assert result['remaining_leaves'] == '17'
     assert result['status'] == "APPROVED"
+    assert response.json()['approved_by'] == str(user.id)

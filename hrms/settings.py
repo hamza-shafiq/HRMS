@@ -72,7 +72,7 @@ ROOT_URLCONF = 'hrms.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -188,8 +188,8 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
 
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', '')
-CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', '')
+# CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', '')
+# CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', '')
 MAX_LEAVES = 15
 
 CORS_ORIGIN_ALLOW_ALL = True
