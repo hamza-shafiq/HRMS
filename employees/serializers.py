@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
 from employees.models import Department, Employee
-
+from user.tasks import send_email
 
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
     employees = serializers.HyperlinkedRelatedField(
@@ -46,7 +46,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         ret['department'] = str(instance.department)
         return ret
 
-    def validate_password(self, value, send_email=None):
+    def validate_password(self, value):
         if value:
             email_body = 'Hi ' + self.initial_data['username'] + '!\n' + \
                          ' Here is your password for HRMS Portal \n' + value

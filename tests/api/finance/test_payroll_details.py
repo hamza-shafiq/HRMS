@@ -1,5 +1,7 @@
 from django.core import mail
+from django.db.models import signals
 from django.urls import reverse
+from factory.django import mute_signals
 from rest_framework import status
 
 from finance.models import Payroll
@@ -7,9 +9,10 @@ from finance.models import Payroll
 
 def test_payroll_update(admin_factory, employee_factory, payroll_factory,
                         authed_token_client_generator, mailoutbox, celery_eager_run_on_commit):
-    employee = employee_factory(email='employee@gmail.com')
-    admin_user = admin_factory()
-    payroll = payroll_factory(employee=employee)
+    with mute_signals(signals.post_save):
+        employee = employee_factory(email='employee@gmail.com')
+        admin_user = admin_factory()
+        payroll = payroll_factory(employee=employee)
     client = authed_token_client_generator(admin_user)
     data = {
         'employee': str(employee.id),
