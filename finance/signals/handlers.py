@@ -36,10 +36,9 @@ def send_payroll_email(sender, instance, created, **kwargs):
                          'You can now view it at your dashboard.'
             data = {'email_body': email_body, 'to_email': employee.email,
                     'email_subject': 'Payroll Generated'}
-            # generate_and_send_employee_credentials(data)
             send_email.delay(data)
             instance.employee = employee
-            # return super().create(instance)
+
         else:
-            raise ('Due to some technical difficulty, an error is raised')
+            raise ('Due to some technical difficulties, an error is raised')
 

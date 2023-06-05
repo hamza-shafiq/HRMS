@@ -1,4 +1,3 @@
-from email.message import EmailMessage
 
 import jwt
 from django.conf import settings
