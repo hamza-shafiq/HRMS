@@ -4,6 +4,7 @@ from rest_framework import serializers
 from employees.models import Department, Employee
 from user.tasks import send_email
 
+
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
     employees = serializers.HyperlinkedRelatedField(
         many=True,
