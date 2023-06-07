@@ -1,3 +1,5 @@
+import datetime
+
 from django.urls import reverse
 from rest_framework import status
 
@@ -110,3 +112,22 @@ def test_put_leave_non_admin(user_factory, leaves_factory, authed_token_client_g
     response = client.put(reverse('leaves-detail', kwargs={'pk': leave.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
+
+
+def test_update_leave_status(admin_factory, leaves_factory, employee_factory, authed_token_client_generator):
+    user = admin_factory()
+    data = {
+        "status": "APPROVED"
+    }
+    employee = employee_factory()
+    leave = leaves_factory(employee=employee, from_date=datetime.datetime.now(),
+                           to_date=datetime.datetime.now() + datetime.timedelta(days=2))
+    client = authed_token_client_generator(user)
+    response = client.patch(reverse('leaves-detail', kwargs={'pk': leave.id}), data=data, format='json')
+    assert response.status_code == status.HTTP_200_OK
+    result = response.json()
+    assert result['employee'] == str(employee.id)
+    assert result['number_of_days'] == '3'
+    assert result['remaining_leaves'] == '17'
+    assert result['status'] == "APPROVED"
+    assert response.json()['approved_by'] == str(user.id)

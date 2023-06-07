@@ -106,6 +106,10 @@ class LeavesViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['employee_id', "status"]
 
+    def update(self, request, *args, **kwargs):
+        request.data['approved_by'] = request.user.id
+        return super(LeavesViewSet, self).update(request, *args, **kwargs)
+
     @staticmethod
     def remaining_leaves_per_month(user_id, request):
         remaining_count = settings.MAX_LEAVES

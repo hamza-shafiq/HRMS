@@ -60,6 +60,11 @@ coverage html
 open htmlcov/index.html
 ```
 
+To run all the test cases, use the following command:
+```
+tox -e pytest
+```
+
 ### Docker Setup
 Login and Pull image from docker hub
 ```

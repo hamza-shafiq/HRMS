@@ -36,7 +36,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
 class LeaveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Leaves
-        fields = ['id', 'employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status']
+        fields = ['id', 'employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status','approved_by']
 
     @staticmethod
     def difference_date(from_date, to_date):
@@ -48,7 +48,6 @@ class LeaveSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         ret = super(LeaveSerializer, self).to_representation(instance)
-
         ret['employee_name'] = str(instance.employee.get_full_name)
         ret.pop('request_date')
 
@@ -57,7 +56,6 @@ class LeaveSerializer(serializers.ModelSerializer):
                                   str(instance.request_date.year).zfill(2))
 
         difference = self.difference_date(str(instance.from_date), str(instance.to_date))
-
         ret['number_of_days'] = str(difference + 1)
-
+        ret['remaining_leaves'] = str(instance.employee.remaining_leaves)
         return ret
