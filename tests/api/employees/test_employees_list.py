@@ -19,7 +19,7 @@ def test_get_employees(admin_factory, employee_factory, authed_token_client_gene
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-list'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]['national_id_number'] == employee.national_id_number
+    assert response.json()['results'][0]['national_id_number'] == employee.national_id_number
 
 
 def test_create_employees(admin_factory, department_factory, authed_token_client_generator, celery_eager_run_on_commit,
@@ -123,4 +123,4 @@ def test_get_employees_count(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-list'))
-    assert len(response.json()) == Employee.objects.all().count()
+    assert response.json()['count'] == Employee.objects.all().count()

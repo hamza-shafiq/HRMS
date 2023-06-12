@@ -1,5 +1,28 @@
 from django.contrib.auth.models import BaseUserManager
+from django.db.models import Manager, QuerySet
 from django_softdelete.models import DeletedManager, GlobalManager, SoftDeleteManager
+
+
+class SoftDeletableTimestampedQuerySetMixin:
+
+    def delete(self, soft=True):
+        if soft:
+            return self.update(is_removed=True)
+        else:
+            return super().delete()
+
+
+class SoftDeletableTimestampedQuerySet(SoftDeletableTimestampedQuerySetMixin, QuerySet):
+    pass
+
+
+class SoftDeletableTimestampedManager(Manager.from_queryset(SoftDeletableTimestampedQuerySet)):
+
+    def get_queryset(self):
+        """
+        Return queryset limited to not removed entries.
+        """
+        return super().get_queryset().filter(is_deleted=False)
 
 
 class SoftDeleteUserManager(SoftDeleteManager, DeletedManager, GlobalManager):

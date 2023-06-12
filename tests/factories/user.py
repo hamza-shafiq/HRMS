@@ -26,8 +26,8 @@ class AdminFactory(DjangoModelFactory):
 
 @register
 class UserFactory(DjangoModelFactory):
-    username = factory.LazyAttribute(lambda a: 'user')
-    email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username))
+    username = factory.Sequence(lambda x: 'username{}'.format(x))
+    email = factory.LazyAttribute(lambda x: '{}@example.com'.format(x.username))
     is_active = True
     is_verified = True
     is_superuser = False
