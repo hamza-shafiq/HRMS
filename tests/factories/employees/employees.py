@@ -10,10 +10,12 @@ faker = FakerFactory.create()
 
 @register
 class EmployeeFactory(DjangoModelFactory):
-    first_name = factory.Sequence(lambda x: 'f_name{}'.format(x))
-    last_name = factory.Sequence(lambda x: 'l_name{}'.format(x))
+    first_name = factory.Faker('first_name')
+    last_name = factory.Faker('last_name')
+    username = factory.LazyAttribute(lambda a: '{0}.{1}example.com'.format(a.first_name, a.last_name).lower())
+    email = factory.LazyAttribute(lambda a: '{}@example.com'.format(a.username))
     phone_number = factory.Sequence(lambda x: '12345{}'.format(x))
-    national_id_number = factory.Sequence(lambda x: '4353553')
+    national_id_number = factory.Sequence(lambda x: '12345{}'.format(x))
     emergency_contact_number = factory.Sequence(lambda x: '23532526')
     gender = factory.Sequence(lambda x: 'MALE')
     department = factory.SubFactory(DepartmentFactory)

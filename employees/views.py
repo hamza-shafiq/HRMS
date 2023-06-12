@@ -1,3 +1,4 @@
+import django_filters
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
@@ -12,12 +13,25 @@ from employees.permissions import DepartmentPermission, EmployeePermission
 from .serializers import DepartmentSerializer, EmployeeSerializer
 
 
-class EmployeeFilter(filters.FilterSet):
+class EmployeeFilter(django_filters.FilterSet):
+    employee_status = filters.CharFilter(
+        method='filter_employee_status',
+    )
+
+    department = filters.CharFilter(
+        method='filter_by_department',
+    )
 
     class Meta:
         model = Employee
         fields = ['first_name', 'last_name', 'phone_number', 'national_id_number',
-                  'gender', 'department', 'designation', 'joining_date']
+                  'gender', 'department', 'designation', 'joining_date', 'employee_status']
+
+    def filter_employee_status(self, queryset, name, value):
+        return queryset.filter(employee_status=value)
+
+    def filter_by_department(self, queryset, name, value):
+        return queryset.filter(department__id=value)
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
@@ -60,22 +74,3 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         return JsonResponse({'error': 'user except admin and employee is not allowed to '
                                       'to perform filter'},
                             status=status.HTTP_403_FORBIDDEN)
-
-    def list(self, request, *args, **kwargs):
-        serializer_context = {
-            'request': request,
-        }
-        department_id = self.request.query_params.get('dept_id')
-        if department_id:
-            try:
-                record = Employee.objects.filter(department_id=department_id, is_deleted=False)
-            except ValidationError:
-                return JsonResponse({'detail': 'Invalid department id'}, status=status.HTTP_404_NOT_FOUND)
-            except ValueError:
-                return JsonResponse({'error': 'Invalid format'}, status=status.HTTP_400_BAD_REQUEST)
-            serializer = EmployeeSerializer(record, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        queryset = Employee.objects.filter(is_deleted=False)
-        serializer = EmployeeSerializer(queryset, many=True, context=serializer_context)
-        return Response(serializer.data, status=status.HTTP_200_OK)

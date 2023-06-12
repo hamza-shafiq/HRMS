@@ -1,5 +1,6 @@
 from django.db import models
 
+from employees.managers import EmployeeQuerySet
 from user.models import BaseModel, User
 
 
@@ -39,6 +40,8 @@ class Employee(User):
     joining_date = models.DateField()
     employee_status = models.CharField(max_length=50, choices=STATUS_CHOICES)
     remaining_leaves = models.IntegerField(default=20, null=True)
+
+    objects = EmployeeQuerySet()
 
     @property
     def get_full_name(self):
