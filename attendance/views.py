@@ -104,11 +104,6 @@ class LeavesViewSet(viewsets.ModelViewSet):
     queryset = Leaves.objects.all().order_by('-created')
     serializer_class = LeaveSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ['employee_id', "status"]
-
-    def update(self, request, *args, **kwargs):
-        request.data['approved_by'] = request.user.id
-        return super(LeavesViewSet, self).update(request, *args, **kwargs)
 
     @staticmethod
     def remaining_leaves_per_month(user_id, request):
@@ -143,3 +138,15 @@ class LeavesViewSet(viewsets.ModelViewSet):
             return Response(({"data": serializer.data, "count": count}), status=status.HTTP_200_OK)
         return Response(({"count": count}), status=status.HTTP_200_OK)
 
+    @action(detail=True, url_name="approve", methods=['PATCH'])
+    def approve(self, request, pk):
+        leave = self.get_object()
+        if leave.status == 'PENDING':
+            leave.status = request.data['status']
+            leave.approved_by = request.user.employee
+            leave.save()
+            return Response(
+                status=status.HTTP_200_OK,
+                data=LeaveSerializer(leave, context=self.get_serializer_context()).data)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={f'The Leave status is already {leave.status}'})

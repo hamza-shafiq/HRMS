@@ -3,6 +3,7 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from assets.filters import AssetFilter
 from assets.models import Asset, AssignedAsset
 from assets.permissions import AssetsPermission
 from assets.serializers import AssetSerializer, AssignedAssetSerializer
@@ -12,29 +13,8 @@ class AssetViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, AssetsPermission]
     queryset = Asset.objects.all()
     serializer_class = AssetSerializer
-
-    def list(self, request, *args, **kwargs):
-        serializer_context = {
-            'request': request,
-        }
-        choice = self.request.query_params.get('choice')
-        if choice == 'ASSIGNED':
-            assign = list(AssignedAsset.objects.filter(is_deleted=False).values_list('asset', flat=True))
-
-            assets = Asset.objects.filter(id__in=assign, is_deleted=False)
-            serializer = AssetSerializer(assets, many=True, context=serializer_context)
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        elif choice == 'AVAILABLE':
-            assign_ids = list(AssignedAsset.objects.filter(is_deleted=False).values_list('asset_id', flat=True))
-            available_assets = Asset.objects.filter(is_deleted=False).exclude(id__in=assign_ids)
-            serializer = AssetSerializer(available_assets, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        queryset = Asset.objects.filter(is_deleted=False)
-        serializer = AssetSerializer(queryset, many=True, context=serializer_context)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = AssetFilter
 
 
 class AssignedAssetViewSet(viewsets.ModelViewSet):

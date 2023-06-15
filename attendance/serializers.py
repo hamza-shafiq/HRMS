@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from attendance.models import Attendance, Leaves
 
@@ -36,7 +37,19 @@ class AttendanceSerializer(serializers.ModelSerializer):
 class LeaveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Leaves
-        fields = ['id', 'employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status','approved_by']
+        fields = ['id', 'employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status',
+                  'approved_by']
+
+    def update(self, instance, validated_data):
+        if instance.status != 'PENDING':
+            raise ValidationError(f"Cannot update Leave Information after {instance.status} status")
+        valid_keys_for_update = ['from_date', 'to_date', 'reason', 'leave_type', 'request_date']
+        invalid_keys = set(validated_data.keys()) - set(valid_keys_for_update)
+        if invalid_keys:
+            raise ValidationError(
+                "Cannot update leave information, valid keys are: {}.".format(','.join(valid_keys_for_update))
+            )
+        return super().update(instance, validated_data)
 
     @staticmethod
     def difference_date(from_date, to_date):
@@ -49,12 +62,11 @@ class LeaveSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super(LeaveSerializer, self).to_representation(instance)
         ret['employee_name'] = str(instance.employee.get_full_name)
-        ret.pop('request_date')
-
-        ret['request_date'] = str(str(instance.request_date.day).zfill(2) + "-" +
-                                  str(instance.request_date.month).zfill(2) + "-" +
-                                  str(instance.request_date.year).zfill(2))
-
+        if instance.approved_by:
+            ret['approved_by'] = {
+                'approved_by_id': str(instance.approved_by.id),
+                'approved_by_name': instance.approved_by.get_full_name
+            }
         difference = self.difference_date(str(instance.from_date), str(instance.to_date))
         ret['number_of_days'] = str(difference + 1)
         ret['remaining_leaves'] = str(instance.employee.remaining_leaves)
