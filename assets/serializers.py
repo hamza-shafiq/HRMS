@@ -42,7 +42,7 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
                 "assignee_name": str(instance.assignee.all().last().employee.get_full_name),
                 "assignee_id": str(instance.assignee.all().last().employee_id)
             }
-            ret["assign_asset_id"] = str(instance.assignee.get().id)
+            ret["assign_asset_id"] = str(instance.assignee.all().last().id)
         return ret
 
 
