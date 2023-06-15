@@ -23,6 +23,8 @@ def test_create_asset(admin_factory, employee_factory, authed_token_client_gener
     if has_assignee:
         employee = employee_factory()
         data['assignee'] = str(employee.id)
+    else:
+        data['assignee'] = ''
     client = authed_token_client_generator(user)
     response = client.post(reverse('asset-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED

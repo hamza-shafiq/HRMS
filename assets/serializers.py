@@ -14,9 +14,8 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
                   "status", "assignee"]
 
     def create(self, validated_data):
-        assignee = None
-        if 'assignee' in validated_data and assignee != '':
-            assignee = validated_data.pop('assignee')
+        assignee = validated_data.pop('assignee')
+        if assignee:
             assignee = Employee.objects.get(id=assignee)
             validated_data['status'] = AssetStatus.ASSIGNED
         asset = Asset.objects.create(**validated_data)
