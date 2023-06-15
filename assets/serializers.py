@@ -6,7 +6,7 @@ from employees.models import Employee
 
 
 class AssetSerializer(serializers.HyperlinkedModelSerializer):
-    assignee = serializers.UUIDField(required=False, allow_null=True)
+    assignee = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = Asset
@@ -23,9 +23,21 @@ class AssetSerializer(serializers.HyperlinkedModelSerializer):
             AssignedAsset.objects.create(asset=asset, employee=assignee)
         return asset
 
+    def update(self, instance, validated_data):
+        if 'assignee' in validated_data:
+            assignee = validated_data.pop('assignee')
+            if assignee:
+                validated_data['status'] = AssetStatus.ASSIGNED
+                assignee = Employee.objects.get(id=assignee)
+                AssignedAsset.objects.create(asset=instance, employee=assignee)
+            else:
+                validated_data['status'] = AssetStatus.UNASSIGNED
+        return super().update(instance, validated_data)
+
     def to_representation(self, instance):
         ret = super(AssetSerializer, self).to_representation(instance)
-        if instance.assignee.all():
+        ret['assignee'] = None
+        if instance.status == AssetStatus.ASSIGNED and instance.assignee.all():
             ret['assignee'] = {
                 "assignee_name": str(instance.assignee.get().employee.get_full_name),
                 "assignee_id": str(instance.assignee.get().employee_id)

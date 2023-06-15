@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 
-from assets.models import Asset
+from assets.models import Asset, AssetStatus
 
 
 def test_retrieve_asset(admin_factory, asset_factory, authed_token_client_generator):
@@ -23,7 +23,7 @@ def test_put_asset(admin_factory, asset_factory, authed_token_client_generator):
         "cost": 5000
     }
     client = authed_token_client_generator(user)
-    response = client.put(reverse('asset-detail', kwargs={'pk': asset.id}), data=data, format='json')
+    response = client.patch(reverse('asset-detail', kwargs={'pk': asset.id}), data=data, format='json')
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['title'] == data['title']
 
@@ -63,7 +63,7 @@ def test_put_asset_non_admin(user_factory, asset_factory, authed_token_client_ge
         "cost": 5000
     }
     client = authed_token_client_generator(user)
-    response = client.put(reverse('asset-detail', kwargs={'pk': asset.id}), data=data, format='json')
+    response = client.patch(reverse('asset-detail', kwargs={'pk': asset.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
@@ -115,3 +115,22 @@ def test_put_patch_asset_invalid_id(admin_factory, authed_token_client_generator
     assert put_response.json()['detail'] == 'Not found.'
     assert patch_response.status_code == status.HTTP_404_NOT_FOUND
     assert patch_response.json()['detail'] == 'Not found.'
+
+
+def test_asset_assignee_update(admin_factory, asset_factory, authed_token_client_generator, employee_factory):
+    user = admin_factory()
+    asset = asset_factory()
+    employee = employee_factory()
+    data = {
+        "assignee": str(employee.id),
+    }
+    client = authed_token_client_generator(user)
+    response = client.patch(reverse('asset-detail', kwargs={'pk': asset.id}), data=data, format='json')
+    assert response.json()['status'] == AssetStatus.ASSIGNED
+    assert response.json()['assignee']['assignee_id'] == str(employee.id)
+    data = {
+        "assignee": None,
+    }
+    response = client.patch(reverse('asset-detail', kwargs={'pk': asset.id}), data=data, format='json')
+    assert response.json()['status'] == AssetStatus.UNASSIGNED
+    assert not response.json()['assignee']
