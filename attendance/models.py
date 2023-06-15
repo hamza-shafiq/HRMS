@@ -46,7 +46,7 @@ class Leaves(BaseModel):
     from_date = models.DateField()
     to_date = models.DateField()
     status = models.CharField(default='PENDING', max_length=50, choices=STATUS_CHOICE)
-    approved_by = models.ForeignKey(User, on_delete=models.CASCADE,null=True)
+    approved_by = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, related_name="approved_by")
     tracker = FieldTracker(fields=['status'])
 
 
