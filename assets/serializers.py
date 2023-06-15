@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from assets.models import Asset, AssignedAsset, AssetStatus
+from assets.models import Asset, AssetStatus, AssignedAsset
 from employees.models import Employee
 
 
