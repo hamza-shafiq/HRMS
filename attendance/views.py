@@ -35,7 +35,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def mark_attendance(self, request):
         action_type = request.data.get("action", None)
         user = request.user
-        current_datetime = datetime.now()
+        current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_datetime = datetime.strptime(current_datetime, '%Y-%m-%d %H:%M:%S')
         record = Attendance.objects.filter(employee_id=user.id, check_in__contains=current_datetime.date()).first()
         if hasattr(user, 'employee'):
             if action_type == "check-in":

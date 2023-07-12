@@ -1,6 +1,7 @@
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
+from attendance.serializers import LeaveSerializer
 from employees.models import Department, Employee
 from user.tasks import send_email
 
@@ -41,10 +42,12 @@ class EmployeeSerializer(serializers.ModelSerializer):
                   'is_verified', 'is_active']
 
     def to_representation(self, instance):
+        leaves = LeaveSerializer(instance.leaves.all(), many=True)
         ret = super(EmployeeSerializer, self).to_representation(instance)
         del ret['department']
         ret['department_id'] = str(instance.department_id)
         ret['department'] = str(instance.department)
+        ret['leaves'] = leaves.data
         return ret
 
     def validate_password(self, value):

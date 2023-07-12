@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from attendance.models import Attendance, Leaves
+from django.conf import settings
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -15,7 +16,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ret = super(AttendanceSerializer, self).to_representation(instance)
         ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
                                    str(instance.employee.last_name).capitalize())
-        dt = datetime.strptime(str(instance.check_in), '%Y-%m-%d %H:%M:%S%z')
+        dt = datetime.strptime(str(instance.check_in), settings.DATETIME_FORMAT)
         ret['time_check_in'] = str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" + str(dt.second).zfill(2)
         ret['check_in_date'] = dt.date()
 
@@ -24,7 +25,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
         if instance.check_out is None or instance.check_out is False:
             pass
         else:
-            dt = datetime.strptime(str(instance.check_out), '%Y-%m-%d %H:%M:%S%z')
+            dt = datetime.strptime(str(instance.check_out), settings.DATETIME_FORMAT)
             ret['time_check_out'] = str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" + str(
                 dt.second).zfill(2)
 
