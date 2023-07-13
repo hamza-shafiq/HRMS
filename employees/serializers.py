@@ -4,6 +4,7 @@ from rest_framework import serializers
 from attendance.serializers import LeaveSerializer
 from employees.models import Department, Employee
 from user.tasks import send_email
+from collections import defaultdict
 
 
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
@@ -42,13 +43,25 @@ class EmployeeSerializer(serializers.ModelSerializer):
                   'is_verified', 'is_active']
 
     def to_representation(self, instance):
-        leaves = LeaveSerializer(instance.leaves.all(), many=True)
+        leaves = LeaveSerializer(instance.leaves.filter(status='APPROVED'), many=True)
+        leave_dict = self.get_leaves_dict(leaves)
         ret = super(EmployeeSerializer, self).to_representation(instance)
         del ret['department']
         ret['department_id'] = str(instance.department_id)
         ret['department'] = str(instance.department)
-        ret['leaves'] = leaves.data
+        ret['leaves'] = leave_dict
         return ret
+
+    @staticmethod
+    def get_leaves_dict(leave):
+        leaves = defaultdict(int)
+        for leave_data in leave.data:
+            leave_type = leave_data['leave_type']
+            number_of_days = leave_data['number_of_days']
+            leaves['total_leaves'] = "20"
+            leaves['remaining_leaves'] = leave_data['remaining_leaves']
+            leaves[leave_type] += int(number_of_days)
+        return leaves
 
     def validate_password(self, value):
         if value:
