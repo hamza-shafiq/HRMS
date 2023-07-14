@@ -41,7 +41,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         if hasattr(user, 'employee'):
             if action_type == "check-in":
                 if not record:
-                    Attendance.objects.create(employee_id=user.id, check_in=current_datetime, status="ON_TIME")
+                    config = {}
+                    sessions = [{'start_time': str(current_datetime)}]
+                    config['sessions'] = sessions
+                    Attendance.objects.create(employee_id=user.id, check_in=current_datetime, config=config, status="ON_TIME")
                     return JsonResponse({"success": "Employee checked-in successfully!"},
                                         status=status.HTTP_201_CREATED)
 
@@ -52,10 +55,43 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 if not record:
                     return JsonResponse({"detail": "Employee did not check-in today!"},
                                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
+                config = record.config
+                sessions = config.get('sessions', [])
+                if sessions:
+                    sessions[-1]['end_time'] = str(current_datetime)
+                else:
+                    return JsonResponse({"detail": "Session Not found!"}, status=status.HTTP_400_BAD_REQUEST)
 
                 record.check_out = current_datetime
                 record.save()
                 return JsonResponse({"success": "Employee checked-out successfully!"}, status=status.HTTP_200_OK)
+
+            elif action_type == "pause":
+                if not record:
+                    return JsonResponse({"detail": "Employee did not check-in today!"},
+                                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+                config = record.config
+                sessions = config.get('sessions', [])
+                if sessions:
+                    sessions[-1]['end_time'] = str(current_datetime)
+                record.save()
+                return JsonResponse({"success": "Timer paused successfully!"}, status=status.HTTP_200_OK)
+
+            elif action_type == "resume":
+                if not record:
+                    return JsonResponse({"detail": "Employee did not check-in today!"},
+                                        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+                config = record.config
+                sessions = config.get('sessions', [])
+                if sessions:
+                    paused_at = sessions[-1]['end_time']
+                    sessions.append({'start_time': str(current_datetime)})
+                    record.save()
+                    return JsonResponse({"success": "Timer resumed successfully!",
+                                         "paused_at": paused_at},
+                                        status=status.HTTP_200_OK)
+                else:
+                    return JsonResponse({"detail": "Sessions Not Found!"}, status=status.HTTP_400_BAD_REQUEST)
 
             return JsonResponse({"error": "Please enter valid action (check-in/check-out)"},
                                 status=status.HTTP_406_NOT_ACCEPTABLE)
