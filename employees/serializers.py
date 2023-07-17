@@ -1,6 +1,8 @@
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
+from user.models import User
+
 from attendance.serializers import LeaveSerializer
 from employees.models import Department, Employee
 from user.tasks import send_email
@@ -33,6 +35,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
     )
     password = serializers.CharField(
         max_length=68, min_length=6, write_only=True)
+    username = serializers.CharField(required=True, write_only=True)
     employee_name = serializers.ReadOnlyField(source='get_full_name')
 
     class Meta:
@@ -70,6 +73,12 @@ class EmployeeSerializer(serializers.ModelSerializer):
             data = {'email_body': email_body, 'to_email': self.initial_data['email'],
                     'email_subject': 'Password'}
             # generate_and_send_employee_credentials(data)
-            send_email.delay(data)
+            # send_email.delay(data)
             return make_password(value)
         return value
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Username already exists.")
+        return value
+
