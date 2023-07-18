@@ -16,7 +16,7 @@ def test_checked_attendance_paused(employee_factory, authed_token_client_generat
     data = {"action": "check-in"}
     client = authed_token_client_generator(employee)
     client.post(reverse('attendance-mark-attendance'), data=data)
-    data = {"action": 'pause'}
+    data = {"action": 'pause', 'timer': '1234'}
     response = client.post(reverse("attendance-mark-attendance"), data=data)
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['success'] == 'Timer paused successfully!'
@@ -27,7 +27,7 @@ def test_marked_attendance_resume(employee_factory, authed_token_client_generato
     data = {"action": "check-in"}
     client = authed_token_client_generator(employee)
     client.post(reverse('attendance-mark-attendance'), data=data)
-    data = {"action": 'pause'}
+    data = {"action": 'pause', 'timer': '1234'}
     client.post(reverse("attendance-mark-attendance"), data=data)
     data = {"action": 'resume'}
     response = client.post(reverse("attendance-mark-attendance"), data=data)

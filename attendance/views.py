@@ -42,8 +42,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             if action_type == "check-in":
                 if not record:
                     config = {}
+                    timer = [{'timer_value': ''}]
                     sessions = [{'start_time': str(current_datetime)}]
                     config['sessions'] = sessions
+                    config['timer'] = timer
                     Attendance.objects.create(employee_id=user.id, check_in=current_datetime, config=config, status="ON_TIME")
                     return JsonResponse({"success": "Employee checked-in successfully!"},
                                         status=status.HTTP_201_CREATED)
@@ -67,13 +69,16 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return JsonResponse({"success": "Employee checked-out successfully!"}, status=status.HTTP_200_OK)
 
             elif action_type == "pause":
+                timer_value = request.data.get('timer', None)
                 if not record:
                     return JsonResponse({"detail": "Employee did not check-in today!"},
                                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
                 config = record.config
+                timer = config.get('timer', [])
                 sessions = config.get('sessions', [])
                 if sessions:
                     sessions[-1]['end_time'] = str(current_datetime)
+                    timer[-1]['timer_value'] = timer_value
                 record.save()
                 return JsonResponse({"success": "Timer paused successfully!"}, status=status.HTTP_200_OK)
 
@@ -82,13 +87,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     return JsonResponse({"detail": "Employee did not check-in today!"},
                                         status=status.HTTP_405_METHOD_NOT_ALLOWED)
                 config = record.config
+                timer = config.get('timer', [])
                 sessions = config.get('sessions', [])
                 if sessions:
                     paused_at = sessions[-1]['end_time']
+                    timer_value = timer[-1]['timer_value']
                     sessions.append({'start_time': str(current_datetime)})
+                    timer.append({'timer_value': ''})
                     record.save()
                     return JsonResponse({"success": "Timer resumed successfully!",
-                                         "paused_at": paused_at},
+                                         "paused_at": paused_at,
+                                         "timer_value": timer_value},
                                         status=status.HTTP_200_OK)
                 else:
                     return JsonResponse({"detail": "Sessions Not Found!"}, status=status.HTTP_400_BAD_REQUEST)
