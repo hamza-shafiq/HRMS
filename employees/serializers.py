@@ -45,9 +45,25 @@ class EmployeeSerializer(serializers.ModelSerializer):
                   'designation', 'bank', 'account_number', 'profile_pic', 'joining_date', 'employee_status',
                   'is_verified', 'is_active']
 
+    def create(self, validated_data):
+        email = validated_data.get('email')
+
+        # Check if there is a soft-deleted user with the same email
+        try:
+            user = User.all_objects.get(email=email, is_deleted=True)
+            if user:
+                user.reactivate_user()
+                user = Employee.objects.get(email=email)
+                return user
+        except User.DoesNotExist:
+            return Employee.objects.create(**validated_data)
+
     def to_representation(self, instance):
         leaves = LeaveSerializer(instance.leaves.filter(status='APPROVED'), many=True)
         leave_dict = self.get_leaves_dict(leaves)
+        if not leave_dict:
+            leave_dict = {}
+
         ret = super(EmployeeSerializer, self).to_representation(instance)
         del ret['department']
         ret['department_id'] = str(instance.department_id)
@@ -73,7 +89,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             data = {'email_body': email_body, 'to_email': self.initial_data['email'],
                     'email_subject': 'Password'}
             # generate_and_send_employee_credentials(data)
-            # send_email.delay(data)
+            send_email.delay(data)
             return make_password(value)
         return value
 
@@ -81,4 +97,3 @@ class EmployeeSerializer(serializers.ModelSerializer):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("Username already exists.")
         return value
-

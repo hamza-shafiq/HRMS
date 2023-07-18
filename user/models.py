@@ -6,7 +6,7 @@ from django_extensions.db.models import TimeStampedModel
 from django_softdelete.models import SoftDeleteModel
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .manager import UserManager
+from .manager import UserManager, UserBaseManager
 
 
 class BaseModel(TimeStampedModel, SoftDeleteModel):
@@ -30,6 +30,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
     REQUIRED_FIELDS = ['username']
 
     objects = UserManager()
+    all_objects = UserBaseManager()
 
     class Meta:
         db_table = "users"
@@ -43,3 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
+
+    def reactivate_user(self):
+        self.is_deleted = False
+        self.save()

@@ -56,3 +56,7 @@ class UserManager(BaseUserManager, SoftDeleteUserManager):
         user.is_verified = True
         user.save()
         return user
+
+
+class UserBaseManager(BaseUserManager):
+    pass
