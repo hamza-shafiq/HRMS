@@ -12,6 +12,8 @@ from finance.serializers import PayRollSerializer
 from finance.utils import normalize_header
 from employees.models import Employee
 import pandas as pd
+from django.template.loader import render_to_string
+from user.tasks import send_email
 
 
 class PayRollViewSet(viewsets.ModelViewSet):
@@ -36,8 +38,9 @@ class PayRollViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, url_name="import-payrolls-data", methods=['Post'])
     def import_payroll_details(self, request):
-        file = request.FILES.get('file')
-
+        file = request.FILES.get('payroll_sheet')
+        month = request.data.get('month', None)
+        year = request.data.get('year', None)
         if not file:
             return Response({'error': 'No file was provided'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -55,12 +58,27 @@ class PayRollViewSet(viewsets.ModelViewSet):
             email = row['email_ids']
             if email in emp_dt:
                 employee_id = emp_dt[email]
-                bonus = row['late_sitting_bonus'] + row['increment'] + row['project_bonus'] + row['project_commission']
+                bonus = row['late_sitting_bonus'] + row['increment'] + row['project_bonus'] + row[
+                    'project_commission'] + row['overtime']
                 basic_salary = row['basic_salary']
-                travel_allowance = row['travel_allowance']
-                tax_deductions = row['tax_deductions']
-                reimbursement = row['other_deductions']
-                year = row['year']
+                travel_allowance = row['allowance']
+                tax_deductions = row['tax_deductions'] + row['deductions']
+                reimbursement = row['arrears']
+                config = {
+                    'loan/advance': row['loan/advance'],
+                    'overtime': row['overtime'],
+                    'increment': row['increment'],
+                    'late_sitting_bonus': row['late_sitting_bonus'],
+                    'arrears': row['arrears'],
+                    'allowance': row['allowance'],
+                    'project_bonus': row['project_bonus'],
+                    'project_commission': row['project_commission'],
+                    'deductions': row['deductions'],
+                    'tax_deductions': row['tax_deductions'],
+                    'total_salary': row['salary']
+                }
+                year = year
+                month = month
 
                 payroll = Payroll(
                     employee_id=employee_id,
@@ -69,6 +87,8 @@ class PayRollViewSet(viewsets.ModelViewSet):
                     travel_allowance=travel_allowance,
                     tax_deduction=tax_deductions,
                     reimbursement=reimbursement,
+                    config=config,
+                    month=month,
                     year=year,
                 )
                 payroll_list.append(payroll)
@@ -77,5 +97,29 @@ class PayRollViewSet(viewsets.ModelViewSet):
         return Response({'message': 'Payroll details imported successfully'}, status=status.HTTP_200_OK)
 
     @action(detail=False, url_name="send-mail", methods=['Post'])
-    def send_mail(self):
-        pass
+    def send_mail(self, request):
+        instance_id = request.data.get('id', None)
+        released = request.data.get('released', None)
+        employee_id = request.data.get('employee', None)
+        month = request.data.get('month', None)
+        year = request.data.get('year', None)
+        payroll = Payroll.objects.get(id=instance_id)
+        employee = Employee.objects.filter(id=employee_id).values_list('id', 'username', 'email')
+        emp_dt = {str(emp[0]): [emp[1], emp[2]] for emp in employee}
+        data = {
+            'to_email': emp_dt[employee_id][1],
+            'email_subject': 'Payroll Released'
+        }
+        if not released:
+            payroll.released = True
+            payroll.save()
+            email_body = 'Hi ' + emp_dt[employee_id][0] + '!\n' + \
+                         ' Your payroll has been generated for the month of ' + month \
+                         + ' ' + year + '\n' + \
+                         'You can now view it at your dashboard.'
+            data['email_subject'] = 'Payroll Generated'
+            data['email_body'] = email_body
+            send_email.delay(data)
+            return Response({'message': 'Salary released Successfully!'}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({'message': 'Salary is being processed will be Updated Soon'}, status=status.HTTP_200_OK)
