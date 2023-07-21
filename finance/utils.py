@@ -4,6 +4,7 @@ def normalize_header(headers):
     return [
         str(head)
         .replace(" – ", "_")
+        .replace('/', '_')
         .replace(" - ", "_")
         .replace("–", "_")
         .replace("-", "_")

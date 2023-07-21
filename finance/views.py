@@ -65,7 +65,7 @@ class PayRollViewSet(viewsets.ModelViewSet):
                 tax_deductions = row['tax_deductions'] + row['deductions']
                 reimbursement = row['arrears']
                 config = {
-                    'loan/advance': row['loan/advance'],
+                    'loan_advance': row['loan_advance'],
                     'overtime': row['overtime'],
                     'increment': row['increment'],
                     'late_sitting_bonus': row['late_sitting_bonus'],
