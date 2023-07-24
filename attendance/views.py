@@ -46,7 +46,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     sessions = [{'start_time': str(current_datetime)}]
                     config['sessions'] = sessions
                     config['timer'] = timer
-                    Attendance.objects.create(employee_id=user.id, check_in=current_datetime, config=config, status="ON_TIME")
+                    Attendance.objects.create(employee_id=user.id, check_in=current_datetime, config=config,
+                                              status="ON_TIME")
                     return JsonResponse({"success": "Employee checked-in successfully!"},
                                         status=status.HTTP_201_CREATED)
 
@@ -90,7 +91,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 timer = config.get('timer', [])
                 sessions = config.get('sessions', [])
                 if sessions:
-                    paused_at = sessions[-1]['end_time']
+                    try:
+                        paused_at = sessions[-1]['end_time']
+                    except:
+                        return JsonResponse({"error": "Timer Wasn't Paused!"}, status=status.HTTP_406_NOT_ACCEPTABLE)
                     timer_value = timer[-1]['timer_value']
                     sessions.append({'start_time': str(current_datetime)})
                     timer.append({'timer_value': ''})
