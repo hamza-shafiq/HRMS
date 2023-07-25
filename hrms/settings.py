@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'finance.apps.FinanceConfig',
     'attendance.apps.AttendanceConfig',
     'recruitments.apps.RecruitmentsConfig',
+    'policies.apps.PoliciesConfig',
     'django_filters',
     'drf_spectacular',
     "corsheaders",

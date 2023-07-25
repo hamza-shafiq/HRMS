@@ -5,7 +5,6 @@ from rest_framework import viewsets, status, mixins
 from assets.models import Asset, AssignedAsset
 from rest_framework.decorators import action
 from employees.models import Employee, Department
-from finance.models import Payroll
 from recruitments.models import Recruits
 from attendance.models import Attendance, Leaves
 from datetime import datetime, timedelta
