@@ -2,7 +2,7 @@ import tempfile
 
 from django.urls import reverse
 from rest_framework import status
-
+from user.models import User
 from employees.models import Employee
 
 
@@ -31,7 +31,8 @@ def test_create_employees(admin_factory, department_factory, authed_token_client
             "emergency_contact_number": 934233800, "gender": "MALE", "department": department.id,
             "designation": "Developer", "bank": "Habib", "account_number": 324244,
             "profile_pic": file, "joining_date": "1990-06-20", "employee_status": "WORKING",
-            "username": 'usama123', "email": 'usama@gmail.com', "password": "paklove"}
+            "username": 'usama123', "email": 'usama@gmail.com', "password": "paklove", 'is_verified': True,
+            "is_active": True}
     client = authed_token_client_generator(user)
     response = client.post(reverse('employees-list'), data=data)
     file.close()
