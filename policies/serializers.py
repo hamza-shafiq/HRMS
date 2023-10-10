@@ -9,7 +9,7 @@ class PolicySerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Policies
-        fields = ['file_name', 'policy_file', 'modified', 'modified_by']
+        fields = ['id', 'file_name', 'policy_file', 'modified', 'modified_by']
 
     def create(self, validated_data):
         request = self.context.get('request', None)
