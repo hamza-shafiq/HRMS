@@ -66,3 +66,13 @@ def test_get_leaves_non_admin(user_factory, authed_token_client_generator):
     response = client.get(reverse('leaves-list'))
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
+
+
+def test_leaves_filter(admin_factory, leaves_factory, authed_token_client_generator):
+    user = admin_factory()
+    leaves_factory()
+    second_leave = leaves_factory(status='APPROVED')
+    client = authed_token_client_generator(user)
+    response = client.get(reverse('leaves-list') + "?status=APPROVED")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['results'][0]['id'] == str(second_leave.id)

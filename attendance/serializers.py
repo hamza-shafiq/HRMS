@@ -1,10 +1,10 @@
 from datetime import datetime
 
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from attendance.models import Attendance, Leaves
-from django.conf import settings
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
