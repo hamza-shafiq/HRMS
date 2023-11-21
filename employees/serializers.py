@@ -1,12 +1,12 @@
+from collections import defaultdict
+
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
-from user.models import User
-
 from attendance.serializers import LeaveSerializer
 from employees.models import Department, Employee
+from user.models import User
 from user.tasks import send_email
-from collections import defaultdict
 
 
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
