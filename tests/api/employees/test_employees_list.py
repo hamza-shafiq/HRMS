@@ -2,7 +2,7 @@ import tempfile
 
 from django.urls import reverse
 from rest_framework import status
-from user.models import User
+
 from employees.models import Employee
 
 

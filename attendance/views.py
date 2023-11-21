@@ -149,11 +149,33 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class LeavesFilter(django_filters.FilterSet):
+    status = filters.CharFilter(
+        method='filter_leaves_status',
+    )
+
+    approved_by = filters.CharFilter(
+        method='filter_approved_by',
+    )
+
+    class Meta:
+        model = Leaves
+        fields = ['employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status',
+                  'approved_by']
+
+    def filter_leaves_status(self, queryset, name, value):
+        return queryset.filter(status=value)
+
+    def filter_approved_by(self, queryset, name, value):
+        return queryset.filter(approved_by__id=value)
+
+
 class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
     queryset = Leaves.objects.all().order_by('-created')
     serializer_class = LeaveSerializer
     filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = LeavesFilter
 
     @staticmethod
     def remaining_leaves_per_month(user_id, request):

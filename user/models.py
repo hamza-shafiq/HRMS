@@ -6,7 +6,7 @@ from django_extensions.db.models import TimeStampedModel
 from django_softdelete.models import SoftDeleteModel
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .manager import UserManager, UserBaseManager
+from .manager import UserBaseManager, UserManager
 
 
 class BaseModel(TimeStampedModel, SoftDeleteModel):
