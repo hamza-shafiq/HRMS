@@ -198,3 +198,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = False
 
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S%z'
+SITE_HEADER = os.environ.get('SITE_HEADER', "HRMS - DEV")
+SITE_TITLE = os.environ.get('SITE_TITLE', "HRMS -  Dev")
+INDEX_TITLE = os.environ.get('INDEX_TITLE', "Welcome to HRMS - Dev")
