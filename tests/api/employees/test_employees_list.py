@@ -116,7 +116,7 @@ def test_unique_constraint_employees(admin_factory, department_factory, authed_t
     response = client.post(reverse('employees-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     file.close()
-    assert response.json()['username'][0] == 'user with this username already exists.'
+    assert response.json()['username'][0] == 'Username already exists.'
     assert response.json()['email'][0] == 'user with this email already exists.'
 
 
