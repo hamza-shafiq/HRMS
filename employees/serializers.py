@@ -35,7 +35,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
     )
     password = serializers.CharField(
         max_length=68, min_length=6, write_only=True)
-    username = serializers.CharField(required=True, write_only=True)
+    username = serializers.CharField(required=True)
     employee_name = serializers.ReadOnlyField(source='get_full_name')
 
     class Meta:

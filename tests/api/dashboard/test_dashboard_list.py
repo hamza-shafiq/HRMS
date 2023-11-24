@@ -33,6 +33,6 @@ def test_get_statistics(admin_factory, employee_factory, asset_factory, recruit_
 def test_get_statistics_non_admin(user_factory, authed_token_client_generator):
     user = user_factory()
     client = authed_token_client_generator(user)
-    response = client.get(reverse('dashborad-employee_dashboard'))
+    response = client.get(reverse('dashboard-list'))
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
