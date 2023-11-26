@@ -2,7 +2,7 @@ from django.db.models import signals
 from django.urls import reverse
 from factory.django import mute_signals
 from rest_framework import status
-from django.core import mail
+
 from finance.models import Payroll
 
 
@@ -48,4 +48,4 @@ def test_send_mail_salary_being_processed(admin_factory, employee_factory, payro
     assert response.status_code == status.HTTP_200_OK
     assert len(mailoutbox) == 0
     unchanged_payroll = Payroll.objects.get(id=payroll.id)
-    assert unchanged_payroll.released == False
+    assert not unchanged_payroll.released
