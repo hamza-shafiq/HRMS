@@ -45,6 +45,8 @@ class User(AbstractBaseUser, PermissionsMixin, BaseModel):
             'access': str(refresh.access_token)
         }
 
-    def reactivate_user(self):
+    def reactivate_user(self, password=None):
+        if password:
+            self.password = password
         self.is_deleted = False
         self.save()

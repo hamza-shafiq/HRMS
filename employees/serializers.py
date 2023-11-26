@@ -52,7 +52,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         try:
             user = User.all_objects.get(email=email, is_deleted=True)
             if user:
-                user.reactivate_user()
+                user.reactivate_user(password=validated_data.get('password'))
                 user = Employee.objects.get(email=email)
                 return user
         except User.DoesNotExist:
