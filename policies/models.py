@@ -1,6 +1,7 @@
 from django.db import models
-from user.models import BaseModel
+
 from employees.models import Employee
+from user.models import BaseModel
 
 
 class Policies(BaseModel):
