@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from attendance.models import Attendance, Leaves
 from attendance.permissions import AttendancePermission, LeavesPermission
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
+from employees.models import Employee
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -180,7 +181,10 @@ class LeavesViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def remaining_leaves_per_month(user_id, request):
+        employee = Employee.objects.filter(id=user_id)
         remaining_count = settings.MAX_LEAVES
+        if employee:
+            remaining_count = employee.get().total_leaves
         date = datetime.now()
         serializer_context = {
             'request': request,
