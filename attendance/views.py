@@ -227,3 +227,9 @@ class LeavesViewSet(viewsets.ModelViewSet):
                 data=LeaveSerializer(leave, context=self.get_serializer_context()).data)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={f'The Leave status is already {leave.status}'})
+
+    def destroy(self, request, *args, **kwargs):
+        leave = self.get_object()
+        if leave.status != 'PENDING':
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={f'Cannot delete Leave with status {leave.status}'})
+        return super(LeavesViewSet, self).destroy(request, *args, **kwargs)

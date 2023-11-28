@@ -98,6 +98,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         return value
 
     def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("Username already exists.")
+        if 'request' in self.context and self.context['request'].method == 'POST':
+            if User.objects.filter(username=value).exists():
+                raise serializers.ValidationError("Username already exists.")
         return value

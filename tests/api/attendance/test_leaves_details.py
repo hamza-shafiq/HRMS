@@ -1,5 +1,6 @@
 import datetime
 
+import pytest
 from django.urls import reverse
 from rest_framework import status
 
@@ -161,3 +162,13 @@ def test_extra_leave_status(leaves_factory, employee_factory, authed_token_clien
     assert result['extra_leaves'] == '3'
     assert result['status'] == "APPROVED"
     assert response.json()['approved_by']['approved_by_name'] == approved_by.get_full_name
+
+
+@pytest.mark.parametrize('leave_status', ['REJECTED', 'APPROVED'])
+def test_delete_leave_with_status(admin_factory, leaves_factory, authed_token_client_generator, leave_status):
+    user = admin_factory()
+    leave = leaves_factory(status=leave_status)
+    client = authed_token_client_generator(user)
+    response = client.delete(reverse('leaves-detail', kwargs={'pk': leave.id}), format='json')
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json()[0] == f'Cannot delete Leave with status {leave_status}'
