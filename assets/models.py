@@ -3,7 +3,7 @@ from django_extensions.db.models import TitleDescriptionModel
 
 from assets.managers import AssetQuerySet
 from employees.models import Employee
-from user.models import BaseModel
+from user.models import BaseModel, Tenant
 
 
 class BaseTitleDescriptionModel(BaseModel, TitleDescriptionModel):
@@ -18,6 +18,7 @@ class AssetStatus:
 
 
 class Asset(BaseTitleDescriptionModel):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='tenant_assets')
     asset_model = models.CharField(max_length=50)
     asset_type = models.CharField(max_length=50)
     cost = models.FloatField()

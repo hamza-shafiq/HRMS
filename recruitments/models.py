@@ -1,7 +1,7 @@
 from django.db import models
 
 from employees.models import Employee
-from user.models import BaseModel
+from user.models import BaseModel, Tenant
 
 
 class Recruits(BaseModel):
@@ -12,6 +12,7 @@ class Recruits(BaseModel):
         ('SELECTED', 'SELECTED'),
         ('REJECTED', 'REJECTED')
     ]
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='tenant_recruits')
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.EmailField()

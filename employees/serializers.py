@@ -40,7 +40,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ['id', 'employee_name', 'assets', 'username', 'email', 'password', 'first_name', 'last_name',
+        fields = ['id', 'tenant', 'employee_name', 'assets', 'username', 'email', 'password', 'first_name', 'last_name',
                   'phone_number', 'national_id_number', 'emergency_contact_number', 'gender', 'department',
                   'designation', 'bank', 'account_number', 'profile_pic', 'joining_date', 'employee_status',
                   'is_verified', 'is_active']
@@ -89,7 +89,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
             data = {'email_body': email_body, 'to_email': self.initial_data['email'],
                     'email_subject': 'Password'}
             # generate_and_send_employee_credentials(data)
-            send_email.delay(data)
+            # send_email.delay(data)
             return make_password(value)
         return value
 

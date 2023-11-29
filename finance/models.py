@@ -1,7 +1,7 @@
 from django.db import models
 
 from employees.models import Employee
-from user.models import BaseModel
+from user.models import BaseModel, Tenant
 
 
 class Payroll(BaseModel):
@@ -19,6 +19,7 @@ class Payroll(BaseModel):
         ('NOVEMBER', 'NOVEMBER'),
         ('DECEMBER', 'DECEMBER'),
     ]
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='tenant_payrolls')
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="payrolls")
     basic_salary = models.FloatField()
     bonus = models.FloatField(default=0)

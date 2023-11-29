@@ -1,6 +1,22 @@
 from django.contrib.auth.models import BaseUserManager
 from django.db.models import Manager, QuerySet
 from django_softdelete.models import DeletedManager, GlobalManager, SoftDeleteManager
+from .tenant_utils.tenant_mixins import BaseTenantQuerySet
+
+
+class TenantQuerySet(BaseTenantQuerySet):
+
+    def get_fuzzy(self, name):
+        """
+        Quick way to get tenant by fuzzy match on the name.
+        """
+        return self.get(name__icontains=name)
+
+    def fuzzy_get(self, name):
+        return self.get_fuzzy(name)
+
+    def active(self):
+        return self.filter(is_active=True)
 
 
 class SoftDeletableTimestampedQuerySetMixin:

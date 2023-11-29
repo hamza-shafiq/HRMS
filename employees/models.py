@@ -1,10 +1,11 @@
 from django.db import models
 
 from employees.managers import EmployeeQuerySet
-from user.models import BaseModel, User
+from user.models import BaseModel, User, Tenant
 
 
 class Department(BaseModel):
+    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='tenant_departments')
     department_name = models.CharField(max_length=50)
     description = models.CharField(max_length=250)
 
@@ -47,10 +48,18 @@ class Employee(User):
     def get_full_name(self):
         if self.first_name or self.last_name:
             return ("%s %s" % (self.first_name.capitalize(), self.last_name.capitalize())).strip()
-        return self.user.email
+        return self.email
 
     class Meta:
         db_table = "employees"
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class Roles(BaseModel):
+    role_type = models.CharField(max_length=255, null=False, blank=False)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='employee')
+
+    def __str__(self):
+        return f"{self.employee.get_full_name} {self.role_type}"

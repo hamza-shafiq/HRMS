@@ -57,6 +57,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     filterset_class = EmployeeFilter
     serializer_class = EmployeeSerializer
 
+
     @action(detail=False, url_path="get_employee", methods=['get'])
     def employee_detail(self, request):
         user = request.user
