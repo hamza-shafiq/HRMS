@@ -74,8 +74,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
         ret['leaves'] = leave_dict
         leave_dict['total_leaves'] = instance.total_leaves
         leave_dict['remaining_leaves'] = instance.remaining_leaves
-        if instance.remaining_leaves > instance.total_leaves:
-            leave_dict['remaining_leaves'] = instance.total_leaves
         return ret
 
     @staticmethod
