@@ -84,7 +84,7 @@ def test_get_leaves(admin_factory, leaves_factory, authed_token_client_generator
     client = authed_token_client_generator(user)
     response = client.get(reverse('leaves-get_leave'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()['count'] == '18'
+    assert str(response.json()['count']) == '18'
 
 
 def test_approved_get_leaves(employee_factory, leaves_factory, authed_token_client_generator):
@@ -93,4 +93,4 @@ def test_approved_get_leaves(employee_factory, leaves_factory, authed_token_clie
     client = authed_token_client_generator(employee)
     response = client.get(reverse('leaves-get_leave'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()['count'] == 16
+    assert str(response.json()['count']) == '16'
