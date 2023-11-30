@@ -76,3 +76,21 @@ def test_leaves_filter(admin_factory, leaves_factory, authed_token_client_genera
     response = client.get(reverse('leaves-list') + "?status=APPROVED")
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['results'][0]['id'] == str(second_leave.id)
+
+
+def test_get_leaves(admin_factory, leaves_factory, authed_token_client_generator):
+    user = admin_factory()
+    leaves_factory()
+    client = authed_token_client_generator(user)
+    response = client.get(reverse('leaves-get_leave'))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['count'] == '18'
+
+
+def test_approved_get_leaves(employee_factory, leaves_factory, authed_token_client_generator):
+    employee = employee_factory()
+    leaves_factory(status='APPROVED', employee=employee)
+    client = authed_token_client_generator(employee)
+    response = client.get(reverse('leaves-get_leave'))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['count'] == 16
