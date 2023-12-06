@@ -102,8 +102,8 @@ class PayRollViewSet(viewsets.ModelViewSet):
         month = request.data.get('month', None)
         year = request.data.get('year', None)
         payroll = Payroll.objects.get(id=instance_id)
-        employee = Employee.objects.filter(id=employee_id).values_list('id', 'username', 'email')
-        emp_dt = {str(emp[0]): [emp[1], emp[2]] for emp in employee}
+        employee = Employee.objects.filter(id=employee_id).values_list('id', 'first_name', 'last_name',  'email')
+        emp_dt = {str(emp[0]): [f'{emp[1]} {emp[2]}', emp[3]] for emp in employee}
         data = {
             'to_email': emp_dt[employee_id][1],
             'email_subject': 'Payroll Released'
@@ -112,7 +112,7 @@ class PayRollViewSet(viewsets.ModelViewSet):
             payroll.released = True
             payroll.save()
             email_body = 'Hi ' + emp_dt[employee_id][0] + '!\n' + \
-                         ' Your payroll has been generated for the month of ' + month \
+                         '\nYour payroll has been generated for the month of ' + month \
                          + ' ' + year + '\n' + \
                          'You can now view it at your dashboard.'
             data['email_subject'] = 'Payroll Generated'
