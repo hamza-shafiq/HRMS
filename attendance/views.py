@@ -132,10 +132,10 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 if date:
                     datetime.strptime(date, '%Y-%m-%d')
                     record = Attendance.objects.filter(check_in__date=date,
-                                                       is_deleted=False).order_by('-check_in__date')
+                                                       is_deleted=False).order_by('-check_in__time')
                 if emp_id:
                     if date:
-                        record = record.filter(employee_id=emp_id).order_by('-check_in__date')
+                        record = record.filter(employee_id=emp_id).order_by('-check_in__time')
                     else:
                         record = Attendance.objects.filter(employee_id=emp_id,
                                                            is_deleted=False).order_by('-check_in__date')
@@ -145,7 +145,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        queryset = Attendance.objects.all().order_by('-check_in__date')
+        queryset = Attendance.objects.all().order_by('-check_in__date', '-check_in__time')
         serializer = AttendanceSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
