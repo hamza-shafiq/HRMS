@@ -39,7 +39,9 @@ class Employee(User):
     profile_pic = models.FileField(upload_to='images', verbose_name="profile img", blank=True, null=True)
     joining_date = models.DateField()
     employee_status = models.CharField(max_length=50, choices=STATUS_CHOICES)
-    remaining_leaves = models.IntegerField(default=20, null=True)
+    remaining_leaves = models.IntegerField(default=18, null=True)
+    total_leaves = models.IntegerField(default=18)
+    extra_leaves = models.IntegerField(default=0)
 
     objects = EmployeeQuerySet()
 

@@ -1,16 +1,18 @@
-from django.http import JsonResponse
-from rest_framework.permissions import IsAuthenticated
-from django.core.exceptions import ValidationError
-from rest_framework import viewsets, status, mixins
-from assets.models import Asset, AssignedAsset
-from rest_framework.decorators import action
-from employees.models import Employee, Department
-from recruitments.models import Recruits
-from attendance.models import Attendance, Leaves
 from datetime import datetime, timedelta
-from employees.serializers import EmployeeSerializer
+
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+from rest_framework import mixins, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+
+from assets.models import Asset, AssignedAsset
+from attendance.models import Attendance, Leaves
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
 from dashboard.permissions import DashboardPermission
+from employees.models import Department, Employee
+from employees.serializers import EmployeeSerializer
+from recruitments.models import Recruits
 
 
 class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -22,7 +24,7 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if emp:
             try:
                 month = datetime.now().month
-                record = Attendance.objects.filter(employee_id=emp, check_in__month=month,  is_deleted=False)
+                record = Attendance.objects.filter(employee_id=emp, check_in__month=month, is_deleted=False)
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             serializer = AttendanceSerializer(record, many=True)
@@ -81,4 +83,3 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 "leaves_approved": leaves_accepted, "total_leaves_applied": total_leaves_applied,
                 'total_working_days': working_days, 'total_absents': total_absents}
         return JsonResponse(status=status.HTTP_200_OK, data=data)
-

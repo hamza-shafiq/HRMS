@@ -13,12 +13,15 @@ from rest_framework.response import Response
 from attendance.models import Attendance, Leaves
 from attendance.permissions import AttendancePermission, LeavesPermission
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
+from employees.models import Employee
+from rest_framework.pagination import LimitOffsetPagination
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, AttendancePermission]
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
+    pagination_class = LimitOffsetPagination
 
     @action(detail=False, url_name="get-attendance", methods=['Get'])
     def get_attendance(self, request):
@@ -143,9 +146,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             except ValueError:
                 return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+            page = self.paginate_queryset(record)
+            if page is not None:
+                serializer = AttendanceSerializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         queryset = Attendance.objects.all().order_by('-check_in__date', '-check_in__time')
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = AttendanceSerializer(queryset, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = AttendanceSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -180,7 +191,10 @@ class LeavesViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def remaining_leaves_per_month(user_id, request):
+        employee = Employee.objects.filter(id=user_id)
         remaining_count = settings.MAX_LEAVES
+        if employee:
+            remaining_count = employee.get().total_leaves
         date = datetime.now()
         serializer_context = {
             'request': request,
@@ -223,3 +237,9 @@ class LeavesViewSet(viewsets.ModelViewSet):
                 data=LeaveSerializer(leave, context=self.get_serializer_context()).data)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data={f'The Leave status is already {leave.status}'})
+
+    def destroy(self, request, *args, **kwargs):
+        leave = self.get_object()
+        if leave.status != 'PENDING':
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={f'Cannot delete Leave with status {leave.status}'})
+        return super(LeavesViewSet, self).destroy(request, *args, **kwargs)

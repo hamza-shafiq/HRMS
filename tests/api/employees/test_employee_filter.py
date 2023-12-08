@@ -65,10 +65,20 @@ def test_filter_employees_department(admin_factory, employee_factory, department
     user = admin_factory()
     dep1 = department_factory()
     dep2 = department_factory()
-    employee1 = employee_factory(department=dep1)
+    employee1 = employee_factory(department=dep1, first_name='Ali', last_name='M')
     employee_factory(department=dep2)
     client = authed_token_client_generator(user)
-    response = client.get(reverse('employees-list') + "?department=" + str(dep1.id))
+    response = client.get(reverse('employees-list') + "?full_name=" + str('Al'))
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['count'] == 1
     assert response.json()['results'][0]['id'] == str(employee1.id)
+
+
+def test_filter_employees_full_name(admin_factory, employee_factory, authed_token_client_generator):
+    user = admin_factory()
+    employee_factory(first_name='john', last_name='cena')
+    employee_factory(first_name='cena', last_name='verma')
+    client = authed_token_client_generator(user)
+    response = client.get(reverse('employees-list') + "?full_name=" + str('cena'))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['count'] == 2

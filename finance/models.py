@@ -1,4 +1,5 @@
 from django.db import models
+
 from employees.models import Employee
 from user.models import BaseModel
 

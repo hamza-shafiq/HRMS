@@ -30,7 +30,7 @@ def test_create_employees(admin_factory, department_factory, authed_token_client
     data = {"first_name": 'Usama', "last_name": 'Tariq', "phone_number": +923046369800, "national_id_number": 33,
             "emergency_contact_number": 934233800, "gender": "MALE", "department": department.id,
             "designation": "Developer", "bank": "Habib", "account_number": 324244,
-            "profile_pic": file, "joining_date": "1990-06-20", "employee_status": "WORKING",
+            "profile_pic": file, "joining_date": "1990-06-20", "employee_status": "WORKING", 'total_leaves': 17,
             "username": 'usama123', "email": 'usama@gmail.com', "password": "paklove", 'is_verified': True,
             "is_active": True}
     client = authed_token_client_generator(user)
@@ -38,6 +38,8 @@ def test_create_employees(admin_factory, department_factory, authed_token_client
     file.close()
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['username'] == data['username']
+    assert response.json()['leaves']['total_leaves'] == data['total_leaves']
+    assert response.json()['leaves']['remaining_leaves'] == data['total_leaves']
 
 
 def test_create_employees_incomplete_data(admin_factory, authed_token_client_generator):
@@ -116,7 +118,7 @@ def test_unique_constraint_employees(admin_factory, department_factory, authed_t
     response = client.post(reverse('employees-list'), data=data)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     file.close()
-    assert response.json()['username'][0] == 'user with this username already exists.'
+    assert response.json()['username'][0] == 'Username already exists.'
     assert response.json()['email'][0] == 'user with this email already exists.'
 
 

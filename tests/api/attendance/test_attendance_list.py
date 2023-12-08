@@ -10,7 +10,7 @@ def test_get_attendances(admin_factory, attendance_factory, authed_token_client_
     client = authed_token_client_generator(user)
     response = client.get(reverse('attendance-list'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]['id'] == str(attendance.id)
+    assert response.json()['results'][0]['id'] == str(attendance.id)
 
 
 def test_create_attendance(admin_factory, employee_factory, authed_token_client_generator):
@@ -65,4 +65,4 @@ def test_get_attendances_count(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('attendance-list'))
-    assert len(response.json()) == Attendance.objects.all().count()
+    assert len(response.json()['results']) == Attendance.objects.all().count()

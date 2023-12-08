@@ -1,18 +1,16 @@
-from rest_framework import status, viewsets
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.decorators import action, api_view
-from rest_framework.response import Response
+import pandas as pd
 from django.http import JsonResponse
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import permissions
-from finance.permissions import PayrollPermission
 from django_filters import rest_framework as filters
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from employees.models import Employee
 from finance.models import Payroll
+from finance.permissions import PayrollPermission
 from finance.serializers import PayRollSerializer
 from finance.utils import normalize_header
-from employees.models import Employee
-import pandas as pd
-from django.template.loader import render_to_string
 from user.tasks import send_email
 
 
