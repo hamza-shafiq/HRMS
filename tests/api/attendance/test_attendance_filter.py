@@ -16,7 +16,7 @@ def test_filter_attendance(admin_factory, attendance_factory, employee_factory, 
     # + "?employee_id={}&date={}".format(attendance.employee.id, date))
     response = client.get(reverse('attendance-list') + "?date={}".format(date))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]['employee'] == str(attendance.employee.id)
+    assert response.json()['results'][0]['employee'] == str(attendance.employee.id)
 
 
 def test_filter_attendance_invalid_format(admin_factory, employee_factory, authed_token_client_generator):

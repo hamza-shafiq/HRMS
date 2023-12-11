@@ -35,7 +35,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
     )
     password = serializers.CharField(
         max_length=68, min_length=6, write_only=True)
-    username = serializers.CharField(required=True, write_only=True)
+    username = serializers.CharField(required=True)
     employee_name = serializers.ReadOnlyField(source='get_full_name')
 
     class Meta:
@@ -43,7 +43,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = ['id', 'employee_name', 'assets', 'username', 'email', 'password', 'first_name', 'last_name',
                   'phone_number', 'national_id_number', 'emergency_contact_number', 'gender', 'department',
                   'designation', 'bank', 'account_number', 'profile_pic', 'joining_date', 'employee_status',
-                  'is_verified', 'is_active']
+                  'is_verified', 'is_active', 'total_leaves', 'remaining_leaves']
 
     def create(self, validated_data):
         email = validated_data.get('email')
@@ -52,10 +52,13 @@ class EmployeeSerializer(serializers.ModelSerializer):
         try:
             user = User.all_objects.get(email=email, is_deleted=True)
             if user:
-                user.reactivate_user()
+                user.reactivate_user(password=validated_data.get('password'))
                 user = Employee.objects.get(email=email)
                 return user
         except User.DoesNotExist:
+            total_leaves = validated_data.get('total_leaves')
+            if total_leaves:
+                validated_data['remaining_leaves'] = total_leaves
             return Employee.objects.create(**validated_data)
 
     def to_representation(self, instance):
@@ -69,6 +72,10 @@ class EmployeeSerializer(serializers.ModelSerializer):
         ret['department_id'] = str(instance.department_id)
         ret['department'] = str(instance.department)
         ret['leaves'] = leave_dict
+        leave_dict['total_leaves'] = instance.total_leaves
+        leave_dict['remaining_leaves'] = instance.remaining_leaves
+        if not instance.remaining_leaves or instance.remaining_leaves > instance.total_leaves:
+            leave_dict['remaining_leaves'] = instance.total_leaves
         return ret
 
     @staticmethod
@@ -77,8 +84,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
         for leave_data in leave.data:
             leave_type = leave_data['leave_type']
             number_of_days = leave_data['number_of_days']
-            leaves['total_leaves'] = "20"
-            leaves['remaining_leaves'] = leave_data['remaining_leaves']
             leaves[leave_type] += int(number_of_days)
         return leaves
 
@@ -88,12 +93,12 @@ class EmployeeSerializer(serializers.ModelSerializer):
                          ' Here is your password for HRMS Portal \n' + value
             data = {'email_body': email_body, 'to_email': self.initial_data['email'],
                     'email_subject': 'Password'}
-            # generate_and_send_employee_credentials(data)
             send_email.delay(data)
             return make_password(value)
         return value
 
     def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("Username already exists.")
+        if 'request' in self.context and self.context['request'].method == 'POST':
+            if User.objects.filter(username=value).exists():
+                raise serializers.ValidationError("Username already exists.")
         return value

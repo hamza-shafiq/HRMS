@@ -12,7 +12,7 @@ psycopg2-binary==2.9.3
 PyJWT==2.5.0
 python-environ==0.4.54
 pytz==2022.5
-PyYAML==6.0
+#PyYAML==6.0
 redis==4.3.4
 celery==5.2.7
 rest-framework-roles==0.4.1
@@ -29,6 +29,5 @@ tox==3.26.0
 coverage==6.5.0
 django-cors-headers==3.13.0
 django-model-utils==4.3.1
-pandas==2.0.3
+pandas
 openpyxl==3.1.2
-

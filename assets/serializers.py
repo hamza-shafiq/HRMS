@@ -7,6 +7,7 @@ from employees.models import Employee
 
 class AssetSerializer(serializers.HyperlinkedModelSerializer):
     assignee = serializers.CharField(required=False, allow_null=True)
+    id = serializers.CharField(read_only=True)
 
     class Meta:
         model = Asset

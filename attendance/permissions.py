@@ -27,4 +27,6 @@ class LeavesPermission(BaseCustomPermission):
         if view.action == 'partial_update':
             if user_role == UserRoles.EMPLOYEE:
                 return True
+        if view.action == 'destroy':
+            return True
         return super().has_permission(request, view)
