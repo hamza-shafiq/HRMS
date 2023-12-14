@@ -29,7 +29,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        attendance = Attendance.objects.filter(employee=user.id).order_by('-check_in__date')
+        attendance = Attendance.objects.filter(employee=user.id).order_by('-check_in')
         if attendance:
             serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -135,13 +135,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 if date:
                     datetime.strptime(date, '%Y-%m-%d')
                     record = Attendance.objects.filter(check_in__date=date,
-                                                       is_deleted=False).order_by('-check_in__date')
+                                                       is_deleted=False).order_by('-check_in')
                 if emp_id:
                     if date:
-                        record = record.filter(employee_id=emp_id).order_by('-check_in__date')
+                        record = record.filter(employee_id=emp_id).order_by('-check_in')
                     else:
                         record = Attendance.objects.filter(employee_id=emp_id,
-                                                           is_deleted=False).order_by('-check_in__date')
+                                                           is_deleted=False).order_by('-check_in')
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             except ValueError:
@@ -152,8 +152,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return self.get_paginated_response(serializer.data)
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-
-        queryset = Attendance.objects.all().order_by('-check_in__date')
+        queryset = Attendance.objects.all().order_by('-check_in')
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = AttendanceSerializer(queryset, many=True)
