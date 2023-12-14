@@ -71,4 +71,5 @@ class LeaveSerializer(serializers.ModelSerializer):
         difference = self.difference_date(str(instance.from_date), str(instance.to_date))
         ret['number_of_days'] = str(difference + 1)
         ret['remaining_leaves'] = str(instance.employee.remaining_leaves)
+        ret['extra_leaves'] = str(instance.employee.extra_leaves)
         return ret
