@@ -12,4 +12,6 @@ class PayRollSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         ret = super(PayRollSerializer, self).to_representation(instance)
         ret['employee_name'] = str(instance.employee.get_full_name)
+        ret['employee_status'] = str(instance.employee.employee_status)
+        ret['employee_designation'] = str(instance.employee.designation)
         return ret
