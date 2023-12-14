@@ -57,17 +57,15 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @staticmethod
     def working_days():
 
-        date = datetime.now()
+        today = datetime.now()
 
-        next_month = date.replace(day=28) + timedelta(days=4)
-        res = next_month - timedelta(days=next_month.day)
-        test_date1, test_date2 = datetime(date.year, date.month, 1), datetime(date.year, date.month, res.day)
+        first_day_of_month = datetime(today.year, today.month, 1)
 
-        dates = (test_date1 + timedelta(idx + 1)
-                 for idx in range((test_date2 - test_date1).days))
+        dates = (first_day_of_month + timedelta(idx) for idx in range((today - first_day_of_month).days + 1))
 
-        res = sum(1 for day in dates if day.weekday() < 5)
-        return res
+        working_days_count = sum(1 for day in dates if day.weekday() < 5)
+
+        return working_days_count
 
     @action(detail=False, url_path="employee_dashboard", methods=['get'])
     def employee_dashboard(self, request):
