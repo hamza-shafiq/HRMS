@@ -102,7 +102,7 @@ class PayRollViewSet(viewsets.ModelViewSet):
         month = request.data.get('month', None)
         year = request.data.get('year', None)
         payroll = Payroll.objects.get(id=instance_id)
-        employee = Employee.objects.filter(id=employee_id).values_list('id', 'first_name', 'last_name',  'email')
+        employee = Employee.objects.filter(id=employee_id).values_list('id', 'first_name', 'last_name', 'email')
         emp_dt = {str(emp[0]): [f'{emp[1]} {emp[2]}', emp[3]] for emp in employee}
         data = {
             'to_email': emp_dt[employee_id][1],
