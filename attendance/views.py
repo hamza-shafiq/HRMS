@@ -152,7 +152,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return self.get_paginated_response(serializer.data)
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        queryset = Attendance.objects.all().order_by('-check_in__date')
+        queryset = Attendance.objects.all().order_by('-check_in')
 
         page = self.paginate_queryset(queryset)
         if page is not None:
