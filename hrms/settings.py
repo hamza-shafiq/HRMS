@@ -15,6 +15,9 @@ from pathlib import Path
 
 import environ
 
+from datetime import timedelta
+from django.utils import timezone
+
 env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -116,9 +119,14 @@ SPECTACULAR_SETTINGS = {
     # OTHER SETTINGS
 }
 
+# token expire after 3AM
+now = timezone.now()
+three_am = now.replace(hour=3, minute=0, second=0, microsecond=0)
+time_difference = three_am - now
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
-    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': time_difference,
+    'REFRESH_TOKEN_LIFETIME': time_difference,
 }
 
 WSGI_APPLICATION = 'hrms.wsgi.application'
