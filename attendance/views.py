@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
+from hrms.pagination import CustomPageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -21,7 +21,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, AttendancePermission]
     queryset = Attendance.objects.all()
     serializer_class = AttendanceSerializer
-    pagination_class = LimitOffsetPagination
+    pagination_class = CustomPageNumberPagination
 
     @action(detail=False, url_name="get-attendance", methods=['Get'])
     def get_attendance(self, request):
@@ -152,11 +152,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return self.get_paginated_response(serializer.data)
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        queryset = Attendance.objects.all().order_by('-check_in__date')
+        queryset = Attendance.objects.all().order_by('-check_in')
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = AttendanceSerializer(queryset, many=True)
+            serializer = AttendanceSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = AttendanceSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
