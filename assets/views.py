@@ -6,6 +6,7 @@ from assets.filters import AssetFilter
 from assets.models import Asset, AssignedAsset
 from assets.permissions import AssetsPermission
 from assets.serializers import AssetSerializer, AssignedAssetSerializer
+from hrms.pagination import CustomPageNumberPagination
 
 
 class AssetViewSet(viewsets.ModelViewSet):
@@ -14,6 +15,7 @@ class AssetViewSet(viewsets.ModelViewSet):
     serializer_class = AssetSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = AssetFilter
+    pagination_class = CustomPageNumberPagination
 
 
 class AssignedAssetViewSet(viewsets.ModelViewSet):
