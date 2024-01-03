@@ -10,7 +10,7 @@ from attendance.models import Attendance, Leaves
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ["id", "employee", "check_in", "check_out", "status"]
+        fields = ["id", "employee", "check_in", "check_out", "total_time", "status"]
 
     def to_representation(self, instance):
         ret = super(AttendanceSerializer, self).to_representation(instance)
@@ -32,6 +32,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             ret['check_out_date'] = dt.date()
 
             ret['check out time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
+            ret['total_time'] = str(str(instance.total_time))
         return ret
 
 

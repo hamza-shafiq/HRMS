@@ -16,6 +16,7 @@ class Attendance(BaseModel):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendance')
     check_in = models.DateTimeField(null=True, blank=True)
     check_out = models.DateTimeField(null=True, blank=True)
+    total_time = models.CharField(max_length=50, null=True)
     status = models.CharField(max_length=50, choices=STATUS_CHOICE)
 
     class Meta:
