@@ -2,11 +2,11 @@ from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from hrms.pagination import CustomPageNumberPagination
 from recruitments.models import Recruits
 
 from .permissions import RecruitsPermission
 from .serializers import RecruitsSerializer
-from hrms.pagination import CustomPageNumberPagination
 
 
 class RecruitsViewSet(viewsets.ModelViewSet):

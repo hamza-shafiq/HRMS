@@ -11,9 +11,9 @@ from rest_framework.response import Response
 
 from employees.models import Department, Employee
 from employees.permissions import DepartmentPermission, EmployeePermission
+from hrms.pagination import CustomPageNumberPagination
 
 from .serializers import DepartmentSerializer, EmployeeSerializer
-from hrms.pagination import CustomPageNumberPagination
 
 
 class EmployeeFilter(django_filters.FilterSet):
@@ -54,7 +54,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     @action(detail=False, url_path="unique-values", methods=['get'])
     def get(self, request, *args, **kwargs):
         # Get unique values of the specific column
-        unique_values = Department.objects.values_list('id','department_name')
+        unique_values = Department.objects.values_list('id', 'department_name')
 
         # Convert the queryset to a list
         unique_values_list = [{'id': item[0], 'department_name': item[1]} for item in unique_values]

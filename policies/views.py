@@ -2,12 +2,11 @@ from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from hrms.pagination import CustomPageNumberPagination
 from policies.models import Policies
 
 from .permissions import PolicyPermission
 from .serializers import PolicySerializer
-
-from hrms.pagination import CustomPageNumberPagination
 
 
 class PoliciesViewSet(viewsets.ModelViewSet):

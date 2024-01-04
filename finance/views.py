@@ -11,8 +11,8 @@ from finance.models import Payroll
 from finance.permissions import PayrollPermission
 from finance.serializers import PayRollSerializer
 from finance.utils import normalize_header
-from user.tasks import send_email
 from hrms.pagination import CustomPageNumberPagination
+from user.tasks import send_email
 
 
 class PayRollViewSet(viewsets.ModelViewSet):
