@@ -68,7 +68,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     sessions[-1]['end_time'] = str(current_datetime)
                 else:
                     return JsonResponse({"detail": "Session Not found!"}, status=status.HTTP_400_BAD_REQUEST)
-
+                total_time = request.data.get("total_time")
+                record.total_time = total_time
                 record.check_out = current_datetime
                 record.save()
                 return JsonResponse({"success": "Employee checked-out successfully!"}, status=status.HTTP_200_OK)
