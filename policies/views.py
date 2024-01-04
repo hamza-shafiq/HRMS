@@ -7,6 +7,8 @@ from policies.models import Policies
 from .permissions import PolicyPermission
 from .serializers import PolicySerializer
 
+from hrms.pagination import CustomPageNumberPagination
+
 
 class PoliciesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, PolicyPermission]
@@ -14,3 +16,4 @@ class PoliciesViewSet(viewsets.ModelViewSet):
     serializer_class = PolicySerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['file_name']
+    pagination_class = CustomPageNumberPagination

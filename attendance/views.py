@@ -171,6 +171,10 @@ class LeavesFilter(django_filters.FilterSet):
         method='filter_approved_by',
     )
 
+    employee_id = filters.CharFilter(
+        method='filter_employee_id'
+    )
+
     class Meta:
         model = Leaves
         fields = ['employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status',
@@ -182,6 +186,9 @@ class LeavesFilter(django_filters.FilterSet):
     def filter_approved_by(self, queryset, name, value):
         return queryset.filter(approved_by__id=value)
 
+    def filter_employee_id(self, queryset, name, value):
+        return queryset.filter(employee__id=value)
+
 
 class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
@@ -189,6 +196,7 @@ class LeavesViewSet(viewsets.ModelViewSet):
     serializer_class = LeaveSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = LeavesFilter
+    pagination_class = CustomPageNumberPagination
 
     @staticmethod
     def remaining_leaves_per_month(user_id, request):

@@ -6,6 +6,7 @@ from recruitments.models import Recruits
 
 from .permissions import RecruitsPermission
 from .serializers import RecruitsSerializer
+from hrms.pagination import CustomPageNumberPagination
 
 
 class RecruitsViewSet(viewsets.ModelViewSet):
@@ -14,3 +15,4 @@ class RecruitsViewSet(viewsets.ModelViewSet):
     serializer_class = RecruitsSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['position', 'status']
+    pagination_class = CustomPageNumberPagination

@@ -12,6 +12,7 @@ from finance.permissions import PayrollPermission
 from finance.serializers import PayRollSerializer
 from finance.utils import normalize_header
 from user.tasks import send_email
+from hrms.pagination import CustomPageNumberPagination
 
 
 class PayRollViewSet(viewsets.ModelViewSet):
@@ -19,6 +20,7 @@ class PayRollViewSet(viewsets.ModelViewSet):
     queryset = Payroll.objects.all().order_by('-created')
     serializer_class = PayRollSerializer
     filter_backends = (filters.DjangoFilterBackend,)
+    pagination_class = CustomPageNumberPagination
 
     filterset_fields = ['employee', 'month', 'year']
 
