@@ -30,9 +30,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             'request': request,
         }
         attendance = Attendance.objects.filter(employee=user.id).order_by('-check_in')
+
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(attendance, request)
         if attendance:
-            serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = AttendanceSerializer(result_page, many=True, context=serializer_context)
+            return paginator.get_paginated_response(serializer.data)
         return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, url_path="mark-attendance", methods=['post'])
@@ -229,9 +232,11 @@ class LeavesViewSet(viewsets.ModelViewSet):
         }
         leaves = Leaves.objects.filter(employee=user.id).order_by('-created')
         count = self.remaining_leaves_per_month(user.id, request)
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(leaves, request)
         if leaves:
-            serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
-            return Response(({"data": serializer.data, "count": count}), status=status.HTTP_200_OK)
+            serializer = LeaveSerializer(result_page, many=True, context=serializer_context)
+            return paginator.get_paginated_response(({"data": serializer.data, "count": count}))
         return Response(({"count": count}), status=status.HTTP_200_OK)
 
     @action(detail=True, url_name="approve", methods=['PATCH'])

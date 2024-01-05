@@ -31,9 +31,12 @@ class PayRollViewSet(viewsets.ModelViewSet):
             'request': request,
         }
         payroll = Payroll.objects.filter(employee=user.id, is_deleted=False).order_by('-created')
+
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(payroll, request)
         if payroll:
-            serializer = PayRollSerializer(payroll, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = PayRollSerializer(result_page, many=True, context=serializer_context)
+            return paginator.get_paginated_response(serializer.data)
         return JsonResponse({'detail': 'No payroll is created for you yet'}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, url_name="import-payrolls-data", methods=['Post'])
