@@ -11,6 +11,7 @@ from rest_framework.response import Response
 
 from employees.models import Department, Employee
 from employees.permissions import DepartmentPermission, EmployeePermission
+from hrms.pagination import CustomPageNumberPagination
 
 from .serializers import DepartmentSerializer, EmployeeSerializer
 
@@ -48,6 +49,17 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, DepartmentPermission]
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    pagination_class = CustomPageNumberPagination
+
+    @action(detail=False, url_path="unique-values", methods=['get'])
+    def get(self, request, *args, **kwargs):
+        # Get unique values of the specific column
+        unique_values = Department.objects.values_list('id', 'department_name')
+
+        # Convert the queryset to a list
+        unique_values_list = [{'id': item[0], 'department_name': item[1]} for item in unique_values]
+
+        return JsonResponse({'unique_values': unique_values_list})
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
@@ -56,6 +68,18 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = EmployeeFilter
     serializer_class = EmployeeSerializer
+    pagination_class = CustomPageNumberPagination
+
+    @action(detail=False, url_path="unique-values", methods=['get'])
+    def get(self, request, *args, **kwargs):
+        # Get unique values of the specific column
+        employees = Employee.objects.all()
+
+        # Create a list of dictionaries with 'id' and 'employee_name'
+        serializer = EmployeeSerializer(employees, many=True, context={'request': request})
+        unique_values_list = [{'id': item['id'], 'name': item.get('employee_name')} for item in serializer.data]
+
+        return JsonResponse({'unique_values': unique_values_list})
 
     @action(detail=False, url_path="get_employee", methods=['get'])
     def employee_detail(self, request):

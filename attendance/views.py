@@ -7,7 +7,6 @@ from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from hrms.pagination import CustomPageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -15,6 +14,7 @@ from attendance.models import Attendance, Leaves
 from attendance.permissions import AttendancePermission, LeavesPermission
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
 from employees.models import Employee
+from hrms.pagination import CustomPageNumberPagination
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -30,9 +30,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             'request': request,
         }
         attendance = Attendance.objects.filter(employee=user.id).order_by('-check_in')
+
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(attendance, request)
         if attendance:
-            serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = AttendanceSerializer(result_page, many=True, context=serializer_context)
+            return paginator.get_paginated_response(serializer.data)
         return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, url_path="mark-attendance", methods=['post'])
@@ -172,6 +175,10 @@ class LeavesFilter(django_filters.FilterSet):
         method='filter_approved_by',
     )
 
+    employee_id = filters.CharFilter(
+        method='filter_employee_id'
+    )
+
     class Meta:
         model = Leaves
         fields = ['employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status',
@@ -183,6 +190,9 @@ class LeavesFilter(django_filters.FilterSet):
     def filter_approved_by(self, queryset, name, value):
         return queryset.filter(approved_by__id=value)
 
+    def filter_employee_id(self, queryset, name, value):
+        return queryset.filter(employee__id=value)
+
 
 class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
@@ -190,6 +200,7 @@ class LeavesViewSet(viewsets.ModelViewSet):
     serializer_class = LeaveSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = LeavesFilter
+    pagination_class = CustomPageNumberPagination
 
     @staticmethod
     def remaining_leaves_per_month(user_id, request):
@@ -222,9 +233,11 @@ class LeavesViewSet(viewsets.ModelViewSet):
         }
         leaves = Leaves.objects.filter(employee=user.id).order_by('-created')
         count = self.remaining_leaves_per_month(user.id, request)
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(leaves, request)
         if leaves:
-            serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
-            return Response(({"data": serializer.data, "count": count}), status=status.HTTP_200_OK)
+            serializer = LeaveSerializer(result_page, many=True, context=serializer_context)
+            return paginator.get_paginated_response(({"data": serializer.data, "count": count}))
         return Response(({"count": count}), status=status.HTTP_200_OK)
 
     @action(detail=True, url_name="approve", methods=['PATCH'])
