@@ -65,6 +65,8 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 class EmployeeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, EmployeePermission]
     queryset = Employee.objects.all()
+    queryset = queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name'))
+    queryset = queryset.order_by('full_name')
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = EmployeeFilter
     serializer_class = EmployeeSerializer
