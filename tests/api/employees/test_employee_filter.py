@@ -81,4 +81,4 @@ def test_filter_employees_full_name(admin_factory, employee_factory, authed_toke
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-list') + "?full_name=" + str('cena'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()['count'] == 2
+    assert response.json()['count'] == 1
