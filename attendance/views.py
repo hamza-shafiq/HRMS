@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from django.db.models import Q
 import django_filters
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -141,10 +141,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     record = Attendance.objects.filter(check_in__date=date,
                                                        is_deleted=False).order_by('-check_in')
                 if emp_id:
+                    queryset = Q(employee__first_name__istartswith=emp_id)
                     if date:
-                        record = record.filter(employee_id=emp_id).order_by('-check_in')
+                        record = record.filter(queryset).order_by('-check_in')
                     else:
-                        record = Attendance.objects.filter(employee_id=emp_id,
+                        record = Attendance.objects.filter(queryset,
                                                            is_deleted=False).order_by('-check_in')
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
@@ -191,7 +192,7 @@ class LeavesFilter(django_filters.FilterSet):
         return queryset.filter(approved_by__id=value)
 
     def filter_employee_id(self, queryset, name, value):
-        return queryset.filter(employee__id=value)
+        return queryset.filter(employee__first_name__istartswith=value)
 
 
 class LeavesViewSet(viewsets.ModelViewSet):

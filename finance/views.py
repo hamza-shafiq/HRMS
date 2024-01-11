@@ -22,7 +22,11 @@ class PayRollViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     pagination_class = CustomPageNumberPagination
 
-    filterset_fields = ['employee', 'month', 'year']
+    filterset_fields = {
+        'employee__first_name': ['istartswith', 'iexact'],
+        'month': ['exact'],
+        'year': ['exact'],
+    }
 
     @action(detail=False, url_name="check_payroll", methods=['Get'])
     def check_payroll(self, request):
