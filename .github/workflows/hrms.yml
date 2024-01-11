@@ -47,7 +47,7 @@ jobs:
     needs: build-test
     name: Deploy to server
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'pull_request'
     steps:
       - name: executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master
