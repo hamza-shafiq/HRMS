@@ -243,18 +243,24 @@ class LeavesViewSet(viewsets.ModelViewSet):
     @action(detail=True, url_name="approve", methods=['PATCH'])
     def approve(self, request, pk):
         leave = self.get_object()
-        if leave.status == 'PENDING':
+        if 'status' in request.data:
             leave.status = request.data['status']
-            leave.approved_by = request.user.employee
-            leave.save()
-            return Response(
-                status=status.HTTP_200_OK,
-                data=LeaveSerializer(leave, context=self.get_serializer_context()).data)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={f'The Leave status is already {leave.status}'})
+            if leave.status == 'PENDING':
+                leave.approved_by = None
+            else:
+                leave.approved_by = request.user.employee
+        if 'to_date' in request.data:
+            leave.to_date = request.data['to_date']
+        if 'from_date' in request.data:
+            leave.from_date = request.data['from_date']
+        leave.save()
+        return Response(
+            status=status.HTTP_200_OK,
+            data=LeaveSerializer(leave, context=self.get_serializer_context()).data)
 
     def destroy(self, request, *args, **kwargs):
         leave = self.get_object()
         if leave.status != 'PENDING':
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={f'Cannot delete Leave with status {leave.status}'})
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data={f'Cannot delete Leave with status {leave.status}'})
         return super(LeavesViewSet, self).destroy(request, *args, **kwargs)
