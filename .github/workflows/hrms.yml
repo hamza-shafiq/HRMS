@@ -57,4 +57,4 @@ jobs:
           key: ${{ secrets.SERVER_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            ~/home/ubuntu/deploy.sh
+            ~/deploy.sh
