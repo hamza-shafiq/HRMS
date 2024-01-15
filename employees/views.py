@@ -14,6 +14,7 @@ from employees.permissions import DepartmentPermission, EmployeePermission
 from hrms.pagination import CustomPageNumberPagination
 
 from .serializers import DepartmentSerializer, EmployeeSerializer
+from django.db.models import Q
 
 
 class EmployeeFilter(django_filters.FilterSet):

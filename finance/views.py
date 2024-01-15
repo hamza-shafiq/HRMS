@@ -47,7 +47,6 @@ class PayrollFilter(django_filters.FilterSet):
                 filter(full_name__icontains=value))
 
 
-
 class PayRollViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, PayrollPermission]
     queryset = Payroll.objects.all().order_by('-created')
