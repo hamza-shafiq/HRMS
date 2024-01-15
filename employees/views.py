@@ -1,7 +1,6 @@
 import django_filters
 from django.core.exceptions import ValidationError
-from django.db.models import Value as V
-from django.db.models.functions import Concat
+from django.db.models.functions import Lower
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
@@ -64,9 +63,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 class EmployeeViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, EmployeePermission]
-    queryset = Employee.objects.all()
-    queryset = queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name'))
-    queryset = queryset.order_by('full_name')
+    queryset = Employee.objects.all().order_by(Lower('first_name'))
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = EmployeeFilter
     serializer_class = EmployeeSerializer
