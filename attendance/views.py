@@ -141,7 +141,7 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     record = Attendance.objects.filter(check_in__date=date,
                                                        is_deleted=False).order_by('-check_in')
                 if emp_id:
-                    queryset = Q(employee__first_name__istartswith=emp_id)
+                    queryset = (Q(employee__first_name__istartswith=emp_id) | Q(employee__last_name__istartswith=emp_id))
                     if date:
                         record = record.filter(queryset).order_by('-check_in')
                     else:
@@ -192,7 +192,7 @@ class LeavesFilter(django_filters.FilterSet):
         return queryset.filter(approved_by__id=value)
 
     def filter_employee_id(self, queryset, name, value):
-        return queryset.filter(employee__first_name__istartswith=value)
+        return queryset.filter(Q(employee__first_name__istartswith=value) | Q(employee__last_name__istartswith=value))
 
 
 class LeavesViewSet(viewsets.ModelViewSet):
