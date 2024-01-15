@@ -1,6 +1,7 @@
 import django_filters
 import pandas as pd
-from django.db.models import Q
+from django.db.models import Value as V
+from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
@@ -42,7 +43,8 @@ class PayrollFilter(django_filters.FilterSet):
         return queryset.filter(month=value)
 
     def filter_employee_id(self, queryset, name, value):
-        return queryset.filter(Q(employee__first_name__istartswith=value) | Q(employee__last_name__istartswith=value))
+        return (queryset.annotate(full_name=Concat('employee__first_name', V(' '), 'employee__last_name')).
+                filter(full_name__icontains=value))
 
 
 class PayRollViewSet(viewsets.ModelViewSet):

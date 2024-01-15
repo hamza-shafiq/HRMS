@@ -17,7 +17,8 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
                                    str(instance.employee.last_name).capitalize())
         dt = datetime.strptime(str(instance.check_in), settings.DATETIME_FORMAT)
-        ret['time_check_in'] = str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" + str(dt.second).zfill(2)
+        ret['time_check_in'] = (str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" +
+                                str(dt.second).zfill(2))
         ret['check_in_date'] = dt.date()
 
         ret['check in time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)

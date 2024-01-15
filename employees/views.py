@@ -13,7 +13,6 @@ from employees.permissions import DepartmentPermission, EmployeePermission
 from hrms.pagination import CustomPageNumberPagination
 
 from .serializers import DepartmentSerializer, EmployeeSerializer
-from django.db.models import Q
 
 
 class EmployeeFilter(django_filters.FilterSet):
@@ -35,7 +34,8 @@ class EmployeeFilter(django_filters.FilterSet):
                   'gender', 'department', 'designation', 'joining_date', 'employee_status', 'full_name']
 
     def filter_employee_name(self, queryset, name, value):
-        return (queryset.filter(Q(first_name__istartswith=value) | Q(last_name__istartswith=value)))
+        return (queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name')).
+                filter(full_name__icontains=value))
 
     def filter_employee_status(self, queryset, name, value):
         return queryset.filter(employee_status=value)
