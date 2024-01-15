@@ -1,4 +1,6 @@
+import django_filters
 import pandas as pd
+from django.db.models import Q
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
@@ -15,18 +17,41 @@ from hrms.pagination import CustomPageNumberPagination
 from user.tasks import send_email
 
 
+class PayrollFilter(django_filters.FilterSet):
+    employee = filters.CharFilter(
+        method='filter_employee_id',
+    )
+
+    year = filters.CharFilter(
+        method='filter_year',
+    )
+
+    month = filters.CharFilter(
+        method='filter_month'
+    )
+
+    class Meta:
+        model = Payroll
+        fields = ["id", "basic_salary", "bonus", "reimbursement", "travel_allowance", "tax_deduction",
+                  "month", "year", "released", "employee"]
+
+    def filter_year(self, queryset, name, value):
+        return queryset.filter(year=value)
+
+    def filter_month(self, queryset, name, value):
+        return queryset.filter(month=value)
+
+    def filter_employee_id(self, queryset, name, value):
+        return queryset.filter(Q(employee__first_name__istartswith=value) | Q(employee__last_name__istartswith=value))
+
+
 class PayRollViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, PayrollPermission]
     queryset = Payroll.objects.all().order_by('-created')
     serializer_class = PayRollSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     pagination_class = CustomPageNumberPagination
-
-    filterset_fields = {
-        'employee__first_name': ['istartswith', 'iexact'],
-        'month': ['exact'],
-        'year': ['exact'],
-    }
+    filterset_class = PayrollFilter
 
     @action(detail=False, url_name="check_payroll", methods=['Get'])
     def check_payroll(self, request):
