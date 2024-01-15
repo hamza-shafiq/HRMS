@@ -2,7 +2,7 @@ from django.db import models
 from model_utils import FieldTracker
 
 from employees.models import Employee
-from user.models import BaseModel, User
+from user.models import BaseModel
 
 
 class Attendance(BaseModel):
@@ -50,7 +50,6 @@ class Leaves(BaseModel):
     status = models.CharField(default='PENDING', max_length=50, choices=STATUS_CHOICE)
     approved_by = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, related_name="approved_by")
     tracker = FieldTracker(fields=['status'])
-
 
     class Meta:
         db_table = "leaves"

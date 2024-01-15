@@ -1,8 +1,11 @@
 from datetime import datetime
-from django.db.models import Q
+
 import django_filters
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models import CharField
+from django.db.models import Value as V
+from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
@@ -134,19 +137,17 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')
         emp_id = self.request.query_params.get('employee_id')
+        queryset = Attendance.objects.all().order_by('-check_in')
         if date or emp_id:
             try:
                 if date:
                     datetime.strptime(date, '%Y-%m-%d')
-                    record = Attendance.objects.filter(check_in__date=date,
-                                                       is_deleted=False).order_by('-check_in')
+                    record = queryset.filter(check_in__date=date, is_deleted=False)
                 if emp_id:
-                    queryset = (Q(employee__first_name__istartswith=emp_id) | Q(employee__last_name__istartswith=emp_id))
-                    if date:
-                        record = record.filter(queryset).order_by('-check_in')
-                    else:
-                        record = Attendance.objects.filter(queryset,
-                                                           is_deleted=False).order_by('-check_in')
+                    record = record.annotate(
+                        full_name=Concat('employee__first_name', V(' '), 'employee__last_name',
+                                         output_field=CharField())
+                    ).filter(full_name__icontains=emp_id)
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             except ValueError:
@@ -192,7 +193,8 @@ class LeavesFilter(django_filters.FilterSet):
         return queryset.filter(approved_by__id=value)
 
     def filter_employee_id(self, queryset, name, value):
-        return queryset.filter(Q(employee__first_name__istartswith=value) | Q(employee__last_name__istartswith=value))
+        return (queryset.annotate(full_name=Concat('employee__first_name', V(' '), 'employee__last_name')).
+                filter(full_name__icontains=value))
 
 
 class LeavesViewSet(viewsets.ModelViewSet):
