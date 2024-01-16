@@ -49,8 +49,8 @@ jobs:
     name: Deploy to server
     runs-on: ubuntu-latest
     if: |
-      github.event_name != 'pull_request' &&
-      github.event.pull_request.base.ref == 'staging'
+      (github.event_name == 'push' && github.ref == 'refs/heads/staging') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'staging')
     steps:
       - name: executing remote ssh commands using ssh key
         uses: appleboy/ssh-action@master
