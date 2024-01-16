@@ -21,7 +21,7 @@ class Asset(BaseTitleDescriptionModel):
     asset_model = models.CharField(max_length=50)
     asset_type = models.CharField(max_length=50)
     cost = models.FloatField()
-    asset_image = models.FileField(upload_to='asset', verbose_name='asset img', default="null")
+    asset_image = models.FileField(upload_to='asset', verbose_name='asset img', blank=True, null=True)
     status = models.CharField(max_length=20, choices=AssetStatus.ASSET_STATUS, default=AssetStatus.UNASSIGNED)
 
     objects = AssetQuerySet()

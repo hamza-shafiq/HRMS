@@ -21,9 +21,8 @@ def update_employee_leaves(sender, instance, created, **kwargs):
         applied_leaves = difference_date(str(instance.from_date), str(instance.to_date))
         if remaining_leaves > 0:
             remaining_leaves = remaining_leaves - applied_leaves
-            instance.employee.remaining_leaves = remaining_leaves -1
+            instance.employee.remaining_leaves = remaining_leaves - 1
         else:
             extra_leaves = instance.employee.extra_leaves
             instance.employee.extra_leaves = extra_leaves + applied_leaves + 1
         instance.employee.save()
-

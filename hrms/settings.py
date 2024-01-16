@@ -11,11 +11,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 import datetime
 import os
+from datetime import timedelta
 from pathlib import Path
 
 import environ
-
-from datetime import timedelta
 from django.utils import timezone
 
 env = environ.Env()
@@ -107,8 +106,8 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100
+    'DEFAULT_PAGINATION_CLASS': 'hrms.pagination.CustomPageNumberPagination',
+    'PAGE_SIZE': 20
 }
 
 SPECTACULAR_SETTINGS = {

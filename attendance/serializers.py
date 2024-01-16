@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -10,12 +9,13 @@ from attendance.models import Attendance, Leaves
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ["id", "employee", "check_in", "check_out", "status"]
+        fields = ["id", "employee", "check_in", "check_out", "total_time", "status"]
 
     def to_representation(self, instance):
         ret = super(AttendanceSerializer, self).to_representation(instance)
         ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
                                    str(instance.employee.last_name).capitalize())
+
         # Check-in time
         dt_check_in = instance.check_in
         ret['time_check_in'] = dt_check_in.strftime('%H:%M:%S')
