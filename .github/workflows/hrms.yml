@@ -43,6 +43,7 @@ jobs:
         SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       run: pytest
 
+
   deploy:
     needs: build-test
     name: Deploy to server
