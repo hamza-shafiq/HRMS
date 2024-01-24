@@ -29,10 +29,14 @@ class EmployeeFilter(django_filters.FilterSet):
         method='filter_employee_name',
     )
 
+    team_lead = filters.CharFilter(
+        method='filter_team_lead'
+    )
+
     class Meta:
         model = Employee
         fields = ['first_name', 'last_name', 'phone_number', 'national_id_number',
-                  'gender', 'department', 'designation', 'joining_date', 'employee_status', 'full_name']
+                  'gender', 'department', 'designation', 'joining_date', 'employee_status', 'full_name', 'team_lead_id']
 
     def filter_employee_name(self, queryset, name, value):
         return (queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name')).
@@ -43,6 +47,9 @@ class EmployeeFilter(django_filters.FilterSet):
 
     def filter_by_department(self, queryset, name, value):
         return queryset.filter(department__id=value)
+
+    def filter_team_lead(self, queryset, name, value):
+        return queryset.filter(team_lead_id=value)
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
@@ -72,14 +79,26 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, url_path="unique-values", methods=['get'])
     def get(self, request, *args, **kwargs):
-        # Get unique values of the specific column
-        employees = Employee.objects.all()
+        emp_id = self.request.query_params.get('team_lead')
+        if emp_id:
+            try:
+                employees = Employee.objects.filter(team_lead_id=emp_id)
+            except ValidationError:
+                return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            employees = Employee.objects.all()
 
         # Create a list of dictionaries with 'id' and 'employee_name'
         serializer = EmployeeSerializer(employees, many=True, context={'request': request})
         unique_values_list = [{'id': item['id'], 'name': item.get('employee_name')} for item in serializer.data]
 
         return JsonResponse({'unique_values': unique_values_list})
+
+    @action(detail=False, url_path="team_leads", methods=['get'])
+    def get_team_leads(self, request, *args, **kwargs):
+        team_lead_employees = Employee.objects.filter(is_team_lead=True)
+        serializer = EmployeeSerializer(team_lead_employees, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, url_path="get_employee", methods=['get'])
     def employee_detail(self, request):

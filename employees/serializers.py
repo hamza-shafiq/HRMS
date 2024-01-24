@@ -37,13 +37,15 @@ class EmployeeSerializer(serializers.ModelSerializer):
         max_length=68, min_length=6, write_only=True)
     username = serializers.CharField(required=True)
     employee_name = serializers.ReadOnlyField(source='get_full_name')
+    team_lead_id = serializers.ReadOnlyField(source='get_team_lead_id')
+    team_lead_name = serializers.ReadOnlyField(source='get_team_lead_name')
 
     class Meta:
         model = Employee
         fields = ['id', 'employee_name', 'assets', 'username', 'email', 'password', 'first_name', 'last_name',
                   'phone_number', 'national_id_number', 'emergency_contact_number', 'gender', 'department',
                   'designation', 'bank', 'account_number', 'profile_pic', 'joining_date', 'employee_status',
-                  'is_verified', 'is_active', 'total_leaves', 'remaining_leaves']
+                  'is_verified', 'is_active', 'total_leaves', 'remaining_leaves', 'team_lead_id', 'team_lead_name']
 
     def create(self, validated_data):
         email = validated_data.get('email')

@@ -137,7 +137,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')
         emp_id = self.request.query_params.get('employee_id')
+        team_lead = self.request.query_params.get('team_lead')
         queryset = Attendance.objects.all().order_by('-check_in')
+        if team_lead:
+            try:
+                queryset = Attendance.objects.filter(employee__team_lead_id=team_lead).order_by('-check_in')
+            except ValueError:
+                return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
         if date or emp_id:
             try:
                 if date:
@@ -158,7 +164,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return self.get_paginated_response(serializer.data)
             serializer = AttendanceSerializer(record, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        queryset = Attendance.objects.all().order_by('-check_in')
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -181,6 +186,10 @@ class LeavesFilter(django_filters.FilterSet):
         method='filter_employee_id'
     )
 
+    employee__team_lead_id = filters.CharFilter(
+        method='filter_team_lead'
+    )
+
     class Meta:
         model = Leaves
         fields = ['employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status',
@@ -195,6 +204,9 @@ class LeavesFilter(django_filters.FilterSet):
     def filter_employee_id(self, queryset, name, value):
         return (queryset.annotate(full_name=Concat('employee__first_name', V(' '), 'employee__last_name')).
                 filter(full_name__icontains=value))
+
+    def filter_team_lead(self, queryset, name, value):
+        return queryset.filter(employee__team_lead_id=value)
 
 
 class LeavesViewSet(viewsets.ModelViewSet):
