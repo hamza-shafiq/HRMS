@@ -1,5 +1,4 @@
 from hrms.permissions import BaseCustomPermission
-from user.utils import UserRoles, check_user_role
 
 
 class DashboardPermission(BaseCustomPermission):

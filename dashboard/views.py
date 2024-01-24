@@ -34,7 +34,8 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             att_serializer = []
         if team_lead:
             try:
-                record = Leaves.objects.filter(employee__team_lead_id=team_lead, is_deleted=False).order_by('-request_date')[:3]
+                record = Leaves.objects.filter(employee__team_lead_id=team_lead,
+                                               is_deleted=False).order_by('-request_date')[:3]
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             serializer = LeaveSerializer(record, many=True)
@@ -46,7 +47,8 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if team_lead:
             emp_attendance = att_serializer
             total_employees = Employee.objects.filter(team_lead=team_lead).count()
-            present_employees = Employee.objects.filter(employee_status="WORKING",team_lead=team_lead, is_active=True).count()
+            present_employees = Employee.objects.filter(employee_status="WORKING",
+                                                        team_lead=team_lead, is_active=True).count()
             attendees = Attendance.objects.filter(check_in__date=datetime.now().date()).count()
             leave_data = serializer
             absent_employees = present_employees - attendees

@@ -1,9 +1,9 @@
 import django_filters
 from django.core.exceptions import ValidationError
-from django.db.models.functions import Lower, Concat
+from django.db.models import Value as V
+from django.db.models.functions import Concat, Lower
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
-from django.db.models import Value as V
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -36,7 +36,8 @@ class EmployeeFilter(django_filters.FilterSet):
     class Meta:
         model = Employee
         fields = ['first_name', 'last_name', 'phone_number', 'national_id_number',
-                  'gender', 'department', 'designation', 'joining_date', 'employee_status', 'full_name', 'team_lead_id']
+                  'gender', 'department', 'designation', 'joining_date', 'employee_status', 'full_name',
+                  'team_lead_id']
 
     def filter_employee_name(self, queryset, name, value):
         return (queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name')).
