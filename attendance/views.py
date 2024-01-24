@@ -142,9 +142,9 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             try:
                 if date:
                     datetime.strptime(date, '%Y-%m-%d')
-                    record = queryset.filter(check_in__date=date, is_deleted=False)
+                    queryset = queryset.filter(check_in__date=date, is_deleted=False)
                 if emp_id:
-                    record = record.annotate(
+                    queryset = queryset.annotate(
                         full_name=Concat('employee__first_name', V(' '), 'employee__last_name',
                                          output_field=CharField())
                     ).filter(full_name__icontains=emp_id)
@@ -152,11 +152,11 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             except ValueError:
                 return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
-            page = self.paginate_queryset(record)
+            page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = AttendanceSerializer(page, many=True)
                 return self.get_paginated_response(serializer.data)
-            serializer = AttendanceSerializer(record, many=True)
+            serializer = AttendanceSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         queryset = Attendance.objects.all().order_by('-check_in')
 
@@ -199,7 +199,7 @@ class LeavesFilter(django_filters.FilterSet):
 
 class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
-    queryset = Leaves.objects.all().order_by('-created')
+    queryset = Leaves.objects.all().order_by('-request_date')
     serializer_class = LeaveSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = LeavesFilter
@@ -234,7 +234,7 @@ class LeavesViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        leaves = Leaves.objects.filter(employee=user.id).order_by('-created')
+        leaves = Leaves.objects.filter(employee=user.id).order_by('-request_date')
         count = self.remaining_leaves_per_month(user.id, request)
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(leaves, request)
