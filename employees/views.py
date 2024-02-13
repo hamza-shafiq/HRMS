@@ -1,9 +1,9 @@
 import django_filters
 from django.core.exceptions import ValidationError
-from django.db.models.functions import Lower, Concat
+from django.db.models import Value as V
+from django.db.models.functions import Concat, Lower
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
-from django.db.models import Value as V
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated

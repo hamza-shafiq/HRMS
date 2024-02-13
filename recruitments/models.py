@@ -16,7 +16,7 @@ class Recruits(BaseModel):
     last_name = models.CharField(max_length=50)
     email = models.EmailField()
     phone_number = models.TextField(max_length=20)
-    position = models.CharField(max_length=20)
+    position = models.CharField(max_length=30)
     # resume = models.URLField(max_length=200)
     resume = models.FileField(upload_to='media', verbose_name="resume pdf")
     status = models.CharField(max_length=100, choices=CHOICES)
