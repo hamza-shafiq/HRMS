@@ -1,5 +1,6 @@
 import django_filters
 import pandas as pd
+from django.conf import settings
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.http import JsonResponse
@@ -140,6 +141,7 @@ class PayRollViewSet(viewsets.ModelViewSet):
         payroll = Payroll.objects.get(id=instance_id)
         employee = Employee.objects.filter(id=employee_id).values_list('id', 'first_name', 'last_name', 'email')
         emp_dt = {str(emp[0]): [f'{emp[1]} {emp[2]}', emp[3]] for emp in employee}
+        payroll_base_url = "payrolls/emp_payrolls"
         data = {
             'to_email': emp_dt[employee_id][1],
             'email_subject': 'Payroll Released'
@@ -150,7 +152,8 @@ class PayRollViewSet(viewsets.ModelViewSet):
             email_body = 'Hi ' + emp_dt[employee_id][0] + '!\n' + \
                          '\nYour payroll has been generated for the month of ' + month \
                          + ' ' + year + '\n' + \
-                         'You can now view it at your dashboard.'
+                         'You can now view it at your dashboard.' + \
+                         f'\n{settings.CLIENT_URL + payroll_base_url}'
             data['email_subject'] = 'Payroll Generated'
             data['email_body'] = email_body
             send_email.delay(data)
