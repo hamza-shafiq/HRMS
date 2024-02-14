@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.conf import settings
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -16,24 +15,20 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ret = super(AttendanceSerializer, self).to_representation(instance)
         ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
                                    str(instance.employee.last_name).capitalize())
-        dt = datetime.strptime(str(instance.check_in), settings.DATETIME_FORMAT)
-        ret['time_check_in'] = (str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" +
-                                str(dt.second).zfill(2))
-        ret['check_in_date'] = dt.date()
 
-        ret['check in time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
+        # Check-in time
+        dt_check_in = instance.check_in
+        ret['time_check_in'] = dt_check_in.strftime('%H:%M:%S')
+        ret['check_in_date'] = dt_check_in.date()
+        ret['check_in_time'] = dt_check_in.strftime('%H%M%S')
 
-        if instance.check_out is None or instance.check_out is False:
-            pass
-        else:
-            dt = datetime.strptime(str(instance.check_out), settings.DATETIME_FORMAT)
-            ret['time_check_out'] = str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" + str(
-                dt.second).zfill(2)
+        # Check-out time
+        if instance.check_out is not None and instance.check_out is not False:
+            dt_check_out = instance.check_out
+            ret['time_check_out'] = dt_check_out.strftime('%H:%M:%S')
+            ret['check_out_date'] = dt_check_out.date()
+            ret['check_out_time'] = dt_check_out.strftime('%H%M%S')
 
-            ret['check_out_date'] = dt.date()
-
-            ret['check out time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
-            ret['total_time'] = str(str(instance.total_time))
         return ret
 
 

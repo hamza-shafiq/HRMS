@@ -1,12 +1,14 @@
-from datetime import datetime
+from datetime import datetime, time
 
 import django_filters
+import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
 from django.http import JsonResponse
+from django.utils import timezone
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -45,9 +47,18 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def mark_attendance(self, request):
         action_type = request.data.get("action", None)
         user = request.user
-        current_datetime = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        desired_time_zone = pytz.timezone('Asia/Karachi')
+        current_datetime = datetime.now(desired_time_zone).strftime('%Y-%m-%d %H:%M:%S')
         current_datetime = datetime.strptime(current_datetime, '%Y-%m-%d %H:%M:%S')
-        record = Attendance.objects.filter(employee_id=user.id, check_in__contains=current_datetime.date()).first()
+        # Check if the current time is between 12 AM and 3 AM
+        if time(0, 0) <= current_datetime.time() <= time(3, 0):
+            # If the current time is between 12 AM and 3 AM, consider the previous date
+            previous_datetime = current_datetime - timezone.timedelta(days=1)
+            record = Attendance.objects.filter(employee_id=user.id, check_in__date=previous_datetime.date()).first()
+        else:
+            # The current time is not between 12 AM and 3 AM, proceed with the original logic
+            record = Attendance.objects.filter(employee_id=user.id, check_in__date=current_datetime.date()).first()
+
         if hasattr(user, 'employee'):
             if action_type == "check-in":
                 if not record:
