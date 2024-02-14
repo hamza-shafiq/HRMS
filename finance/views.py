@@ -1,4 +1,8 @@
+import django_filters
 import pandas as pd
+from django.conf import settings
+from django.db.models import Value as V
+from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
@@ -11,7 +15,37 @@ from finance.models import Payroll
 from finance.permissions import PayrollPermission
 from finance.serializers import PayRollSerializer
 from finance.utils import normalize_header
+from hrms.pagination import CustomPageNumberPagination
 from user.tasks import send_email
+
+
+class PayrollFilter(django_filters.FilterSet):
+    employee = filters.CharFilter(
+        method='filter_employee_id',
+    )
+
+    year = filters.CharFilter(
+        method='filter_year',
+    )
+
+    month = filters.CharFilter(
+        method='filter_month'
+    )
+
+    class Meta:
+        model = Payroll
+        fields = ["id", "basic_salary", "bonus", "reimbursement", "travel_allowance", "tax_deduction",
+                  "month", "year", "released", "employee"]
+
+    def filter_year(self, queryset, name, value):
+        return queryset.filter(year=value)
+
+    def filter_month(self, queryset, name, value):
+        return queryset.filter(month=value)
+
+    def filter_employee_id(self, queryset, name, value):
+        return (queryset.annotate(full_name=Concat('employee__first_name', V(' '), 'employee__last_name')).
+                filter(full_name__icontains=value))
 
 
 class PayRollViewSet(viewsets.ModelViewSet):
@@ -19,8 +53,8 @@ class PayRollViewSet(viewsets.ModelViewSet):
     queryset = Payroll.objects.all().order_by('-created')
     serializer_class = PayRollSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-
-    filterset_fields = ['employee', 'month', 'year']
+    pagination_class = CustomPageNumberPagination
+    filterset_class = PayrollFilter
 
     @action(detail=False, url_name="check_payroll", methods=['Get'])
     def check_payroll(self, request):
@@ -29,9 +63,12 @@ class PayRollViewSet(viewsets.ModelViewSet):
             'request': request,
         }
         payroll = Payroll.objects.filter(employee=user.id, is_deleted=False).order_by('-created')
+
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(payroll, request)
         if payroll:
-            serializer = PayRollSerializer(payroll, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = PayRollSerializer(result_page, many=True, context=serializer_context)
+            return paginator.get_paginated_response(serializer.data)
         return JsonResponse({'detail': 'No payroll is created for you yet'}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, url_name="import-payrolls-data", methods=['Post'])
@@ -104,6 +141,7 @@ class PayRollViewSet(viewsets.ModelViewSet):
         payroll = Payroll.objects.get(id=instance_id)
         employee = Employee.objects.filter(id=employee_id).values_list('id', 'first_name', 'last_name', 'email')
         emp_dt = {str(emp[0]): [f'{emp[1]} {emp[2]}', emp[3]] for emp in employee}
+        payroll_base_url = "/payrolls/emp_payrolls"
         data = {
             'to_email': emp_dt[employee_id][1],
             'email_subject': 'Payroll Released'
@@ -114,7 +152,8 @@ class PayRollViewSet(viewsets.ModelViewSet):
             email_body = 'Hi ' + emp_dt[employee_id][0] + '!\n' + \
                          '\nYour payroll has been generated for the month of ' + month \
                          + ' ' + year + '\n' + \
-                         'You can now view it at your dashboard.'
+                         'You can now view it at your dashboard.' + \
+                         f'\n{settings.CLIENT_URL + payroll_base_url}'
             data['email_subject'] = 'Payroll Generated'
             data['email_body'] = email_body
             send_email.delay(data)

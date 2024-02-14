@@ -10,14 +10,15 @@ from attendance.models import Attendance, Leaves
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ["id", "employee", "check_in", "check_out", "status"]
+        fields = ["id", "employee", "check_in", "check_out", "total_time", "status"]
 
     def to_representation(self, instance):
         ret = super(AttendanceSerializer, self).to_representation(instance)
         ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
                                    str(instance.employee.last_name).capitalize())
         dt = datetime.strptime(str(instance.check_in), settings.DATETIME_FORMAT)
-        ret['time_check_in'] = str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" + str(dt.second).zfill(2)
+        ret['time_check_in'] = (str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" +
+                                str(dt.second).zfill(2))
         ret['check_in_date'] = dt.date()
 
         ret['check in time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
@@ -32,6 +33,7 @@ class AttendanceSerializer(serializers.ModelSerializer):
             ret['check_out_date'] = dt.date()
 
             ret['check out time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
+            ret['total_time'] = str(str(instance.total_time))
         return ret
 
 

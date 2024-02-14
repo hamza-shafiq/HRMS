@@ -3,11 +3,13 @@ from datetime import datetime
 import django_filters
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models import CharField
+from django.db.models import Value as V
+from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from hrms.pagination import CustomPageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -15,6 +17,7 @@ from attendance.models import Attendance, Leaves
 from attendance.permissions import AttendancePermission, LeavesPermission
 from attendance.serializers import AttendanceSerializer, LeaveSerializer
 from employees.models import Employee
+from hrms.pagination import CustomPageNumberPagination
 
 
 class AttendanceViewSet(viewsets.ModelViewSet):
@@ -30,9 +33,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
             'request': request,
         }
         attendance = Attendance.objects.filter(employee=user.id).order_by('-check_in')
+
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(attendance, request)
         if attendance:
-            serializer = AttendanceSerializer(attendance, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = AttendanceSerializer(result_page, many=True, context=serializer_context)
+            return paginator.get_paginated_response(serializer.data)
         return JsonResponse({'detail': 'You did not check-in today'}, status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, url_path="mark-attendance", methods=['post'])
@@ -68,7 +74,8 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                     sessions[-1]['end_time'] = str(current_datetime)
                 else:
                     return JsonResponse({"detail": "Session Not found!"}, status=status.HTTP_400_BAD_REQUEST)
-
+                total_time = request.data.get("total_time")
+                record.total_time = total_time
                 record.check_out = current_datetime
                 record.save()
                 return JsonResponse({"success": "Employee checked-out successfully!"}, status=status.HTTP_200_OK)
@@ -130,27 +137,26 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')
         emp_id = self.request.query_params.get('employee_id')
+        queryset = Attendance.objects.all().order_by('-check_in')
         if date or emp_id:
             try:
                 if date:
                     datetime.strptime(date, '%Y-%m-%d')
-                    record = Attendance.objects.filter(check_in__date=date,
-                                                       is_deleted=False).order_by('-check_in')
+                    queryset = queryset.filter(check_in__date=date, is_deleted=False)
                 if emp_id:
-                    if date:
-                        record = record.filter(employee_id=emp_id).order_by('-check_in')
-                    else:
-                        record = Attendance.objects.filter(employee_id=emp_id,
-                                                           is_deleted=False).order_by('-check_in')
+                    queryset = queryset.annotate(
+                        full_name=Concat('employee__first_name', V(' '), 'employee__last_name',
+                                         output_field=CharField())
+                    ).filter(full_name__icontains=emp_id)
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             except ValueError:
                 return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
-            page = self.paginate_queryset(record)
+            page = self.paginate_queryset(queryset)
             if page is not None:
                 serializer = AttendanceSerializer(page, many=True)
                 return self.get_paginated_response(serializer.data)
-            serializer = AttendanceSerializer(record, many=True)
+            serializer = AttendanceSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         queryset = Attendance.objects.all().order_by('-check_in')
 
@@ -171,6 +177,10 @@ class LeavesFilter(django_filters.FilterSet):
         method='filter_approved_by',
     )
 
+    employee_id = filters.CharFilter(
+        method='filter_employee_id'
+    )
+
     class Meta:
         model = Leaves
         fields = ['employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status',
@@ -182,13 +192,18 @@ class LeavesFilter(django_filters.FilterSet):
     def filter_approved_by(self, queryset, name, value):
         return queryset.filter(approved_by__id=value)
 
+    def filter_employee_id(self, queryset, name, value):
+        return (queryset.annotate(full_name=Concat('employee__first_name', V(' '), 'employee__last_name')).
+                filter(full_name__icontains=value))
+
 
 class LeavesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, LeavesPermission]
-    queryset = Leaves.objects.all().order_by('-created')
+    queryset = Leaves.objects.all().order_by('-request_date')
     serializer_class = LeaveSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = LeavesFilter
+    pagination_class = CustomPageNumberPagination
 
     @staticmethod
     def remaining_leaves_per_month(user_id, request):
@@ -219,28 +234,36 @@ class LeavesViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        leaves = Leaves.objects.filter(employee=user.id).order_by('-created')
+        leaves = Leaves.objects.filter(employee=user.id).order_by('-request_date')
         count = self.remaining_leaves_per_month(user.id, request)
+        paginator = CustomPageNumberPagination()
+        result_page = paginator.paginate_queryset(leaves, request)
         if leaves:
-            serializer = LeaveSerializer(leaves, many=True, context=serializer_context)
-            return Response(({"data": serializer.data, "count": count}), status=status.HTTP_200_OK)
+            serializer = LeaveSerializer(result_page, many=True, context=serializer_context)
+            return paginator.get_paginated_response(({"data": serializer.data, "count": count}))
         return Response(({"count": count}), status=status.HTTP_200_OK)
 
     @action(detail=True, url_name="approve", methods=['PATCH'])
     def approve(self, request, pk):
         leave = self.get_object()
-        if leave.status == 'PENDING':
+        if 'status' in request.data:
             leave.status = request.data['status']
-            leave.approved_by = request.user.employee
-            leave.save()
-            return Response(
-                status=status.HTTP_200_OK,
-                data=LeaveSerializer(leave, context=self.get_serializer_context()).data)
-        else:
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={f'The Leave status is already {leave.status}'})
+            if leave.status == 'PENDING':
+                leave.approved_by = None
+            else:
+                leave.approved_by = request.user.employee
+        if 'to_date' in request.data:
+            leave.to_date = request.data['to_date']
+        if 'from_date' in request.data:
+            leave.from_date = request.data['from_date']
+        leave.save()
+        return Response(
+            status=status.HTTP_200_OK,
+            data=LeaveSerializer(leave, context=self.get_serializer_context()).data)
 
     def destroy(self, request, *args, **kwargs):
         leave = self.get_object()
         if leave.status != 'PENDING':
-            return Response(status=status.HTTP_400_BAD_REQUEST, data={f'Cannot delete Leave with status {leave.status}'})
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data={f'Cannot delete Leave with status {leave.status}'})
         return super(LeavesViewSet, self).destroy(request, *args, **kwargs)
