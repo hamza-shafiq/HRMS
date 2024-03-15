@@ -126,7 +126,7 @@ class EmploymentHistorySerializer(serializers.ModelSerializer):
             }
         if instance.review_by:
             ret['review_by'] = {
-                'review_by_id': str(instance.added_by.id),
-                'review_by_name': instance.added_by.get_full_name
+                'review_by_id': str(instance.review_by.id),
+                'review_by_name': instance.review_by.get_full_name
             }
         return ret

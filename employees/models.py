@@ -68,7 +68,7 @@ class EmployeeHistory(BaseModel):
     review_by = models.ForeignKey(Employee, related_name='review_by', on_delete=models.SET_NULL, null=True)
     review_date = models.DateField()
     added_by = models.ForeignKey(Employee, related_name='added_by', on_delete=models.SET_NULL, null=True)
-    added_date = models.DateTimeField()
+    added_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "employee_history"
