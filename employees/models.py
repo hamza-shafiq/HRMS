@@ -56,3 +56,19 @@ class Employee(User):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class EmployeeHistory(BaseModel):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="employee")
+    subject = models.CharField(max_length=255)
+    remarks = models.TextField()
+    increment = models.FloatField()
+    interval_from = models.DateField()
+    interval_to = models.DateField()
+    review_by = models.ForeignKey(Employee, related_name='review_by', on_delete=models.SET_NULL, null=True)
+    review_date = models.DateField()
+    added_by = models.ForeignKey(Employee, related_name='added_by', on_delete=models.SET_NULL, null=True)
+    added_date = models.DateTimeField()
+
+    class Meta:
+        db_table = "employee_history"
