@@ -2,16 +2,17 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from employees.models import Employee
-from recruitments.models import Recruits, Referrals
+from recruitments.models import Recruits, Referrals, RecruitsHistory
 
 
 class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
     referrers = serializers.CharField(required=False)
+    full_name = serializers.ReadOnlyField(source='get_full_name')
 
     class Meta:
         model = Recruits
         fields = ['url', 'id', 'first_name', 'last_name', 'email', 'phone_number', 'position', 'resume',
-                  'status', 'referrers']
+                  'status', 'referrers', 'full_name']
 
     def create(self, validated_data):
         if self.initial_data.get('referrers') is not None:
@@ -49,4 +50,31 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
             ret['referrer_id'] = str(instance.referrers.all().get().referer_id)
         else:
             ret['referrers'] = ""
+        return ret
+
+
+class RecruitsHistorySerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = RecruitsHistory
+        fields = ["id", "recruit", "process_stage", "remarks", "event_date", "conduct_by", "added_by", "added_date"]
+
+    def to_representation(self, instance):
+        ret = super(RecruitsHistorySerializer, self).to_representation(instance)
+        if instance.recruit:
+            ret['recruit'] = {
+                'recruit_id': str(instance.recruit.id),
+                'recruit_name': instance.recruit.get_full_name
+            }
+        if instance.added_by:
+            ret['added_by'] = {
+                'added_by_id': str(instance.added_by.id),
+                'added_by_name': instance.added_by.get_full_name
+            }
+        if instance.conduct_by:
+            ret['conduct_by'] = {
+                'conduct_by_id': str(instance.conduct_by.id),
+                'conduct_by_name': instance.conduct_by.get_full_name
+            }
         return ret
