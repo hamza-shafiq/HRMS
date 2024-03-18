@@ -52,7 +52,7 @@ class Referrals(BaseModel):
 class RecruitsHistory(BaseModel):
     recruit = models.ForeignKey(Recruits, on_delete=models.CASCADE, related_name="recruit")
     process_stage = models.CharField(max_length=255)
-    remarks = models.TextField()
+    remarks = models.TextField(max_length=20)
     event_date = models.DateField()
     conduct_by = models.ForeignKey(Employee, related_name='conduct_by', on_delete=models.SET_NULL, null=True)
     added_by = models.ForeignKey(Employee, related_name='added_by', on_delete=models.SET_NULL, null=True)
