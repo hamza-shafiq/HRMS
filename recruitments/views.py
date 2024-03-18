@@ -23,5 +23,5 @@ class RecruitsHistoryViewSet(viewsets.ModelViewSet):
     queryset = RecruitsHistory.objects.filter(is_deleted=False)
     serializer_class = RecruitsHistorySerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ['id']
+    filterset_fields = ['recruit_id']
     pagination_class = CustomPageNumberPagination
