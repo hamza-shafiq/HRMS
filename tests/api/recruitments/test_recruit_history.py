@@ -16,20 +16,21 @@ def test_retrieve_recruit_history(admin_factory, recruit_factory, recruits_histo
     assert response.json()['results'][0]['recruit']['recruit_id'] == str(employee_history.recruit_id)
 
 
-def test_create_recruit_history(admin_factory, recruit_factory, employee_factory, authed_token_client_generator):
-    user = admin_factory()
+def test_create_recruit_history(admin_factory, recruit_factory, employee_factory,
+                                authed_token_client_generator):
+    admin = admin_factory()
     employee1 = recruit_factory()
     employee2 = employee_factory()
     employee3 = employee_factory()
     data = {
         "recruit": employee1.id,
-        "process_stage": "New Subject",
+        "process_stage": "New Stage",
         "remarks": "New Remarks",
         "event_date": "2024-02-01",
         "conduct_by": employee2.id,
         "added_by": employee3.id
     }
-    client = authed_token_client_generator(user)
+    client = authed_token_client_generator(admin)
     response = client.post(reverse('recruits_history-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['recruit']['recruit_id'] == str(data['recruit'])
@@ -105,14 +106,15 @@ def test_update_recruit_history_invalid_id(admin_factory, authed_token_client_ge
     assert response.json()['detail'] == 'Not found.'
 
 
-def test_create_employee_history_invalid_id(admin_factory, recruit_factory, employee_factory, authed_token_client_generator):
+def test_create_recruit_history_invalid_id(admin_factory, recruit_factory, employee_factory,
+                                           authed_token_client_generator):
     user = admin_factory()
     employee1 = recruit_factory()
     employee2 = employee_factory()
     employee3 = employee_factory()
     valid_data = {
         "recruit": employee1.id,
-        "process_stage": "New Subject",
+        "process_stage": "My Stage",
         "remarks": "New Remarks",
         "event_date": "2024-02-01",
         "conduct_by": employee2.id,
