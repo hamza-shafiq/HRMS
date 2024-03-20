@@ -21,21 +21,18 @@ def test_create_recruit_history(admin_factory, recruit_factory, employee_factory
     admin = admin_factory()
     employee1 = recruit_factory()
     employee2 = employee_factory()
-    employee3 = employee_factory()
     data = {
         "recruit": employee1.id,
         "process_stage": "New Stage",
         "remarks": "New Remarks",
         "event_date": "2024-02-01",
-        "conduct_by": employee2.id,
-        "added_by": employee3.id
+        "conduct_by": employee2.id
     }
     client = authed_token_client_generator(admin)
     response = client.post(reverse('recruits_history-list'), data=data)
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['recruit']['recruit_id'] == str(data['recruit'])
     assert response.json()['conduct_by']['conduct_by_id'] == str(data['conduct_by'])
-    assert response.json()['added_by']['added_by_id'] == str(data['added_by'])
 
 
 def test_create_recruit_history_non_admin(user_factory, authed_token_client_generator):
@@ -51,14 +48,12 @@ def test_create_recruit_history_invalid_id(admin_factory, recruit_factory, emplo
     user = admin_factory()
     employee1 = recruit_factory()
     employee2 = employee_factory()
-    employee3 = employee_factory()
     valid_data = {
         "recruit": employee1.id,
         "process_stage": "My Stage",
         "remarks": "New Remarks",
         "event_date": "2024-02-01",
-        "conduct_by": employee2.id,
-        "added_by": employee3.id
+        "conduct_by": employee2.id
     }
 
     invalid_data = {
@@ -66,8 +61,7 @@ def test_create_recruit_history_invalid_id(admin_factory, recruit_factory, emplo
         "process_stage": "New Subject",
         "remarks": "New Remarks",
         "event_date": "2024-02-01",
-        "conduct_by": employee2.id,
-        "added_by": employee3.id
+        "conduct_by": employee2.id
     }
     client = authed_token_client_generator(user)
     # Test with valid data
