@@ -14,3 +14,7 @@ class EmployeePermission(BaseCustomPermission):
             if user_role == UserRoles.EMPLOYEE:
                 return True
         return super().has_permission(request, view)
+
+
+class EmployeeHistoryPermission(BaseCustomPermission):
+    pass
