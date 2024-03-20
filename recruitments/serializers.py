@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from employees.models import Employee
-from recruitments.models import Recruits, Referrals, RecruitsHistory
+from recruitments.models import Recruits, RecruitsHistory, Referrals
 
 
 class RecruitsSerializer(serializers.HyperlinkedModelSerializer):

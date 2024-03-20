@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from hrms.pagination import CustomPageNumberPagination
 from recruitments.models import Recruits, RecruitsHistory
 
-from .permissions import RecruitsPermission, RecruitsHistoryPermission
-from .serializers import RecruitsSerializer, RecruitsHistorySerializer
+from .permissions import RecruitsHistoryPermission, RecruitsPermission
+from .serializers import RecruitsHistorySerializer, RecruitsSerializer
 
 
 class RecruitsViewSet(viewsets.ModelViewSet):
