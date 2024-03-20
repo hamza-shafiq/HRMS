@@ -26,3 +26,4 @@ class EmployeesAdmin(admin.ModelAdmin):
 # Register your models here.
 admin.site.register(employees.models.Employee, EmployeesAdmin)
 admin.site.register(employees.models.Department)
+admin.site.register(employees.models.EmployeeHistory)
