@@ -55,7 +55,7 @@ class RecruitsHistory(BaseModel):
     remarks = models.TextField(max_length=20)
     event_date = models.DateField()
     conduct_by = models.ForeignKey(Employee, related_name='conduct_by', on_delete=models.SET_NULL, null=True)
-    added_by = models.ForeignKey(Employee, related_name='added_by', on_delete=models.SET_NULL, null=True)
+    added_by = models.ForeignKey(Employee, related_name='recruit_history_added_by', on_delete=models.SET_NULL, null=True)
     added_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
