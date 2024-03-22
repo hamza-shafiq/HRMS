@@ -1,3 +1,4 @@
+from .announcements import *  # noqa
 from .assets import *  # noqa
 from .attendance import *  # noqa
 from .employees import *  # noqa
