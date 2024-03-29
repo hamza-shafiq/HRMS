@@ -8,7 +8,7 @@ class TasksSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tasks
-        fields = ['id', 'title', 'description', 'assigned_by', 'assigned_to', 'deadline', 'created_on', 'status']
+        fields = ['id', 'title', 'description', 'assigned_by', 'employee', 'deadline', 'created_on', 'status']
 
     def to_representation(self, instance):
         ret = super(TasksSerializer, self).to_representation(instance)
@@ -18,10 +18,10 @@ class TasksSerializer(serializers.ModelSerializer):
                 'assigned_by_name': instance.assigned_by.get_full_name
             }
 
-        if instance.assigned_to:
-            ret['assigned_to'] = {
-                'assigned_to_id': str(instance.assigned_to.id),
-                'assigned_to_name': instance.assigned_to.get_full_name
+        if instance.employee:
+            ret['employee'] = {
+                'employee_id': str(instance.employee.id),
+                'employee_name': instance.employee.get_full_name
             }
 
         return ret

@@ -16,7 +16,7 @@ class Tasks(BaseModel):
     description = models.TextField()
     assigned_by = models.ForeignKey(Employee, related_name='tasks_assigned_by', on_delete=models.SET_NULL, null=True)
     created_on = models.DateTimeField(auto_now_add=True)
-    assigned_to = models.ForeignKey(Employee, related_name='tasks_assigned_to', on_delete=models.SET_NULL, null=True)
+    employee = models.ForeignKey(Employee, related_name='assigned_to', on_delete=models.SET_NULL, null=True)
     deadline = models.DateField()
     status = models.CharField(default='NOT_STARTED', max_length=50, choices=STATUS_CHOICE)
 
