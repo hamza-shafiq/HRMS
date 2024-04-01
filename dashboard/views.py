@@ -13,6 +13,8 @@ from dashboard.permissions import DashboardPermission
 from employees.models import Department, Employee
 from employees.serializers import EmployeeSerializer
 from recruitments.models import Recruits
+from tasks.models import Tasks
+from tasks.serializers import TasksSerializer
 
 
 class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -77,7 +79,10 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         total_leaves_applied = Leaves.objects.filter(employee_id=user.id).count()
         working_days = self.working_days()
         total_absents = working_days - attendees
+        tasks_data = Tasks.objects.filter(employee=user.id, is_deleted=False).order_by('-deadline')[:3]
+        task_seria = TasksSerializer(tasks_data, many=True)
+        task_seria = task_seria.data
         data = {"employee_present_for_current_month": attendees, "leaves_rejected": leaves_rejected,
                 "leaves_approved": leaves_accepted, "total_leaves_applied": total_leaves_applied,
-                'total_working_days': working_days, 'total_absents': total_absents}
+                'total_working_days': working_days, 'total_absents': total_absents, "tasks_data": task_seria}
         return JsonResponse(status=status.HTTP_200_OK, data=data)
