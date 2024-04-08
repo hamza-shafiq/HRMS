@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from employees.models import Department, Employee, EmployeeHistory
-from employees.permissions import DepartmentPermission, EmployeePermission, EmployeeHistoryPermission
+from employees.permissions import DepartmentPermission, EmployeeHistoryPermission, EmployeePermission
 from hrms.pagination import CustomPageNumberPagination
 
 from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHistorySerializer
@@ -101,7 +101,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        if user.is_admin:
+        if user.is_admin and self.request.query_params.get('employee_id'):
             emp_id = self.request.query_params.get('employee_id')
             if emp_id:
                 try:
