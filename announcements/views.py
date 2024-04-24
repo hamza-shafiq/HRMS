@@ -22,8 +22,10 @@ class AnnouncementsViewSet(viewsets.ModelViewSet):
     def latest(self, request):
         try:
             latest_announcement = Announcements.objects.latest('added_date')
+            title = latest_announcement.title
             latest_detail = latest_announcement.detail
-            return JsonResponse({'latest_detail': latest_detail})
+            data = [{'title': title, 'latest_detail': latest_detail}]
+            return JsonResponse(data=data, safe=False)
         except Announcements.DoesNotExist:
             return JsonResponse({'error': 'No announcements found'}, status=404)
 
