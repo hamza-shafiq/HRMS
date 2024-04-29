@@ -30,7 +30,7 @@ def test_filter_with_empty_data(admin_factory, authed_token_client_generator):
     user = admin_factory()
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail'))
-    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_filter_employee_own_detail(employee_factory, authed_token_client_generator):

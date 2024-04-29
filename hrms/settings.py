@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'attendance.apps.AttendanceConfig',
     'recruitments.apps.RecruitmentsConfig',
     'policies.apps.PoliciesConfig',
+    'tasks.apps.TasksConfig',
+    'announcements.apps.AnnouncementsConfig',
     'django_filters',
     'drf_spectacular',
     "corsheaders",

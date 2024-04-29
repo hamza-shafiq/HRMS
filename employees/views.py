@@ -9,11 +9,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from employees.models import Department, Employee
-from employees.permissions import DepartmentPermission, EmployeePermission
+from employees.models import Department, Employee, EmployeeHistory
+from employees.permissions import DepartmentPermission, EmployeeHistoryPermission, EmployeePermission
 from hrms.pagination import CustomPageNumberPagination
 
-from .serializers import DepartmentSerializer, EmployeeSerializer
+from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHistorySerializer
 
 
 class EmployeeFilter(django_filters.FilterSet):
@@ -43,6 +43,20 @@ class EmployeeFilter(django_filters.FilterSet):
 
     def filter_by_department(self, queryset, name, value):
         return queryset.filter(department__id=value)
+
+
+class EmployeeHistoryFilter(django_filters.FilterSet):
+    emp_id = filters.CharFilter(
+        method='filter_employee_id',
+    )
+
+    class Meta:
+        model = EmployeeHistory
+        fields = ["id", "employee", "subject", "remarks", "increment", "interval_from", "interval_to", "review_by",
+                  "review_date", "added_by", "added_date"]
+
+    def filter_employee_id(self, queryset, name, value):
+        return queryset.filter(employee__id=value)
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
@@ -87,7 +101,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
-        if user.is_admin:
+        if user.is_admin and self.request.query_params.get('employee_id'):
             emp_id = self.request.query_params.get('employee_id')
             if emp_id:
                 try:
@@ -108,3 +122,11 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         return JsonResponse({'error': 'user except admin and employee is not allowed to '
                                       'to perform filter'},
                             status=status.HTTP_403_FORBIDDEN)
+
+
+class EmploymentHistoryViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, EmployeeHistoryPermission]
+    queryset = EmployeeHistory.objects.all()
+    serializer_class = EmploymentHistorySerializer
+    pagination_class = CustomPageNumberPagination
+    filterset_class = EmployeeHistoryFilter
