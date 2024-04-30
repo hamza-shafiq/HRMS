@@ -67,15 +67,17 @@ class EmployeeSerializer(serializers.ModelSerializer):
         if not leave_dict:
             leave_dict = {}
 
+        total_leave_count = sum(value for key, value in leave_dict.items() if key not in ["WORK_FROM_HOME", "EXTRA_DAYS"])
+
         ret = super(EmployeeSerializer, self).to_representation(instance)
         del ret['department']
         ret['department_id'] = str(instance.department_id)
         ret['department'] = str(instance.department)
+        ret['total_leaves'] = instance.total_leaves
         ret['leaves'] = leave_dict
-        leave_dict['total_leaves'] = instance.total_leaves
-        leave_dict['remaining_leaves'] = instance.remaining_leaves
-        if not instance.remaining_leaves or instance.remaining_leaves > instance.total_leaves:
-            leave_dict['remaining_leaves'] = instance.total_leaves
+        ret['remaining_leaves'] = instance.total_leaves - total_leave_count
+        # leave_dict['total_leaves'] = instance.total_leaves
+        # leave_dict['remaining_leaves'] = remaining_leaves
         return ret
 
     @staticmethod
