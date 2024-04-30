@@ -28,4 +28,3 @@ class AnnouncementsViewSet(viewsets.ModelViewSet):
             return JsonResponse(data=data, safe=False)
         except Announcements.DoesNotExist:
             return JsonResponse({'error': 'No announcements found'}, status=404)
-
