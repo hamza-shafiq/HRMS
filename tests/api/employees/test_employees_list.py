@@ -38,8 +38,8 @@ def test_create_employees(admin_factory, department_factory, authed_token_client
     file.close()
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()['username'] == data['username']
-    assert response.json()['leaves']['total_leaves'] == data['total_leaves']
-    assert response.json()['leaves']['remaining_leaves'] == data['total_leaves']
+    assert response.json()['total_leaves'] == data['total_leaves']
+    assert response.json()['remaining_leaves'] == data['total_leaves']
 
 
 def test_create_employees_incomplete_data(admin_factory, authed_token_client_generator):

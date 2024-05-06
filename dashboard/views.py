@@ -72,11 +72,33 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     @action(detail=False, url_path="employee_dashboard", methods=['get'])
     def employee_dashboard(self, request):
         user = request.user
+        employee = EmployeeSerializer(Employee.objects.filter(id=user.id))
+        leaves_approved = LeaveSerializer(Leaves.objects.filter(status='APPROVED', employee_id=user.id), many=True)
+        leaves_approved_dict = employee.get_leaves_dict(leaves_approved)
+        if not leaves_approved_dict:
+            leaves_approved_dict = {}
+        approve_leave_count = sum(
+            value for key, value in leaves_approved_dict.items() if key not in ["WORK_FROM_HOME", "EXTRA_DAYS"])
+
+        leaves_rejected = LeaveSerializer(Leaves.objects.filter(status='REJECTED', employee_id=user.id), many=True)
+        leaves_rejected_dict = employee.get_leaves_dict(leaves_rejected)
+        if not leaves_rejected_dict:
+            leaves_rejected_dict = {}
+        rejected_leave_count = sum(
+            value for key, value in leaves_rejected_dict.items() if key not in ["WORK_FROM_HOME", "EXTRA_DAYS"])
+
+        leaves = LeaveSerializer(Leaves.objects.filter(employee_id=user.id), many=True)
+        leaves_dict = employee.get_leaves_dict(leaves)
+        if not leaves_dict:
+            leaves_dict = {}
+        leave_count = sum(
+            value for key, value in leaves_dict.items() if key not in ["WORK_FROM_HOME", "EXTRA_DAYS"])
+
         month = datetime.now().month
         attendees = Attendance.objects.filter(employee_id=user.id, check_in__month=month).count()
-        leaves_rejected = Leaves.objects.filter(status='REJECTED', employee_id=user.id).count()
-        leaves_accepted = Leaves.objects.filter(status='APPROVED', employee_id=user.id).count()
-        total_leaves_applied = Leaves.objects.filter(employee_id=user.id).count()
+        leaves_rejected = rejected_leave_count
+        leaves_accepted = approve_leave_count
+        total_leaves_applied = leave_count
         working_days = self.working_days()
         total_absents = working_days - attendees
         tasks_data = Tasks.objects.filter(employee=user.id, is_deleted=False).order_by('-deadline')[:3]
