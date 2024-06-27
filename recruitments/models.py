@@ -1,4 +1,5 @@
 from django.db import models
+
 from employees.models import Employee
 from user.models import BaseModel
 
@@ -41,7 +42,7 @@ class Recruits(BaseModel):
 class Referrals(BaseModel):
     recruit = models.ForeignKey(Recruits, on_delete=models.CASCADE, related_name="referrers")
     referer = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='recruits_referred', null=True)
-    
+
     class Meta:
         unique_together = ('recruit', 'referer')
         db_table = "referrals"

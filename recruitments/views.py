@@ -1,18 +1,14 @@
 from django_filters import rest_framework as filters
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
-
 from rest_framework.response import Response
-from rest_framework import status
 
 from hrms.pagination import CustomPageNumberPagination
 from recruitments.models import Recruits, RecruitsHistory
+from tasks.serializers import TasksSerializer
 
 from .permissions import RecruitsHistoryPermission, RecruitsPermission
 from .serializers import RecruitsHistorySerializer, RecruitsSerializer
-
-from tasks.models import Tasks
-from tasks.serializers import TasksSerializer
 
 
 class RecruitsViewSet(viewsets.ModelViewSet):
@@ -22,14 +18,18 @@ class RecruitsViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['position', 'status']
     pagination_class = CustomPageNumberPagination
-    
+
     def create_task_for_interview(self, data, assigned_by):
         if len(data['interview_date']) and len(data['assigned_to']):
             task_data = {
                 "title": "Interview",
                 "deadline": data['interview_date'],
                 "employee": data['assigned_to'],
-                "description": f"Interview Scheduled for {data['first_name']} {data['last_name']} on {data['interview_date']}",
+                "description": (
+                    f"Interview Scheduled for {data['first_name']} {data['last_name']} "
+                    f"on {data['interview_date']}"
+                ),
+
                 "assigned_by": assigned_by,
             }
             task_serializer = TasksSerializer(data=task_data)
@@ -54,6 +54,8 @@ class RecruitsViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
+
+
 class RecruitsHistoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, RecruitsHistoryPermission]
     queryset = RecruitsHistory.objects.filter(is_deleted=False)

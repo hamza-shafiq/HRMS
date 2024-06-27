@@ -17,7 +17,7 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Recruits
         fields = ['url', 'id', 'first_name', 'last_name', 'email', 'phone_number', 'position', 'resume',
-                  'status', 'referrers', 'full_name',  'interview_date','assigned_to']
+                  'status', 'referrers', 'full_name', 'interview_date', 'assigned_to']
 
     def create(self, validated_data):
         if self.initial_data.get('referrers') is not None:
