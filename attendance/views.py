@@ -180,6 +180,10 @@ class LeavesFilter(django_filters.FilterSet):
     employee_id = filters.CharFilter(
         method='filter_employee_id'
     )
+    
+    leave_type = filters.CharFilter(
+        method = 'filter_leave_type',
+    )
 
     class Meta:
         model = Leaves
@@ -191,6 +195,9 @@ class LeavesFilter(django_filters.FilterSet):
 
     def filter_approved_by(self, queryset, name, value):
         return queryset.filter(approved_by__id=value)
+    
+    def filter_leave_type(self, queryset, name, value):
+        return queryset.filter(leave_type=value)
 
     def filter_employee_id(self, queryset, name, value):
         return (queryset.annotate(full_name=Concat('employee__first_name', V(' '), 'employee__last_name')).
