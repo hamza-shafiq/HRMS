@@ -1,5 +1,4 @@
 from django.db import models
-
 from employees.models import Employee
 from user.models import BaseModel
 
@@ -20,6 +19,8 @@ class Recruits(BaseModel):
     # resume = models.URLField(max_length=200)
     resume = models.FileField(upload_to='media', verbose_name="resume pdf")
     status = models.CharField(max_length=100, choices=CHOICES)
+    assigned_to = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)
+    interview_date = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = "recruits"
@@ -40,7 +41,7 @@ class Recruits(BaseModel):
 class Referrals(BaseModel):
     recruit = models.ForeignKey(Recruits, on_delete=models.CASCADE, related_name="referrers")
     referer = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='recruits_referred', null=True)
-
+    
     class Meta:
         unique_together = ('recruit', 'referer')
         db_table = "referrals"
