@@ -20,7 +20,7 @@ class RecruitsViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPageNumberPagination
 
     def create_task_for_interview(self, data, assigned_by):
-        if len(data['interview_date']) and len(data['assigned_to']):
+        if data.get("interview_date") and data.get("assigned_to"):
             task_data = {
                 "title": "Interview",
                 "deadline": data['interview_date'],
