@@ -8,11 +8,16 @@ from recruitments.models import Recruits, RecruitsHistory, Referrals
 class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
     referrers = serializers.CharField(required=False)
     full_name = serializers.ReadOnlyField(source='get_full_name')
+    assigned_to = serializers.PrimaryKeyRelatedField(
+        queryset=Employee.objects.all(),
+        required=False,
+        allow_null=True
+    )
 
     class Meta:
         model = Recruits
         fields = ['url', 'id', 'first_name', 'last_name', 'email', 'phone_number', 'position', 'resume',
-                  'status', 'referrers', 'full_name']
+                  'status', 'referrers', 'full_name', 'interview_date', 'assigned_to']
 
     def create(self, validated_data):
         if self.initial_data.get('referrers') is not None:
@@ -50,6 +55,13 @@ class RecruitsSerializer(serializers.HyperlinkedModelSerializer):
             ret['referrer_id'] = str(instance.referrers.all().get().referer_id)
         else:
             ret['referrers'] = ""
+        if instance.assigned_to:
+            ret['assigned_to'] = {
+                'id': str(instance.assigned_to.id),
+                'name': instance.assigned_to.get_full_name
+            }
+        else:
+            ret['assigned_to'] = None
         return ret
 
 
