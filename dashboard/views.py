@@ -37,6 +37,8 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         emp_attendance = serializer
         total_employees = Employee.objects.count()
         present_employees = Employee.objects.filter(employee_status="WORKING", is_active=True).count()
+        working_employees = Employee.objects.filter(employee_status="WORKING", is_active=True)
+        user = request.user
         total_assets = Asset.objects.count()
         assignee = AssignedAsset.objects.count()
         total_recruits = Recruits.objects.count()
@@ -48,12 +50,23 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         leave_data = Leaves.objects.filter(is_deleted=False).order_by('-request_date')[:3]
         seria = LeaveSerializer(leave_data, many=True)
         seria = seria.data
+        working_employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp
+                                 in working_employees]
+        serializer_context = {
+            'request': request,
+        }
+        record = Employee.objects.filter(id=user.id, is_deleted=False)
+        serializer = EmployeeSerializer(record, many=True, context=serializer_context)
+
         data = {"total_departments": total_department, "total_employees": total_employees,
-                "present_employees": present_employees, "absent_employees": absent_employees,
+                "present_employees": present_employees, "working_employees": working_employee_data,
+                "absent_employees": absent_employees,
                 "total_assets": total_assets, "total_assignee": assignee, "remaining_assets": remaining_assets,
                 "total_recruits": total_recruits, "active_recruits": active_recruits,
                 "pending_recruits": pending_recruits, "total_attendees": attendees, "emp_attendance": emp_attendance,
-                "leave_data": seria}
+                "leave_data": seria,
+                "profile_pic": serializer.data[0]['profile_pic'] if serializer.data else None
+                }
         return JsonResponse(status=status.HTTP_200_OK, data=data)
 
     @staticmethod
@@ -104,7 +117,14 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         tasks_data = Tasks.objects.filter(employee=user.id, is_deleted=False).order_by('-deadline')[:3]
         task_seria = TasksSerializer(tasks_data, many=True)
         task_seria = task_seria.data
+        serializer_context = {
+            'request': request,
+        }
+        record = Employee.objects.filter(id=user.id, is_deleted=False)
+        serializer = EmployeeSerializer(record, many=True, context=serializer_context)
         data = {"employee_present_for_current_month": attendees, "leaves_rejected": leaves_rejected,
                 "leaves_approved": leaves_accepted, "total_leaves_applied": total_leaves_applied,
-                'total_working_days': working_days, 'total_absents': total_absents, "tasks_data": task_seria}
+                'total_working_days': working_days, 'total_absents': total_absents, "tasks_data": task_seria,
+                "profile_pic": serializer.data[0]['profile_pic'] if serializer.data else None
+                }
         return JsonResponse(status=status.HTTP_200_OK, data=data)
