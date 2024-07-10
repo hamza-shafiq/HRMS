@@ -64,7 +64,7 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 "total_assets": total_assets, "total_assignee": assignee, "remaining_assets": remaining_assets,
                 "total_recruits": total_recruits, "active_recruits": active_recruits,
                 "pending_recruits": pending_recruits, "total_attendees": attendees, "emp_attendance": emp_attendance,
-                "leave_data": seria,"profile_pic": serializer.data[0]['profile_pic'] if serializer.data else None
+                "leave_data": seria, "profile_pic": serializer.data[0]['profile_pic'] if serializer.data else None
                 }
         return JsonResponse(status=status.HTTP_200_OK, data=data)
 
@@ -105,7 +105,6 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             leaves_dict = {}
         leave_count = sum(
             value for key, value in leaves_dict.items() if key not in ["WORK_FROM_HOME", "EXTRA_DAYS"])
-
         month = datetime.now().month
         attendees = Attendance.objects.filter(employee_id=user.id, check_in__month=month).count()
         leaves_rejected = rejected_leave_count
