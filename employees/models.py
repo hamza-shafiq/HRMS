@@ -61,7 +61,7 @@ class Employee(User):
 class EmployeeHistory(BaseModel):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="employee")
     subject = models.CharField(max_length=255)
-    remarks = models.TextField(max_length=20)
+    remarks = models.TextField(max_length=500)
     increment = models.FloatField(default=0)
     interval_from = models.DateField()
     interval_to = models.DateField()
