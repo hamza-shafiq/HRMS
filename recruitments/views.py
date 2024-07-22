@@ -1,4 +1,6 @@
 import django_filters
+from django.db.models import Value as V
+from django.db.models.functions import Concat
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -11,19 +13,16 @@ from tasks.serializers import TasksSerializer
 from .permissions import RecruitsHistoryPermission, RecruitsPermission
 from .serializers import RecruitsHistorySerializer, RecruitsSerializer
 
-from django.db.models.functions import Concat
-from django.db.models import Value as V
-
 
 class ApplicantFilter(django_filters.FilterSet):
     full_name = filters.CharFilter(
         method='filter_applicant_name',
     )
     status = filters.CharFilter(
-        method='filter_employee_status',
+        method='filter_applicant_status',
     )
     position = filters.CharFilter(
-        method='filter_employee_position',
+        method='filter_applicant_position',
     )
 
     class Meta:
@@ -34,10 +33,10 @@ class ApplicantFilter(django_filters.FilterSet):
         return (queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name')).
                 filter(full_name__icontains=value))
 
-    def filter_employee_status(self, queryset, name, value):
+    def filter_applicant_status(self, queryset, name, value):
         return queryset.filter(status=value)
 
-    def filter_employee_position(self, queryset, name, value):
+    def filter_applicant_position(self, queryset, name, value):
         return queryset.filter(position=value)
 
 
