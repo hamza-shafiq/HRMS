@@ -91,7 +91,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
         # Create a list of dictionaries with 'id' and 'employee_name'
         serializer = EmployeeSerializer(employees, many=True, context={'request': request})
-        unique_values_list = [{'id': item['id'], 'name': item.get('employee_name')} for item in serializer.data]
+        unique_values_list = [{'id': item['id'], 'name': item.get('employee_name'),
+                               'status': item.get('employee_status')} for item in serializer.data]
 
         return JsonResponse({'unique_values': unique_values_list})
 
