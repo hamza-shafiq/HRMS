@@ -20,6 +20,8 @@ class Recruits(BaseModel):
     # resume = models.URLField(max_length=200)
     resume = models.FileField(upload_to='media', verbose_name="resume pdf")
     status = models.CharField(max_length=100, choices=CHOICES)
+    assigned_to = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True)
+    interview_date = models.DateField(null=True, blank=True)
 
     class Meta:
         db_table = "recruits"
