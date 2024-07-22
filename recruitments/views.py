@@ -1,3 +1,4 @@
+import django_filters
 from django_filters import rest_framework as filters
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
@@ -10,13 +11,42 @@ from tasks.serializers import TasksSerializer
 from .permissions import RecruitsHistoryPermission, RecruitsPermission
 from .serializers import RecruitsHistorySerializer, RecruitsSerializer
 
+from django.db.models.functions import Concat
+from django.db.models import Value as V
+
+
+class ApplicantFilter(django_filters.FilterSet):
+    full_name = filters.CharFilter(
+        method='filter_applicant_name',
+    )
+    status = filters.CharFilter(
+        method='filter_employee_status',
+    )
+    position = filters.CharFilter(
+        method='filter_employee_position',
+    )
+
+    class Meta:
+        model = Recruits
+        fields = ['first_name', 'last_name', 'full_name', 'position', 'status']
+
+    def filter_applicant_name(self, queryset, name, value):
+        return (queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name')).
+                filter(full_name__icontains=value))
+
+    def filter_employee_status(self, queryset, name, value):
+        return queryset.filter(status=value)
+
+    def filter_employee_position(self, queryset, name, value):
+        return queryset.filter(position=value)
+
 
 class RecruitsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, RecruitsPermission]
     queryset = Recruits.objects.filter(is_deleted=False)
     serializer_class = RecruitsSerializer
     filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ['position', 'status']
+    filterset_class = ApplicantFilter
     pagination_class = CustomPageNumberPagination
 
     def create_task_for_interview(self, data, assigned_by):
