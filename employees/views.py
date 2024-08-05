@@ -17,22 +17,16 @@ from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHis
 
 
 class EmployeeFilter(django_filters.FilterSet):
-    employee_status = filters.CharFilter(
-        method='filter_employee_status',
-    )
-
-    department = filters.CharFilter(
-        method='filter_by_department',
-    )
-
-    full_name = filters.CharFilter(
-        method='filter_employee_name',
-    )
+    employee_status = filters.CharFilter(method='filter_employee_status')
+    department = filters.CharFilter(method='filter_by_department')
+    full_name = filters.CharFilter(method='filter_employee_name')
+    team_lead = filters.CharFilter(method='filter_team_lead')
 
     class Meta:
         model = Employee
         fields = ['first_name', 'last_name', 'phone_number', 'national_id_number',
-                  'gender', 'department', 'designation', 'joining_date', 'employee_status', 'full_name']
+                  'gender', 'department', 'designation', 'joining_date', 'employee_status', 'full_name',
+                  'team_lead_id']
 
     def filter_employee_name(self, queryset, name, value):
         return (queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name')).
@@ -43,6 +37,15 @@ class EmployeeFilter(django_filters.FilterSet):
 
     def filter_by_department(self, queryset, name, value):
         return queryset.filter(department__id=value)
+
+    def filter_team_lead(self, queryset, name, value):
+        return queryset.filter(team_lead_id=value)
+
+    def filter_queryset(self, queryset):
+        user = self.request.user
+        if user.is_team_lead:
+            queryset = queryset.filter(team_lead_id=user.id)
+        return super().filter_queryset(queryset)
 
 
 class EmployeeHistoryFilter(django_filters.FilterSet):
@@ -86,43 +89,48 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, url_path="unique-values", methods=['get'])
     def get(self, request, *args, **kwargs):
-        # Get unique values of the specific column
-        employees = Employee.objects.all()
+        user = request.user
+        if user.is_team_lead:
+            employees = Employee.objects.filter(team_lead_id=user.id)
+        else:
+            employees = Employee.objects.all()
 
-        # Create a list of dictionaries with 'id' and 'employee_name'
         serializer = EmployeeSerializer(employees, many=True, context={'request': request})
-        unique_values_list = [{'id': item['id'], 'name': item.get('employee_name'),
-                               'status': item.get('employee_status')} for item in serializer.data]
+        return JsonResponse({'unique_values': serializer.data})
 
-        return JsonResponse({'unique_values': unique_values_list})
+    @action(detail=False, url_path="team_leads", methods=['get'])
+    def get_team_leads(self, request, *args, **kwargs):
+        team_lead_employees = Employee.objects.filter(is_team_lead=True)
+        serializer = EmployeeSerializer(team_lead_employees, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, url_path="get_employee", methods=['get'])
     def employee_detail(self, request):
         user = request.user
-        serializer_context = {
-            'request': request,
-        }
+        serializer_context = {'request': request}
+
         if user.is_admin and self.request.query_params.get('employee_id'):
             emp_id = self.request.query_params.get('employee_id')
             if emp_id:
                 try:
                     record = Employee.objects.filter(id=emp_id, is_deleted=False)
-                    if record:
+                    if record.exists():
                         serializer = EmployeeSerializer(record, many=True, context=serializer_context)
                         return Response(serializer.data, status=status.HTTP_200_OK)
                     return JsonResponse({'error': f'Employee with id: {emp_id} does not exist'},
                                         status=status.HTTP_404_NOT_FOUND)
                 except ValidationError:
-                    return JsonResponse({'detail': 'Invalid employee id'},
-                                        status=status.HTTP_404_NOT_FOUND)
+                    return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
         elif user.is_employee:
             record = Employee.objects.filter(id=user.id, is_deleted=False)
             serializer = EmployeeSerializer(record, many=True, context=serializer_context)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return JsonResponse({'error': 'user except admin and employee is not allowed to '
-                                      'to perform filter'},
-                            status=status.HTTP_403_FORBIDDEN)
+        elif user.is_team_lead:
+            record = Employee.objects.filter(team_lead_id=user.id, is_deleted=False)
+            serializer = EmployeeSerializer(record, many=True, context=serializer_context)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return JsonResponse({'error': 'User not allowed to perform this action'}, status=status.HTTP_403_FORBIDDEN)
 
 
 class EmploymentHistoryViewSet(viewsets.ModelViewSet):

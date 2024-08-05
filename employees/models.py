@@ -43,7 +43,24 @@ class Employee(User):
     total_leaves = models.IntegerField(default=18)
     extra_leaves = models.IntegerField(default=0)
 
+    team_lead = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                  related_name='team_lead_employees', limit_choices_to={'is_team_lead': True})
+
     objects = EmployeeQuerySet()
+
+    def get_team_lead_name(self):
+        if self.team_lead:
+            user = Employee.objects.get(id=self.team_lead.id)
+            return user.get_full_name
+        return ""
+
+    def get_team_lead_id(self):
+        if self.team_lead:
+            return self.team_lead.id
+        return ""
+
+    def total_employees(self):
+        return Employee.objects.filter(team_lead=self.id).count()
 
     @property
     def get_full_name(self):
