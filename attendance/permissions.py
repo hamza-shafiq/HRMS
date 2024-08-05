@@ -5,10 +5,10 @@ from user.utils import UserRoles, check_user_role
 class AttendancePermission(BaseCustomPermission):
 
     def has_permission(self, request, view):
-        user_role = check_user_role(request.user)
+        # user_role = check_user_role(request.user)
         if view.action == 'mark_attendance' or view.action == 'check_today_attendance'\
                 or view.action == 'get_attendance':
-            if user_role == UserRoles.EMPLOYEE:
+            if request.user.is_employee:
                 return True
         return super().has_permission(request, view)
 
@@ -18,10 +18,10 @@ class LeavesPermission(BaseCustomPermission):
     def has_permission(self, request, view):
         user_role = check_user_role(request.user)
         if view.action == 'create' or view.action == 'get_leave':
-            if user_role == UserRoles.EMPLOYEE:
+            if request.user.is_employee:
                 return True
         if view.action == 'approve':
-            if user_role == UserRoles.ADMIN and request.user.is_employee:
+            if user_role == UserRoles.ADMIN or user_role == UserRoles.TEAM_LEAD:
                 return True
             return False
         if view.action == 'partial_update':
