@@ -24,16 +24,19 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request, *args, **kwargs):
         emp = request.query_params.get('emp')
-        team_lead_id = request.user.id if request.user.is_team_lead else None
+        user = request.user
 
         att_serializer = self.get_attendance_data(emp)
-        leave_serializer = self.get_leave_data(team_lead_id)
 
-        if team_lead_id:
-            data = self.get_team_lead_data(team_lead_id, att_serializer, leave_serializer)
-        else:
+        if user.is_admin:
+            leave_serializer = self.get_leave_data(emp)
             data = self.get_admin_data(att_serializer, leave_serializer, request)
-
+            # data = self.get_team_lead_data(employee.id, att_serializer, leave_serializer)
+        else:
+            employee = Employee.objects.get(id=request.user.id)
+            leave_serializer = self.get_leave_data(employee.id)
+            # data = self.get_admin_data(att_serializer, leave_serializer, request)
+            data = self.get_team_lead_data(employee.id, att_serializer, leave_serializer)
         return JsonResponse(status=status.HTTP_200_OK, data=data)
 
     def get_attendance_data(self, emp):
@@ -125,18 +128,20 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         user = request.user
         team_lead_id = user.id
 
+        employee = Employee.objects.get(id=user.id)
+
         # Ensure the user is a team lead
-        if not user.is_team_lead:
+        if not employee.is_team_lead:
             return Response({"detail": "User is not a team lead"}, status=status.HTTP_403_FORBIDDEN)
 
         try:
 
             # Fetch employees under the team lead
-            employees_details = Employee.objects.filter(team_lead=team_lead_id, is_active=True)
+            employees_details = Employee.objects.filter(team_lead_id=team_lead_id, is_active=True)
             employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp in employees_details]
             # total_employees = Employee.objects.filter(team_lead=team_lead_id).count()
 
-            present_employees = Employee.objects.filter(employee_status="WORKING", team_lead=team_lead_id,
+            present_employees = Employee.objects.filter(employee_status="WORKING", team_lead_id=team_lead_id,
                                                         is_active=True).count()
             attendees = Attendance.objects.filter(employee__team_lead_id=team_lead_id,
                                                   check_in__date=datetime.now().date()).count()

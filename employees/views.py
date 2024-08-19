@@ -20,13 +20,12 @@ class EmployeeFilter(django_filters.FilterSet):
     employee_status = filters.CharFilter(method='filter_employee_status')
     department = filters.CharFilter(method='filter_by_department')
     full_name = filters.CharFilter(method='filter_employee_name')
-    team_lead = filters.CharFilter(method='filter_team_lead')
 
     class Meta:
         model = Employee
         fields = ['first_name', 'last_name', 'phone_number', 'national_id_number',
                   'gender', 'department', 'designation', 'joining_date', 'employee_status', 'full_name',
-                  'team_lead_id']
+                  'team_lead']
 
     def filter_employee_name(self, queryset, name, value):
         return (queryset.annotate(full_name=Concat('first_name', V(' '), 'last_name')).
@@ -38,13 +37,14 @@ class EmployeeFilter(django_filters.FilterSet):
     def filter_by_department(self, queryset, name, value):
         return queryset.filter(department__id=value)
 
-    def filter_team_lead(self, queryset, name, value):
-        return queryset.filter(team_lead_id=value)
-
     def filter_queryset(self, queryset):
         user = self.request.user
-        if user.is_team_lead:
-            queryset = queryset.filter(team_lead_id=user.id)
+        if user.is_admin:
+            pass
+        else:
+            employee = Employee.objects.get(id=user.id)
+            if employee.is_team_lead:
+                queryset = queryset.filter(team_lead_id=user.id)
         return super().filter_queryset(queryset)
 
 
@@ -87,11 +87,52 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
     pagination_class = CustomPageNumberPagination
 
+    def update(self, request, *args, **kwargs):
+        employee = self.get_object()
+        lead = request.data.get('team_lead')
+        old_lead = employee.team_lead
+
+        try:
+            # Handle team lead change
+            if lead:
+                lead_employee = Employee.objects.get(id=lead)
+                employee.team_lead = lead_employee
+                lead_employee.is_team_lead = True
+                employee.save()
+                lead_employee.save()
+
+            elif not lead and employee.team_lead:
+                employee.team_lead = None
+                employee.save()
+
+            if old_lead and not Employee.objects.filter(team_lead=old_lead.id).exists():
+                old_lead.is_team_lead = False
+                old_lead.save()
+
+            # Update the rest of the employee data
+            serializer = EmployeeSerializer(employee, data=request.data, partial=True, context={'request': request})
+
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Employee.DoesNotExist:
+            return Response({'error': 'Team lead not found'}, status=status.HTTP_404_NOT_FOUND)
+        except ValueError:
+            return Response({'error': 'Invalid team lead ID'}, status=status.HTTP_400_BAD_REQUEST)
+
     @action(detail=False, url_path="unique-values", methods=['get'])
     def get(self, request, *args, **kwargs):
         user = request.user
-        if user.is_team_lead:
-            employees = Employee.objects.filter(team_lead_id=user.id)
+        employee = Employee.objects.get(id=user.id)
+
+        if user.is_employee:
+            if employee.is_team_lead:
+                employees = Employee.objects.filter(team_lead_id=user.id)
+            else:
+                employees = Employee.objects.filter(id=user.id)
         else:
             employees = Employee.objects.all()
 
@@ -113,23 +154,51 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             emp_id = self.request.query_params.get('employee_id')
             if emp_id:
                 try:
-                    record = Employee.objects.filter(id=emp_id, is_deleted=False)
-                    if record.exists():
-                        serializer = EmployeeSerializer(record, many=True, context=serializer_context)
-                        return Response(serializer.data, status=status.HTTP_200_OK)
+                    emp_record = None
+                    if emp_id is not None and Employee.objects.filter(id=emp_id, is_deleted=False).exists():
+                        emp_record = Employee.objects.get(id=emp_id, is_deleted=False)
+                    tl_employees = Employee.objects.filter(team_lead_id=emp_id, is_deleted=False)
+                    if emp_record is not None:
+                        tl_serializer = EmployeeSerializer(emp_record, context=serializer_context)
+                        serializer_context = {'request': request, 'minimal_fields': True}
+                        tl_employees_serializer = EmployeeSerializer(tl_employees, many=True,
+                                                                     context=serializer_context)
+                        return Response({"employee": tl_serializer.data,
+                                         "employees": tl_employees_serializer.data}, status=status.HTTP_200_OK)
                     return JsonResponse({'error': f'Employee with id: {emp_id} does not exist'},
                                         status=status.HTTP_404_NOT_FOUND)
                 except ValidationError:
                     return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
             return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
-        elif user.is_employee:
-            record = Employee.objects.filter(id=user.id, is_deleted=False)
+
+        elif user.is_admin:
+            record = Employee.objects.all()
             serializer = EmployeeSerializer(record, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        elif user.is_team_lead:
-            record = Employee.objects.filter(team_lead_id=user.id, is_deleted=False)
-            serializer = EmployeeSerializer(record, many=True, context=serializer_context)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"employees": serializer.data}, status=status.HTTP_200_OK)
+        else:
+            employee = Employee.objects.get(id=user.id)
+            if user.is_employee and employee.is_team_lead and self.request.query_params.get('employee_id'):
+                emp_id = self.request.query_params.get('employee_id')
+                if emp_id:
+                    try:
+                        record = Employee.objects.get(id=emp_id, is_deleted=False)
+                        if record is not None:
+                            serializer = EmployeeSerializer(record, context=serializer_context)
+                            return Response({"employee": serializer.data}, status=status.HTTP_200_OK)
+                        return JsonResponse({'error': f'Employee with id: {emp_id} does not exist'},
+                                            status=status.HTTP_404_NOT_FOUND)
+                    except ValidationError:
+                        return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
+
+            elif user.is_employee and not employee.is_team_lead:
+                record = Employee.objects.get(id=user.id, is_deleted=False)
+                serializer = EmployeeSerializer(record, context=serializer_context)
+                return Response({"employee": serializer.data}, status=status.HTTP_200_OK)
+            elif user.is_employee and employee.is_team_lead:
+                record = Employee.objects.filter(team_lead_id=user.id, is_deleted=False)
+                serializer = EmployeeSerializer(record, many=True, context=serializer_context)
+                return Response({"employee": serializer.data}, status=status.HTTP_200_OK)
         return JsonResponse({'error': 'User not allowed to perform this action'}, status=status.HTTP_403_FORBIDDEN)
 
 

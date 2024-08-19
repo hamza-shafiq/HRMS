@@ -137,15 +137,18 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')
         emp_id = self.request.query_params.get('employee_id')
-        # team_lead_id = self.request.query_params.get('team_lead_id')
-        team_lead_id = False
-        if request.user.is_team_lead:
-            team_lead_id = request.user.id
-        if team_lead_id is not None and team_lead_id is not False:
-            try:
-                queryset = Attendance.objects.filter(employee__team_lead=team_lead_id).order_by('-check_in')
-            except ValueError:
-                return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
+
+        if not user.is_admin:
+            employee = Employee.objects.get(id=user.id)
+            team_lead = None
+            if employee.is_team_lead:
+                team_lead = employee
+            if team_lead:
+                try:
+                    queryset = Attendance.objects.filter(employee__team_lead=team_lead).order_by('-check_in')
+                except ValueError:
+                    return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             queryset = Attendance.objects.all().order_by('-check_in')
         if date or emp_id:
@@ -189,11 +192,11 @@ class LeavesFilter(django_filters.FilterSet):
     employee_id = filters.CharFilter(
         method='filter_employee_id'
     )
-    
+
     leave_type = filters.CharFilter(
-        method = 'filter_leave_type',
+        method='filter_leave_type',
     )
-    employee__team_lead_id = filters.CharFilter(
+    employee__team_lead = filters.CharFilter(
         method='filter_team_lead'
     )
 
@@ -207,7 +210,7 @@ class LeavesFilter(django_filters.FilterSet):
 
     def filter_approved_by(self, queryset, name, value):
         return queryset.filter(approved_by__id=value)
-    
+
     def filter_leave_type(self, queryset, name, value):
         return queryset.filter(leave_type=value)
 
@@ -218,8 +221,12 @@ class LeavesFilter(django_filters.FilterSet):
     def filter_queryset(self, queryset):
         # Filtering logic for team lead
         user = self.request.user
-        if user.is_team_lead:
-            queryset = queryset.filter(employee__team_lead_id=user.id)
+        if user.is_admin:
+            pass
+        else:
+            employee = Employee.objects.get(id=user.id)
+            if employee.is_team_lead:
+                queryset = queryset.filter(employee__team_lead=user)
         return super().filter_queryset(queryset)
 
     # def filter_team_lead(self, queryset, name, value):

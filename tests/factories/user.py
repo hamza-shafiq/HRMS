@@ -33,7 +33,6 @@ class UserFactory(DjangoModelFactory):
     is_superuser = False
     is_employee = False
     is_staff = False
-    is_team_lead = False
 
     class Meta:
         model = 'user.User'
