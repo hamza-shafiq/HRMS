@@ -16,6 +16,16 @@ def test_retrieve_leave(admin_factory, leaves_factory, authed_token_client_gener
     assert response.json()['id'] == str(leave.id)
 
 
+def test_retrieve_leaves_non_admin_team_lead(employee_factory, leaves_factory, authed_token_client_generator):
+    teamlead = employee_factory(is_team_lead=True)
+    emp = employee_factory(team_lead=teamlead)
+    leaves = leaves_factory(employee=emp)
+    client = authed_token_client_generator(leaves.employee)
+    response = client.get(reverse('leaves-detail', kwargs={'pk': leaves.id}), format='json')
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['id'] == str(leaves.id)
+
+
 def test_patch_leave(employee_factory, leaves_factory, authed_token_client_generator):
     user = employee_factory()
     leave = leaves_factory(employee=user)
@@ -133,34 +143,37 @@ def test_update_leave_status(leaves_factory, employee_factory, authed_token_clie
     assert response.json()['approved_by']['approved_by_name'] == approved_by.get_full_name
 
 
-def test_leave_approve_permission(user_factory, employee_factory, leaves_factory, authed_token_client_generator):
+def test_update_leave_status_non_admin_team_lead(leaves_factory, employee_factory, authed_token_client_generator):
     data = {
         "status": "APPROVED"
     }
-    approved_by = user_factory(is_staff=True, is_admin=True)
+    teamlead = employee_factory(is_team_lead=True)
+    employee = employee_factory(team_lead=teamlead)
+    leave = leaves_factory(employee=employee, from_date=datetime.datetime.now(),
+                           to_date=datetime.datetime.now() + datetime.timedelta(days=2))
+    client = authed_token_client_generator(teamlead)
+    response = client.patch(reverse('leaves-approve', kwargs={'pk': leave.id}), data=data, format='json')
+    assert response.status_code == status.HTTP_200_OK
+    result = response.json()
+    assert result['employee'] == str(employee.id)
+    assert result['number_of_days'] == '3'
+    assert result['status'] == "APPROVED"
+    assert response.json()['approved_by']['approved_by_name'] == teamlead.get_full_name
+
+
+def test_leave_approve_permission(employee_factory, leaves_factory,
+                                  authed_token_client_generator):
+    approved_by = employee_factory()
     employee = employee_factory()
     leave = leaves_factory(employee=employee, from_date=datetime.datetime.now(),
                            to_date=datetime.datetime.now() + datetime.timedelta(days=2))
+    data = {
+        "status": "APPROVED"
+    }
     client = authed_token_client_generator(approved_by)
     response = client.patch(reverse('leaves-approve', kwargs={'pk': leave.id}), data=data, format='json')
     assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
-
-
-# def test_extra_leave_status(leaves_factory, employee_factory, authed_token_client_generator):
-#     data = {"status": "APPROVED"}
-#     approved_by = employee_factory(is_staff=True, is_admin=True)
-#     employee = employee_factory(remaining_leaves=0)
-#     leave = leaves_factory(employee=employee, from_date=datetime.datetime.now(),
-#                            to_date=datetime.datetime.now() + datetime.timedelta(days=2))
-#     client = authed_token_client_generator(approved_by)
-#     response = client.patch(reverse('leaves-approve', kwargs={'pk': leave.id}), data=data, format='json')
-#     assert response.status_code == status.HTTP_200_OK
-#     result = response.json()
-#     assert result['employee'] == str(employee.id)
-#     assert result['extra_leaves'] == '3'
-#     assert result['status'] == "APPROVED"
-#     assert response.json()['approved_by']['approved_by_name'] == approved_by.get_full_name
 
 
 @pytest.mark.parametrize('leave_status', ['REJECTED', 'APPROVED'])

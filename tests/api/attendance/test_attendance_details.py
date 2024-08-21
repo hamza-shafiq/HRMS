@@ -13,6 +13,24 @@ def test_retrieve_attendance(admin_factory, attendance_factory, authed_token_cli
     assert response.json()['id'] == str(attendance.id)
 
 
+def test_retrieve_attendance_non_admin_team_lead(employee_factory, attendance_factory, authed_token_client_generator):
+    teamlead1 = employee_factory(is_team_lead=True)
+    teamlead2 = employee_factory(is_team_lead=True)
+    emp1 = employee_factory(team_lead=teamlead1)
+    emp2 = employee_factory(team_lead=teamlead2)
+    attendance_factory(employee=emp1)
+    attendance_factory(employee=emp1)
+    attendance_factory(employee=emp2)
+    client = authed_token_client_generator(teamlead1)
+    response = client.get(reverse('attendance-list'), format='json')
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['count'] == 2
+    client = authed_token_client_generator(teamlead2)
+    response = client.get(reverse('attendance-list'), format='json')
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['count'] == 1
+
+
 def test_retrieve_attendance_employee(attendance_factory, authed_token_client_generator):
     attendance = attendance_factory()
     client = authed_token_client_generator(attendance.employee)

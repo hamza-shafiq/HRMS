@@ -1,11 +1,16 @@
+# from user.utils import UserRoles, check_user_role
+from employees.models import Employee
 from hrms.permissions import BaseCustomPermission
-from user.utils import UserRoles, check_user_role
 
 
 class DashboardPermission(BaseCustomPermission):
     def has_permission(self, request, view):
-        user_role = check_user_role(request.user)
-        if view.action == 'employee_dashboard':
-            if user_role == UserRoles.EMPLOYEE:
+        user = request.user
+        if not user.is_admin and user.is_employee:
+            employee = Employee.objects.get(id=user.id)
+            if view.action == 'team_lead_dashboard':
+                if employee.is_team_lead:
+                    return True
+            elif view.action == 'employee_dashboard':
                 return True
         return super().has_permission(request, view)

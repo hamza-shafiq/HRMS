@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 from assets.models import Asset, AssignedAsset
 from attendance.models import Attendance, Leaves
@@ -22,23 +23,70 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = EmployeeSerializer
 
     def list(self, request, *args, **kwargs):
-        emp = self.request.query_params.get('emp')
+        emp = request.query_params.get('emp')
+        user = request.user
+
+        att_serializer = self.get_attendance_data(emp)
+
+        if user.is_admin:
+            leave_serializer = self.get_leave_data(emp)
+            data = self.get_admin_data(att_serializer, leave_serializer, request)
+        else:
+            employee = Employee.objects.get(id=request.user.id)
+            leave_serializer = self.get_leave_data(employee.id)
+            data = self.get_team_lead_data(employee.id, att_serializer, leave_serializer)
+        return JsonResponse(status=status.HTTP_200_OK, data=data)
+
+    def get_attendance_data(self, emp):
         if emp:
             try:
                 month = datetime.now().month
                 record = Attendance.objects.filter(employee_id=emp, check_in__month=month, is_deleted=False)
+                return AttendanceSerializer(record, many=True).data
             except ValidationError:
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
-            serializer = AttendanceSerializer(record, many=True)
-            serializer = serializer.data
+        return []
+
+    def get_leave_data(self, team_lead_id):
+        if team_lead_id:
+            try:
+                record = Leaves.objects.filter(employee__team_lead_id=team_lead_id, is_deleted=False).order_by(
+                    '-request_date')[:3]
+                return LeaveSerializer(record, many=True).data
+            except ValidationError:
+                return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
         else:
-            serializer = []
+            record = Leaves.objects.filter(is_deleted=False).order_by('-request_date')[:3]
+            return LeaveSerializer(record, many=True).data
+
+    def get_team_lead_data(self, team_lead_id, att_serializer, leave_serializer):
+        emp_attendance = att_serializer
+
+        employees_details = Employee.objects.filter(team_lead=team_lead_id, is_active=True)
+        employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp in employees_details]
+
+        total_employees = Employee.objects.filter(team_lead=team_lead_id).count()
+        present_employees = Employee.objects.filter(employee_status="WORKING", team_lead=team_lead_id,
+                                                    is_active=True).count()
+        attendees = Attendance.objects.filter(check_in__date=datetime.now().date()).count()
+        absent_employees = present_employees - attendees
+
+        return {
+            "total_employees": total_employees,
+            "active_employees": present_employees,
+            "employees_details": employee_data,
+            "absent_employees": absent_employees,
+            "present_employees": attendees,
+            "emp_attendance": emp_attendance,
+            "leave_data": leave_serializer
+        }
+
+    def get_admin_data(self, att_serializer, leave_serializer, request):
+        emp_attendance = att_serializer
         total_department = Department.objects.count()
-        emp_attendance = serializer
         total_employees = Employee.objects.count()
         present_employees = Employee.objects.filter(employee_status="WORKING", is_active=True).count()
         working_employees = Employee.objects.filter(employee_status="WORKING", is_active=True)
-        user = request.user
         total_assets = Asset.objects.count()
         assignee = AssignedAsset.objects.count()
         total_recruits = Recruits.objects.count()
@@ -47,26 +95,78 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         active_recruits = total_recruits - pending_recruits
         attendees = Attendance.objects.filter(check_in__date=datetime.now().date()).count()
         absent_employees = present_employees - attendees
-        leave_data = Leaves.objects.filter(is_deleted=False).order_by('-request_date')[:3]
-        seria = LeaveSerializer(leave_data, many=True)
-        seria = seria.data
-        working_employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp
-                                 in working_employees]
-        serializer_context = {
-            'request': request,
-        }
-        record = Employee.objects.filter(id=user.id, is_deleted=False)
-        serializer = EmployeeSerializer(record, many=True, context=serializer_context)
 
-        data = {"total_departments": total_department, "total_employees": total_employees,
-                "present_employees": present_employees, "working_employees": working_employee_data,
+        working_employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp in
+                                 working_employees]
+        serializer_context = {'request': request}
+        record = Employee.objects.filter(id=request.user.id, is_deleted=False)
+        profile_pic = EmployeeSerializer(record, many=True, context=serializer_context).data[0].get(
+            'profile_pic') if record else None
+
+        return {
+            "total_departments": total_department,
+            "total_employees": total_employees,
+            "present_employees": present_employees,
+            "working_employees": working_employee_data,
+            "absent_employees": absent_employees,
+            "total_assets": total_assets,
+            "total_assignee": assignee,
+            "remaining_assets": remaining_assets,
+            "total_recruits": total_recruits,
+            "active_recruits": active_recruits,
+            "pending_recruits": pending_recruits,
+            "total_attendees": attendees,
+            "emp_attendance": emp_attendance,
+            "leave_data": leave_serializer,
+            "profile_pic": profile_pic
+        }
+
+    @action(detail=False, url_path="team_lead_dashboard", methods=['get'])
+    def team_lead_dashboard(self, request):
+        user = request.user
+        team_lead_id = user.id
+
+        employee = Employee.objects.get(id=user.id)
+
+        # Ensure the user is a team lead
+        if not employee.is_team_lead:
+            return Response({"detail": "User is not a team lead"}, status=status.HTTP_403_FORBIDDEN)
+
+        try:
+
+            # Fetch employees under the team lead
+            employees_details = Employee.objects.filter(team_lead_id=team_lead_id, is_active=True)
+            employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp in employees_details]
+
+            present_employees = Employee.objects.filter(employee_status="WORKING", team_lead_id=team_lead_id,
+                                                        is_active=True).count()
+            attendees = Attendance.objects.filter(employee__team_lead_id=team_lead_id,
+                                                  check_in__date=datetime.now().date()).count()
+            absent_employees = present_employees - attendees
+
+            # Fetch the last three leave records for employees under the team lead
+            leave_records = Leaves.objects.filter(employee__team_lead_id=team_lead_id, is_deleted=False).order_by(
+                '-request_date')[:3]
+            leave_serializer = LeaveSerializer(leave_records, many=True)
+
+            # Fetch attendance data for employees under the team lead
+            attendance_records = Attendance.objects.filter(employee__team_lead_id=team_lead_id, is_deleted=False)
+            attendance_serializer = AttendanceSerializer(attendance_records, many=True)
+
+            data = {
+                "employees_details": employee_data,
+                "total_employees": user.employee.total_employees(),
+                "active_employees": present_employees,
                 "absent_employees": absent_employees,
-                "total_assets": total_assets, "total_assignee": assignee, "remaining_assets": remaining_assets,
-                "total_recruits": total_recruits, "active_recruits": active_recruits,
-                "pending_recruits": pending_recruits, "total_attendees": attendees, "emp_attendance": emp_attendance,
-                "leave_data": seria, "profile_pic": serializer.data[0]['profile_pic'] if serializer.data else None
-                }
-        return JsonResponse(status=status.HTTP_200_OK, data=data)
+                "total_attendees": attendees,
+                "emp_attendance": attendance_serializer.data,
+                "leave_data": leave_serializer.data,
+                "profile_pic": employee.profile_pic if employee.profile_pic else None,
+            }
+            return Response(data, status=status.HTTP_200_OK)
+
+        except ValidationError:
+            return Response({"detail": "Invalid team lead id"}, status=status.HTTP_404_NOT_FOUND)
 
     @staticmethod
     def working_days():

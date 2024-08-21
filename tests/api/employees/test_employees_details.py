@@ -17,7 +17,7 @@ def test_retrieve_employee(admin_factory, employee_factory, authed_token_client_
     user = admin_factory()
     employee = employee_factory()
     client = authed_token_client_generator(user)
-    response = client.patch(reverse('employees-detail', kwargs={'pk': employee.id}), format='json')
+    response = client.get(reverse('employees-detail', kwargs={'pk': employee.id}), format='json')
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['id'] == str(employee.id)
 

@@ -59,6 +59,15 @@ def test_get_employees_non_admin(user_factory, authed_token_client_generator):
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
+def test_get_employees_non_admin_team_lead(employee_factory, authed_token_client_generator):
+    teamlead = employee_factory(is_team_lead=True)
+    employee = employee_factory(team_lead=teamlead)
+    client = authed_token_client_generator(teamlead)
+    response = client.get(reverse('employees-list'))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['results'][0]['national_id_number'] == employee.national_id_number
+
+
 def test_create_employees_non_admin(user_factory, authed_token_client_generator):
     user = user_factory()
     data = {

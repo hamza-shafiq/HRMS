@@ -8,7 +8,20 @@ def test_filter_employees(admin_factory, employee_factory, authed_token_client_g
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str(employee.id))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]['id'] == str(employee.id)
+    response_data = response.json()
+    # data is now returning a dictionary with two keys
+    assert response_data['employee']['id'] == str(employee.id)
+
+
+def test_filter_employees_non_admin_team_lead(employee_factory, authed_token_client_generator):
+    teamlead = employee_factory(is_team_lead=True)
+    employee = employee_factory(team_lead=teamlead)
+    client = authed_token_client_generator(teamlead)
+    response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str(employee.id))
+    assert response.status_code == status.HTTP_200_OK
+    response_data = response.json()
+    # data is now returning a dictionary with two keys
+    assert response_data['employee']['id'] == str(employee.id)
 
 
 def test_filter_employees_invalid_id(admin_factory, authed_token_client_generator):
@@ -38,7 +51,10 @@ def test_filter_employee_own_detail(employee_factory, authed_token_client_genera
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-employee-detail'))
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()[0]['id'] == str(user.id)
+    response_data = response.json()
+    # assert response.json()[0]['id'] == str(user.id)
+    # now data is returning as a dictionsary
+    assert response_data['employee']['id'] == str(user.id)
 
 
 def test_filter_employee_with_user(user_factory, authed_token_client_generator):

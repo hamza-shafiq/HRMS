@@ -137,7 +137,18 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')
         emp_id = self.request.query_params.get('employee_id')
-        queryset = Attendance.objects.all().order_by('-check_in')
+        user = request.user
+
+        if not user.is_admin:
+            employee = Employee.objects.get(id=user.id)
+            if employee.is_team_lead:
+                team_lead = employee
+                try:
+                    queryset = Attendance.objects.filter(employee__team_lead=team_lead).order_by('-check_in')
+                except ValueError:
+                    return JsonResponse({'error': 'invalid team Lead'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            queryset = Attendance.objects.all().order_by('-check_in')
         if date or emp_id:
             try:
                 if date:
@@ -158,7 +169,6 @@ class AttendanceViewSet(viewsets.ModelViewSet):
                 return self.get_paginated_response(serializer.data)
             serializer = AttendanceSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        queryset = Attendance.objects.all().order_by('-check_in')
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -180,9 +190,9 @@ class LeavesFilter(django_filters.FilterSet):
     employee_id = filters.CharFilter(
         method='filter_employee_id'
     )
-    
+
     leave_type = filters.CharFilter(
-        method = 'filter_leave_type',
+        method='filter_leave_type',
     )
 
     class Meta:
@@ -195,13 +205,24 @@ class LeavesFilter(django_filters.FilterSet):
 
     def filter_approved_by(self, queryset, name, value):
         return queryset.filter(approved_by__id=value)
-    
+
     def filter_leave_type(self, queryset, name, value):
         return queryset.filter(leave_type=value)
 
     def filter_employee_id(self, queryset, name, value):
         return (queryset.annotate(full_name=Concat('employee__first_name', V(' '), 'employee__last_name')).
                 filter(full_name__icontains=value))
+
+    def filter_queryset(self, queryset):
+        # Filtering logic for team lead
+        user = self.request.user
+        if user.is_admin:
+            pass
+        else:
+            employee = Employee.objects.get(id=user.id)
+            if employee.is_team_lead:
+                queryset = queryset.filter(employee__team_lead=user)
+        return super().filter_queryset(queryset)
 
 
 class LeavesViewSet(viewsets.ModelViewSet):

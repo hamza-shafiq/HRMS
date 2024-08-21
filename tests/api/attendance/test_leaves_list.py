@@ -13,6 +13,16 @@ def test_get_leaves_admin(admin_factory, leaves_factory, authed_token_client_gen
     assert response.json()['results'][0]['leave_type'] == leaves.leave_type
 
 
+def test_get_leaves_non_admin_team_lead(employee_factory, leaves_factory, authed_token_client_generator):
+    teamlead = employee_factory(is_team_lead=True)
+    emp = employee_factory(team_lead=teamlead)
+    leaves = leaves_factory(employee=emp)
+    client = authed_token_client_generator(teamlead)
+    response = client.get(reverse('leaves-list'))
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['results'][0]['leave_type'] == leaves.leave_type
+
+
 def test_create_leave(admin_factory, employee_factory, authed_token_client_generator):
     user = admin_factory()
     employee = employee_factory()
