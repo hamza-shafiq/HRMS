@@ -5,7 +5,6 @@ from user.utils import UserRoles, check_user_role
 class AttendancePermission(BaseCustomPermission):
 
     def has_permission(self, request, view):
-        # user_role = check_user_role(request.user)
         if view.action == 'mark_attendance' or view.action == 'check_today_attendance'\
                 or view.action == 'get_attendance':
             if request.user.is_employee:

@@ -31,11 +31,9 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         if user.is_admin:
             leave_serializer = self.get_leave_data(emp)
             data = self.get_admin_data(att_serializer, leave_serializer, request)
-            # data = self.get_team_lead_data(employee.id, att_serializer, leave_serializer)
         else:
             employee = Employee.objects.get(id=request.user.id)
             leave_serializer = self.get_leave_data(employee.id)
-            # data = self.get_admin_data(att_serializer, leave_serializer, request)
             data = self.get_team_lead_data(employee.id, att_serializer, leave_serializer)
         return JsonResponse(status=status.HTTP_200_OK, data=data)
 
@@ -139,7 +137,6 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             # Fetch employees under the team lead
             employees_details = Employee.objects.filter(team_lead_id=team_lead_id, is_active=True)
             employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp in employees_details]
-            # total_employees = Employee.objects.filter(team_lead=team_lead_id).count()
 
             present_employees = Employee.objects.filter(employee_status="WORKING", team_lead_id=team_lead_id,
                                                         is_active=True).count()
@@ -164,6 +161,7 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 "total_attendees": attendees,
                 "emp_attendance": attendance_serializer.data,
                 "leave_data": leave_serializer.data,
+                "profile_pic": employee.profile_pic if employee.profile_pic else None,
             }
             return Response(data, status=status.HTTP_200_OK)
 

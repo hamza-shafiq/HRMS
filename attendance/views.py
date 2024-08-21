@@ -2,7 +2,7 @@ from datetime import datetime
 
 import django_filters
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.exceptions import ValidationError
 from django.db.models import CharField
 from django.db.models import Value as V
 from django.db.models.functions import Concat
@@ -141,14 +141,12 @@ class AttendanceViewSet(viewsets.ModelViewSet):
 
         if not user.is_admin:
             employee = Employee.objects.get(id=user.id)
-            team_lead = None
             if employee.is_team_lead:
                 team_lead = employee
-            if team_lead:
                 try:
                     queryset = Attendance.objects.filter(employee__team_lead=team_lead).order_by('-check_in')
                 except ValueError:
-                    return JsonResponse({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+                    return JsonResponse({'error': 'invalid team Lead'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             queryset = Attendance.objects.all().order_by('-check_in')
         if date or emp_id:
@@ -196,9 +194,6 @@ class LeavesFilter(django_filters.FilterSet):
     leave_type = filters.CharFilter(
         method='filter_leave_type',
     )
-    employee__team_lead = filters.CharFilter(
-        method='filter_team_lead'
-    )
 
     class Meta:
         model = Leaves
@@ -228,9 +223,6 @@ class LeavesFilter(django_filters.FilterSet):
             if employee.is_team_lead:
                 queryset = queryset.filter(employee__team_lead=user)
         return super().filter_queryset(queryset)
-
-    # def filter_team_lead(self, queryset, name, value):
-    #     return queryset.filter(employee__team_lead_id=value)
 
 
 class LeavesViewSet(viewsets.ModelViewSet):

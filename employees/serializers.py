@@ -8,8 +8,6 @@ from employees.models import Department, Employee, EmployeeHistory
 from user.models import User
 from user.tasks import send_email
 
-# from user.utils import check_user_role
-
 
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
     employees = serializers.HyperlinkedRelatedField(
@@ -95,8 +93,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
         ret['total_leaves'] = instance.total_leaves
         ret['leaves'] = leave_dict
         ret['remaining_leaves'] = instance.total_leaves - total_leave_count
-        # leave_dict['total_leaves'] = instance.total_leaves
-        # leave_dict['remaining_leaves'] = remaining_leaves
         return ret
 
     @staticmethod

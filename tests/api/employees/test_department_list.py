@@ -39,6 +39,16 @@ def test_get_department_non_admin(user_factory, authed_token_client_generator):
     assert response.json()['detail'] == 'You do not have permission to perform this action.'
 
 
+def test_get_department_non_admin_team_lead(employee_factory,
+                                            authed_token_client_generator):
+    teamlead = employee_factory(is_team_lead=True)
+    client = authed_token_client_generator(teamlead)
+    response = client.get(reverse('department-list'))
+    dep = Department.objects.first()
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()['results'][0]['department_name'] == dep.department_name
+
+
 def test_create_department_non_admin(user_factory, authed_token_client_generator):
     user = user_factory()
     data = {"department_name": 'Backend', "description": "test_description"}

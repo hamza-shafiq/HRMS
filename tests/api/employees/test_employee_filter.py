@@ -9,7 +9,17 @@ def test_filter_employees(admin_factory, employee_factory, authed_token_client_g
     response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str(employee.id))
     assert response.status_code == status.HTTP_200_OK
     response_data = response.json()
-    # assert response.json()[0]['id'] == str(employee.id)
+    # data is now returning a dictionary with two keys
+    assert response_data['employee']['id'] == str(employee.id)
+
+
+def test_filter_employees_non_admin_team_lead(employee_factory, authed_token_client_generator):
+    teamlead = employee_factory(is_team_lead=True)
+    employee = employee_factory(team_lead=teamlead)
+    client = authed_token_client_generator(teamlead)
+    response = client.get(reverse('employees-employee-detail') + "?employee_id=" + str(employee.id))
+    assert response.status_code == status.HTTP_200_OK
+    response_data = response.json()
     # data is now returning a dictionary with two keys
     assert response_data['employee']['id'] == str(employee.id)
 
