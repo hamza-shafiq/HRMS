@@ -66,9 +66,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
     def get_team_lead_name(self, obj):
         return obj.team_lead.get_full_name if obj.team_lead else None
 
-    def get_team_lead_id(self, obj):
-        return obj.team_lead.id if obj.team_lead else None
-
     def to_representation(self, instance):
         ret = super(EmployeeSerializer, self).to_representation(instance)
 

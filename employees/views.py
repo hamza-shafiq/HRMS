@@ -44,7 +44,7 @@ class EmployeeFilter(django_filters.FilterSet):
         else:
             employee = Employee.objects.get(id=user.id)
             if employee.is_team_lead:
-                queryset = queryset.filter(team_lead_id=user.id)
+                queryset = queryset.filter(team_lead=user.id)
         return super().filter_queryset(queryset)
 
 
@@ -126,15 +126,15 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     @action(detail=False, url_path="unique-values", methods=['get'])
     def get(self, request, *args, **kwargs):
         user = request.user
-        employee = Employee.objects.get(id=user.id)
 
-        if user.is_employee:
+        if user.is_admin:
+            employees = Employee.objects.all()
+        else:
+            employee = Employee.objects.get(id=user.id)
             if employee.is_team_lead:
-                employees = Employee.objects.filter(team_lead_id=user.id)
+                employees = Employee.objects.filter(team_lead=user.id)
             else:
                 employees = Employee.objects.filter(id=user.id)
-        else:
-            employees = Employee.objects.all()
 
         serializer = EmployeeSerializer(employees, many=True, context={'request': request})
         return JsonResponse({'unique_values': serializer.data})
@@ -157,7 +157,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     emp_record = None
                     if emp_id is not None and Employee.objects.filter(id=emp_id, is_deleted=False).exists():
                         emp_record = Employee.objects.get(id=emp_id, is_deleted=False)
-                    tl_employees = Employee.objects.filter(team_lead_id=emp_id, is_deleted=False)
+                    tl_employees = Employee.objects.filter(team_lead=emp_id, is_deleted=False)
                     if emp_record is not None:
                         tl_serializer = EmployeeSerializer(emp_record, context=serializer_context)
                         serializer_context = {'request': request, 'minimal_fields': True}
@@ -176,8 +176,7 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             serializer = EmployeeSerializer(record, many=True, context=serializer_context)
             return Response({"employees": serializer.data}, status=status.HTTP_200_OK)
         else:
-            employee = Employee.objects.get(id=user.id)
-            if user.is_employee and employee.is_team_lead and self.request.query_params.get('employee_id'):
+            if user.employee.is_team_lead and self.request.query_params.get('employee_id'):
                 emp_id = self.request.query_params.get('employee_id')
                 if emp_id:
                     try:
@@ -191,12 +190,12 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                         return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
                 return JsonResponse({'error': 'Employee id is not provided'}, status=status.HTTP_204_NO_CONTENT)
 
-            elif user.is_employee and not employee.is_team_lead:
+            elif not user.employee.is_team_lead:
                 record = Employee.objects.get(id=user.id, is_deleted=False)
                 serializer = EmployeeSerializer(record, context=serializer_context)
                 return Response({"employee": serializer.data}, status=status.HTTP_200_OK)
-            elif user.is_employee and employee.is_team_lead:
-                record = Employee.objects.filter(team_lead_id=user.id, is_deleted=False)
+            elif user.employee.is_team_lead:
+                record = Employee.objects.filter(team_lead=user.id, is_deleted=False)
                 serializer = EmployeeSerializer(record, many=True, context=serializer_context)
                 return Response({"employee": serializer.data}, status=status.HTTP_200_OK)
         return JsonResponse({'error': 'User not allowed to perform this action'}, status=status.HTTP_403_FORBIDDEN)
