@@ -51,7 +51,7 @@ class Employee(User):
     objects = EmployeeQuerySet()
 
     def total_employees(self):
-        return Employee.objects.filter(team_lead_id=self.id).count()
+        return Employee.objects.filter(team_lead=self.id).count()
 
     @property
     def get_full_name(self):

@@ -29,9 +29,9 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         att_serializer = self.get_attendance_data(emp)
 
         if user.is_admin:
-            leave_serializer = self.get_leave_data(emp)
+            leave_serializer = self.get_leave_data(False)
             data = self.get_admin_data(att_serializer, leave_serializer, request)
-        else:
+        elif user.employee.is_team_lead:
             employee = Employee.objects.get(id=request.user.id)
             leave_serializer = self.get_leave_data(employee.id)
             data = self.get_team_lead_data(employee.id, att_serializer, leave_serializer)
@@ -47,10 +47,10 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 return JsonResponse({'detail': 'Invalid employee id'}, status=status.HTTP_404_NOT_FOUND)
         return []
 
-    def get_leave_data(self, team_lead_id):
-        if team_lead_id:
+    def get_leave_data(self, team_lead):
+        if team_lead:
             try:
-                record = Leaves.objects.filter(employee__team_lead_id=team_lead_id, is_deleted=False).order_by(
+                record = Leaves.objects.filter(employee__team_lead=team_lead, is_deleted=False).order_by(
                     '-request_date')[:3]
                 return LeaveSerializer(record, many=True).data
             except ValidationError:
@@ -59,14 +59,14 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             record = Leaves.objects.filter(is_deleted=False).order_by('-request_date')[:3]
             return LeaveSerializer(record, many=True).data
 
-    def get_team_lead_data(self, team_lead_id, att_serializer, leave_serializer):
+    def get_team_lead_data(self, team_lead, att_serializer, leave_serializer):
         emp_attendance = att_serializer
 
-        employees_details = Employee.objects.filter(team_lead=team_lead_id, is_active=True)
+        employees_details = Employee.objects.filter(team_lead=team_lead, is_active=True)
         employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp in employees_details]
 
-        total_employees = Employee.objects.filter(team_lead=team_lead_id).count()
-        present_employees = Employee.objects.filter(employee_status="WORKING", team_lead=team_lead_id,
+        total_employees = Employee.objects.filter(team_lead=team_lead).count()
+        present_employees = Employee.objects.filter(employee_status="WORKING", team_lead=team_lead,
                                                     is_active=True).count()
         attendees = Attendance.objects.filter(check_in__date=datetime.now().date()).count()
         absent_employees = present_employees - attendees
@@ -135,22 +135,22 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         try:
 
             # Fetch employees under the team lead
-            employees_details = Employee.objects.filter(team_lead_id=team_lead_id, is_active=True)
+            employees_details = Employee.objects.filter(team_lead=team_lead_id, is_active=True)
             employee_data = [{"id": emp.id, "name": f"{emp.first_name} {emp.last_name}"} for emp in employees_details]
 
-            present_employees = Employee.objects.filter(employee_status="WORKING", team_lead_id=team_lead_id,
+            present_employees = Employee.objects.filter(employee_status="WORKING", team_lead=team_lead_id,
                                                         is_active=True).count()
-            attendees = Attendance.objects.filter(employee__team_lead_id=team_lead_id,
+            attendees = Attendance.objects.filter(employee__team_lead=team_lead_id,
                                                   check_in__date=datetime.now().date()).count()
             absent_employees = present_employees - attendees
 
             # Fetch the last three leave records for employees under the team lead
-            leave_records = Leaves.objects.filter(employee__team_lead_id=team_lead_id, is_deleted=False).order_by(
+            leave_records = Leaves.objects.filter(employee__team_lead=team_lead_id, is_deleted=False).order_by(
                 '-request_date')[:3]
             leave_serializer = LeaveSerializer(leave_records, many=True)
 
             # Fetch attendance data for employees under the team lead
-            attendance_records = Attendance.objects.filter(employee__team_lead_id=team_lead_id, is_deleted=False)
+            attendance_records = Attendance.objects.filter(employee__team_lead=team_lead_id, is_deleted=False)
             attendance_serializer = AttendanceSerializer(attendance_records, many=True)
 
             data = {
