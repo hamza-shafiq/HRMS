@@ -106,11 +106,11 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         return {
             "total_departments": total_department,
             "total_employees": total_employees,
-            "present_employees": present_employees,
+            "active_employees": present_employees,
             "working_employees": working_employee_data,
             "absent_employees": absent_employees,
             "total_assets": total_assets,
-            "total_assignee": assignee,
+            "assigned_assets": assignee,
             "remaining_assets": remaining_assets,
             "total_recruits": total_recruits,
             "active_recruits": active_recruits,
@@ -161,7 +161,7 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 "total_attendees": attendees,
                 "emp_attendance": attendance_serializer.data,
                 "leave_data": leave_serializer.data,
-                "profile_pic": employee.profile_pic if employee.profile_pic else None,
+                # "profile_pic": employee.profile_pic if employee.profile_pic else None,
             }
             return Response(data, status=status.HTTP_200_OK)
 

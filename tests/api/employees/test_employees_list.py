@@ -61,11 +61,12 @@ def test_get_employees_non_admin(user_factory, authed_token_client_generator):
 
 def test_get_employees_non_admin_team_lead(employee_factory, authed_token_client_generator):
     teamlead = employee_factory(is_team_lead=True)
-    employee = employee_factory(team_lead=teamlead)
+    employee_factory(team_lead=teamlead)
     client = authed_token_client_generator(teamlead)
-    response = client.get(reverse('employees-list'))
+    response = client.get(reverse('dashboard-team-lead-dashboard'))
+    employee_list_count = Employee.objects.filter(team_lead=teamlead).count()
     assert response.status_code == status.HTTP_200_OK
-    assert response.json()['results'][0]['national_id_number'] == employee.national_id_number
+    assert response.data['total_employees'] == employee_list_count
 
 
 def test_create_employees_non_admin(user_factory, authed_token_client_generator):

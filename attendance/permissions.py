@@ -20,11 +20,11 @@ class LeavesPermission(BaseCustomPermission):
             if request.user.is_employee:
                 return True
         if view.action == 'approve':
-            if user_role == UserRoles.ADMIN or user_role == UserRoles.TEAM_LEAD:
+            if UserRoles.ADMIN in user_role or UserRoles.TEAM_LEAD in user_role:
                 return True
             return False
         if view.action == 'partial_update':
-            if user_role == UserRoles.EMPLOYEE:
+            if UserRoles.EMPLOYEE in user_role:
                 return True
         if view.action == 'destroy':
             return True

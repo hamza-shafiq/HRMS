@@ -22,9 +22,9 @@ def test_get_statistics(admin_factory, employee_factory, asset_factory, recruit_
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['total_departments'] == 1
     assert response.json()['total_employees'] == 1
-    assert response.json()['present_employees'] == 0
+    assert response.json()['active_employees'] == 0
     assert response.json()['total_assets'] == 1
-    assert response.json()['total_assignee'] == 0
+    assert response.json()['assigned_assets'] == 0
     assert response.json()['total_recruits'] == 1
     assert response.json()['pending_recruits'] == 1
     assert response.json()['total_attendees'] == 1

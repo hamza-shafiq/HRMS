@@ -26,6 +26,11 @@ class Asset(BaseTitleDescriptionModel):
 
     objects = AssetQuerySet()
 
+    def delete(self, *args, **kwargs):
+        # Delete associated AssignedAsset records before deleting the Asset
+        AssignedAsset.objects.filter(asset=self).delete()
+        super().delete(*args, **kwargs)
+
     class Meta:
         db_table = 'assets'
 

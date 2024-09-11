@@ -38,13 +38,10 @@ class EmployeeFilter(django_filters.FilterSet):
         return queryset.filter(department__id=value)
 
     def filter_queryset(self, queryset):
+        portal = self.request.query_params.get('portal')
         user = self.request.user
-        if user.is_admin:
-            pass
-        else:
-            employee = Employee.objects.get(id=user.id)
-            if employee.is_team_lead:
-                queryset = queryset.filter(team_lead=user.id)
+        if (user.is_admin or user.employee.is_team_lead) and portal == 'team_lead':
+            queryset = queryset.filter(team_lead=user.id)
         return super().filter_queryset(queryset)
 
 
