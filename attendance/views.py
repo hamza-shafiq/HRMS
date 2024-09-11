@@ -137,9 +137,13 @@ class AttendanceViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         date = self.request.query_params.get('date')
         emp_id = self.request.query_params.get('employee_id')
+        portal = self.request.query_params.get('portal')
         user = request.user
 
-        if not user.is_admin:
+        if (user.is_admin or user.employee.is_team_lead) and portal == 'team_lead':
+            queryset = Attendance.objects.filter(employee__team_lead=user.id).order_by('-check_in')
+
+        elif not user.is_admin:
             employee = Employee.objects.get(id=user.id)
             if employee.is_team_lead:
                 team_lead = employee
@@ -214,8 +218,11 @@ class LeavesFilter(django_filters.FilterSet):
                 filter(full_name__icontains=value))
 
     def filter_queryset(self, queryset):
+        portal = self.request.query_params.get('portal')
         # Filtering logic for team lead
         user = self.request.user
+        if (user.is_admin or user.employee.is_team_lead) and portal == 'team_lead':
+            queryset = queryset.filter(employee__team_lead=user.id)
         if user.is_admin:
             pass
         else:
