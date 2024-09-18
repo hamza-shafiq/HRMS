@@ -18,7 +18,7 @@ def test_get_statistics(admin_factory, employee_factory, asset_factory, recruit_
     recruit.refresh_from_db()
     user = admin_factory()
     client = authed_token_client_generator(user)
-    response = client.get(reverse('dashboard-list'))
+    response = client.get(reverse('dashboard-list') + '?portal=admin')
     assert response.status_code == status.HTTP_200_OK
     assert response.json()['total_departments'] == 1
     assert response.json()['total_employees'] == 1

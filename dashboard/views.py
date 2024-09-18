@@ -23,19 +23,23 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     serializer_class = EmployeeSerializer
 
     def list(self, request, *args, **kwargs):
+        portal = self.request.query_params.get('portal')
         emp = request.query_params.get('emp')
         user = request.user
 
         att_serializer = self.get_attendance_data(emp)
 
-        if user.is_admin:
+        if user.is_admin and portal == "admin":
             leave_serializer = self.get_leave_data(False)
             data = self.get_admin_data(att_serializer, leave_serializer, request)
-        elif user.employee.is_team_lead:
-            employee = Employee.objects.get(id=request.user.id)
+            return JsonResponse(status=status.HTTP_200_OK, data=data)
+        elif portal == "team_lead":
+            employee = Employee.objects.get(id=user.id)
             leave_serializer = self.get_leave_data(employee.id)
             data = self.get_team_lead_data(employee.id, att_serializer, leave_serializer)
-        return JsonResponse(status=status.HTTP_200_OK, data=data)
+            return JsonResponse(status=status.HTTP_200_OK, data=data)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def get_attendance_data(self, emp):
         if emp:
