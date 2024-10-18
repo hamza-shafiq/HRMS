@@ -82,7 +82,7 @@ def test_filter_employees_department(admin_factory, employee_factory, department
     dep1 = department_factory()
     dep2 = department_factory()
     employee1 = employee_factory(department=dep1, first_name='Ali', last_name='M')
-    employee_factory(department=dep2)
+    employee_factory(department=dep2, first_name='Ha', last_name='M')
     client = authed_token_client_generator(user)
     response = client.get(reverse('employees-list') + "?full_name=" + str('Al'))
     assert response.status_code == status.HTTP_200_OK
