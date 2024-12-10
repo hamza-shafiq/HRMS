@@ -60,6 +60,11 @@ INSTALLED_APPS = [
     "corsheaders",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://api.hrms.inovaqo.com",
+    "http://localhost:8000",
+]
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
