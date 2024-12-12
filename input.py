@@ -32,7 +32,7 @@ def create_fake_employees(count=20):
             bank = fake.company()
             account_number = fake.unique.bban()
             joining_date = fake.date_between(start_date="-5y", end_date="today")
-            employee_status = random.choice(['WORKING', 'RESIGNED', 'FIRED'])
+            employee_status = random.choice(['WORKING'])
             remaining_leaves = random.randint(0, 18)
             total_leaves = 18
             extra_leaves = random.randint(0, 5)

@@ -1,6 +1,11 @@
+from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+
+from employees.models import Employee
+from employees.serializers import EmployeeSerializer
 from hrms.pagination import CustomPageNumberPagination
 from .permissions import ProjectPermission
 from .serializers import ProjectsSerializer
@@ -43,3 +48,22 @@ class ProjectsViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPageNumberPagination
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = ProjectFilter
+
+    @action(detail=False, url_path="account_managers", methods=['get'])
+    def get(self, request, *args, **kwargs):
+        user = request.user
+
+        if user.is_admin:
+            employees = Employee.objects.filter(department__department_name="Accounts")
+        else:
+            try:
+                employee = Employee.objects.get(id=user.id)
+                if employee.is_team_lead:
+                    employees = Employee.objects.filter(department__department_name="Accounts")
+                else:
+                    return JsonResponse({'error': 'Permission denied'}, status=403)
+            except Employee.DoesNotExist:
+                return JsonResponse({'error': 'User not found'}, status=404)
+
+        serializer = EmployeeSerializer(employees, many=True, context={'request': request})
+        return JsonResponse({'account_managers': serializer.data})
