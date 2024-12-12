@@ -8,9 +8,9 @@ from employees.models import Employee
 from employees.serializers import EmployeeSerializer
 from hrms.pagination import CustomPageNumberPagination
 from .permissions import ProjectPermission
-from .serializers import ProjectsSerializer
+from .serializers import ProjectsSerializer, AssignmentSerializer
 import django_filters
-from .models import Projects
+from .models import Projects, Assignment
 
 
 class ProjectFilter(django_filters.FilterSet):
@@ -67,3 +67,12 @@ class ProjectsViewSet(viewsets.ModelViewSet):
 
         serializer = EmployeeSerializer(employees, many=True, context={'request': request})
         return JsonResponse({'account_managers': serializer.data})
+
+
+
+
+class AssignmentViewSet(viewsets.ModelViewSet):
+    queryset = Assignment.objects.all()
+    serializer_class = AssignmentSerializer
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ['project']
