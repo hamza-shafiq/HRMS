@@ -76,3 +76,66 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     serializer_class = AssignmentSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['project']
+
+    @action(detail=False, methods=['get'], url_path='employee_assignments')
+    def get_employee_assignments(self, request):
+        user = request.user
+
+        try:
+            assignments = Assignment.objects.filter(employee_id=user.id).select_related('project', 'employee')
+            
+            data = []
+            for assignment in assignments:
+                project_data = {
+                    'project_id': assignment.project.id,
+                    'project_title': assignment.project.title,
+                    'project_description': assignment.project.description,
+                    'project_status': assignment.project.status,
+                    'assignment_id': assignment.id,
+                    'start_date': assignment.start_date,
+                    'end_date': assignment.end_date,
+                    'engagement_type': assignment.engagement_type,
+                    'project_teamlead': assignment.project.team_lead.get_full_name if assignment.project.team_lead else None,
+                }
+                data.append(project_data)
+                
+            return JsonResponse({
+                'employee_id': user.id,
+                'assignments': data
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+    @action(detail=False, methods=['get'], url_path='teamlead_assignments')
+    def get_teamlead_assignments(self, request):
+        user = request.user
+
+        try:
+            assignments = Assignment.objects.filter(employee_id=user.id).select_related('project', 'employee')
+
+            data = []
+            for assignment in assignments:
+                project_data = {
+                    'project_id': assignment.project.id,
+                    'project_title': assignment.project.title,
+                    'project_description': assignment.project.description,
+                    'project_status': assignment.project.status,
+                    'assignment_id': assignment.id,
+                    'start_date': assignment.start_date,
+                    'end_date': assignment.end_date,
+                    'engagement_type': assignment.engagement_type,
+                    'project_teamlead': assignment.project.team_lead.get_full_name if assignment.project.team_lead else None,
+                }
+                data.append(project_data)
+
+            return JsonResponse({
+                'employee_id': user.id,
+                'assignments': data
+            })
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+
+
+
