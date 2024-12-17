@@ -28,18 +28,19 @@ class ProjectsSerializer(serializers.ModelSerializer):
                 'team_lead_name': instance.team_lead.first_name + ' ' + instance.team_lead.last_name
             }
 
-        # Update team members to use assignments
-        ret['team_members'] = [
-            {
-                'id': assignment.id,
-                'employee_id': str(assignment.employee.id),
-                'team_member_name': f"{assignment.employee.first_name} {assignment.employee.last_name}",
-                'start_date': assignment.start_date,
-                'end_date': assignment.end_date,
-                'engagement_type': assignment.engagement_type
-            }
-            for assignment in instance.assignments.all()
-        ]
+
+        if instance.team_lead:
+            ret['team_members'] = [
+                {
+                    'id': assignment.id,
+                    'employee_id': str(assignment.employee.id),
+                    'team_member_name': f"{assignment.employee.first_name} {assignment.employee.last_name}",
+                    'start_date': assignment.start_date,
+                    'end_date': assignment.end_date,
+                    'engagement_type': assignment.engagement_type
+                }
+                for assignment in instance.assignments.all()
+            ]
 
         if instance.account_manager:
             ret['account_manager'] = [

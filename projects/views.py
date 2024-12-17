@@ -36,7 +36,7 @@ class ProjectFilter(django_filters.FilterSet):
         portal = self.request.query_params.get('portal')
         user = self.request.user
         if (user.is_admin or user.employee.is_team_lead) and portal == 'team_lead':
-            queryset = queryset.filter(assignment__team_lead=user.id)
+            queryset = queryset.filter(team_lead_id=user.id)
         return super().filter_queryset(queryset)
 
 
@@ -49,11 +49,12 @@ class ProjectsViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = ProjectFilter
 
+
+
     @action(detail=False, url_path="account_managers", methods=['get'])
     def get(self, request, *args, **kwargs):
         user = request.user
-
-        if user.is_admin:
+        if user.is_admin :
             employees = Employee.objects.filter(department__department_name="Accounts")
         else:
             try:
@@ -76,6 +77,7 @@ class AssignmentViewSet(viewsets.ModelViewSet):
     serializer_class = AssignmentSerializer
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_fields = ['project']
+    permission_classes = [IsAuthenticated, ProjectPermission]
 
     @action(detail=False, methods=['get'], url_path='employee_assignments')
     def get_employee_assignments(self, request):
