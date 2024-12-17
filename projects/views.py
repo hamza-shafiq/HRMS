@@ -3,7 +3,6 @@ from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
-
 from employees.models import Employee
 from employees.serializers import EmployeeSerializer
 from hrms.pagination import CustomPageNumberPagination
@@ -25,9 +24,6 @@ class ProjectFilter(django_filters.FilterSet):
     def filter_by_title(self, queryset, name, value):
         return queryset.filter(title__icontains=value)
 
-    def filter_by_assignee(self, queryset, name, value):
-
-        return queryset.filter(assignee__username__icontains=value)
 
     def filter_by_status(self, queryset, name, value):
         return queryset.filter(status=value)
@@ -72,20 +68,28 @@ class ProjectsViewSet(viewsets.ModelViewSet):
 
 
 
+
+
 class AssignmentViewSet(viewsets.ModelViewSet):
     queryset = Assignment.objects.all()
     serializer_class = AssignmentSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
-    filterset_fields = ['project']
     permission_classes = [IsAuthenticated, ProjectPermission]
+    pagination_class = CustomPageNumberPagination
 
     @action(detail=False, methods=['get'], url_path='employee_assignments')
     def get_employee_assignments(self, request):
+        title=request.GET.get('title')
+        status=request.GET.get('status')
         user = request.user
 
         try:
             assignments = Assignment.objects.filter(employee_id=user.id).select_related('project', 'employee')
-            
+            if title:
+                assignments=assignments.filter(project__title=title )
+            if status:
+                assignments=assignments.filter(project__status=status)
+
+
             data = []
             for assignment in assignments:
                 project_data = {
@@ -100,12 +104,12 @@ class AssignmentViewSet(viewsets.ModelViewSet):
                     'project_teamlead': assignment.project.team_lead.get_full_name if assignment.project.team_lead else None,
                 }
                 data.append(project_data)
-                
+
             return JsonResponse({
                 'employee_id': user.id,
                 'assignments': data
             })
-            
+
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
 
