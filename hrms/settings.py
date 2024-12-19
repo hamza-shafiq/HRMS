@@ -55,7 +55,6 @@ INSTALLED_APPS = [
     'policies.apps.PoliciesConfig',
     'tasks.apps.TasksConfig',
     'announcements.apps.AnnouncementsConfig',
-    'projects.apps.ProjectsConfig',
     'django_filters',
     'drf_spectacular',
     "corsheaders",

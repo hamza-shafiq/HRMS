@@ -41,8 +41,7 @@ class Leaves(BaseModel):
         ('MARRIAGE_LEAVE', 'MARRIAGE_LEAVE'),
         ('EMERGENCY_LEAVE', 'EMERGENCY_LEAVE'),
         ('WORK_FROM_HOME', 'WORK_FROM_HOME'),
-        ('EXTRA_DAYS', 'EXTRA_DAYS'),
-        ('REIMBURSEMENT','REIMBURSEMENT'),
+        ('EXTRA_DAYS', 'EXTRA_DAYS')
     ]
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="leaves")
     leave_type = models.CharField(max_length=50, choices=LEAVE_CHOICES)
