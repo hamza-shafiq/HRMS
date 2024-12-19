@@ -41,7 +41,7 @@ class ProjectsViewSet(viewsets.ModelViewSet):
     queryset = Projects.objects.all()
     serializer_class = ProjectsSerializer
     permission_classes = [IsAuthenticated, ProjectPermission]
-    pagination_class = CustomPageNumberPagination
+
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = ProjectFilter
 

@@ -1,5 +1,6 @@
 import django_filters
 from django.core.exceptions import ValidationError
+from django.db import models
 from django.db.models import Value as V
 from django.db.models.functions import Concat, Lower
 from django.http import JsonResponse
@@ -8,7 +9,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db import models
 
 from employees.models import Department, Employee, EmployeeHistory
 from employees.permissions import DepartmentPermission, EmployeeHistoryPermission, EmployeePermission
@@ -42,22 +42,18 @@ class EmployeeFilter(django_filters.FilterSet):
         portal = self.request.query_params.get('portal')
         user = self.request.user
         if (user.is_admin or user.employee.is_team_lead) and portal == 'team_lead':
-
             from projects.models import Projects
             team_lead_projects = Projects.objects.filter(team_lead=user)
-            
             # Get all employees assigned to these projects
             from projects.models import Assignment
             project_employees = Assignment.objects.filter(
                 project__in=team_lead_projects
             ).values_list('employee_id', flat=True).distinct()
-            
             # Combine both direct reports and project team members
             queryset = queryset.filter(
                 models.Q(team_lead=user.id) |  # Direct reports
                 models.Q(id__in=project_employees)  # Project team members
             ).distinct()
-        
         return super().filter_queryset(queryset)
 
 
