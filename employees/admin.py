@@ -21,6 +21,7 @@ class EmployeeStatusFilter(SimpleListFilter):
 class EmployeesAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'department', 'employee_status', 'remaining_leaves')
     list_filter = (EmployeeStatusFilter,)
+    search_fields = ['first_name','last_name']
 
 
 # Register your models here.

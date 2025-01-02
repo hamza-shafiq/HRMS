@@ -166,7 +166,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     emp_record = None
                     if emp_id is not None and Employee.objects.filter(id=emp_id, is_deleted=False).exists():
                         emp_record = Employee.objects.get(id=emp_id, is_deleted=False)
-                    tl_employees = Employee.objects.filter(team_lead=emp_id, is_deleted=False)
+                    tl_employees = Employee.objects.filter(team_lead=emp_id, is_deleted=False,employee_status="WORKING")
+                    print(tl_employees)
                     if emp_record is not None:
                         tl_serializer = EmployeeSerializer(emp_record, context=serializer_context)
                         serializer_context = {'request': request, 'minimal_fields': True}
