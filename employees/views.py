@@ -166,8 +166,8 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                     emp_record = None
                     if emp_id is not None and Employee.objects.filter(id=emp_id, is_deleted=False).exists():
                         emp_record = Employee.objects.get(id=emp_id, is_deleted=False)
-                    tl_employees = Employee.objects.filter(team_lead=emp_id, is_deleted=False,employee_status="WORKING")
-                    print(tl_employees)
+                    tl_employees = Employee.objects.filter(team_lead=emp_id, is_deleted=False,
+                                                           employee_status="WORKING")
                     if emp_record is not None:
                         tl_serializer = EmployeeSerializer(emp_record, context=serializer_context)
                         serializer_context = {'request': request, 'minimal_fields': True}
@@ -209,6 +209,12 @@ class EmployeeViewSet(viewsets.ModelViewSet):
                 serializer = EmployeeSerializer(record, many=True, context=serializer_context)
                 return Response({"employee": serializer.data}, status=status.HTTP_200_OK)
         return JsonResponse({'error': 'User not allowed to perform this action'}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(detail=False, url_path="get_working_employee", methods=['get'])
+    def get_working_employee(self, request):
+        employees = Employee.objects.filter(employee_status="WORKING")
+        serializer = EmployeeSerializer(employees, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class EmploymentHistoryViewSet(viewsets.ModelViewSet):
