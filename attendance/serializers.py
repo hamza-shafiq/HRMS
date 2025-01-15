@@ -5,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from attendance.models import Attendance, Leaves
+from attendance.utils import send_leave_request_message
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -42,6 +43,22 @@ class LeaveSerializer(serializers.ModelSerializer):
         model = Leaves
         fields = ['id', 'employee', 'leave_type', 'reason', 'request_date', 'from_date', 'to_date', 'status',
                   'approved_by']
+
+    def create(self, validated_data):
+        employee = validated_data['employee']
+        name = employee.first_name + " " + employee.last_name
+        leave_type = validated_data['leave_type']
+        start_date = validated_data['from_date']
+        end_date = validated_data['to_date']
+        status = "Pending"
+        team_lead = employee.team_lead
+        if team_lead is None:
+            team_lead_name = "-"
+        else:
+            team_lead_name = team_lead.first_name + " " + team_lead.last_name
+        if leave_type=="WORK_FROM_HOME" or  leave_type=="CASUAL_LEAVE":
+            send_leave_request_message(name, start_date, end_date, leave_type, status, team_lead_name)
+        return Leaves.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         if instance.status != 'PENDING':
