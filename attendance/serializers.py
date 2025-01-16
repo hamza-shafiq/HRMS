@@ -52,11 +52,13 @@ class LeaveSerializer(serializers.ModelSerializer):
         end_date = validated_data['to_date']
         status = "Pending"
         team_lead = employee.team_lead
+        leave_list = ["SICK_LEAVE", "CASUAL_LEAVE", "MATERNITY_LEAVE", "PATERNITY_LEAVE", "MARRIAGE_LEAVE",
+                      "EMERGENCY_LEAVE", "WORK_FROM_HOME"]
         if team_lead is None:
             team_lead_name = "-"
         else:
             team_lead_name = team_lead.first_name + " " + team_lead.last_name
-        if leave_type=="WORK_FROM_HOME" or  leave_type=="CASUAL_LEAVE":
+        if leave_type in leave_list:
             send_leave_request_message(name, start_date, end_date, leave_type, status, team_lead_name)
         return Leaves.objects.create(**validated_data)
 

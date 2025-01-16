@@ -1,16 +1,19 @@
 import os
+from pathlib import Path
 
 import certifi
 import requests
-from dotenv import load_dotenv
 from slack_bolt import App
+import environ
 
-load_dotenv()
+env = environ.Env()
+environ.Env.read_env('.env')
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
-SLACK_TOKEN = os.environ.get("SLACK_BOT_TOKEN")
-SIGNING_SECRET = os.environ.get("SLACK_SIGNING_SECRET")
-SLACK_APP_LEVEL_TOKEN = os.environ.get("SLACK_APP_LEVEL_TOKEN")
+SLACK_TOKEN = env("SLACK_BOT_TOKEN")
+SIGNING_SECRET = env("SLACK_SIGNING_SECRET")
+SLACK_APP_LEVEL_TOKEN = env("SLACK_APP_LEVEL_TOKEN")
+SLACK_CHANNEL_ID = env("SLACK_CHANNEL_ID")
 
 app = App(token=SLACK_TOKEN, signing_secret=SIGNING_SECRET)
 
@@ -51,7 +54,7 @@ def send_leave_request_message(name, start_date, end_date, leave_type, status, t
             )
 
     payload = {
-        "channel": "C088CPH13K5",
+        "channel": SLACK_CHANNEL_ID,
         "text": message,
         "mrkdwn": True
     }

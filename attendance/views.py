@@ -281,6 +281,7 @@ class LeavesViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, url_name="approve", methods=['PATCH'])
     def approve(self, request, pk):
+        leave_list=["SICK_LEAVE","CASUAL_LEAVE","MATERNITY_LEAVE","PATERNITY_LEAVE","MARRIAGE_LEAVE","EMERGENCY_LEAVE","WORK_FROM_HOME"]
         leave = self.get_object()
         employee_name = f"{leave.employee.first_name} {leave.employee.last_name}"
         leave_type = leave.leave_type
@@ -297,9 +298,9 @@ class LeavesViewSet(viewsets.ModelViewSet):
         if 'from_date' in request.data:
             leave.from_date = request.data['from_date']
         leave.save()
-        approved = leave.approved_by
-        approved_by = f"{approved.first_name} {approved.last_name}"
-        if leave_type=="WORK_FROM_HOME" or  leave_type=="CASUAL_LEAVE":
+        if (leave_type in leave_list) and leave.status == 'APPROVED':
+            approved = leave.approved_by
+            approved_by = f"{approved.first_name} {approved.last_name}"
             send_leave_request_message(employee_name, from_date, to_date, leave_type, "Approved",approved_by )
         return Response(
             status=status.HTTP_200_OK,
