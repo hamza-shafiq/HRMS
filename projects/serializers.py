@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from employees.models import Employee
 from projects.models import Projects, Assignment
 
 class AssignmentSerializer(serializers.ModelSerializer):
@@ -19,6 +21,19 @@ class ProjectsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Projects
         fields = '__all__'
+
+    def create(self, validated_data):
+        assignments_data = self.initial_data.get('assignments', [])
+        user_id = self.context['request'].user.id
+        employee = Employee.objects.get(id=user_id)
+        employee_name = employee.first_name + " " + employee.last_name
+        validated_data['added_by'] = employee_name
+        project = Projects.objects.create(**validated_data)
+        for assignment_data in assignments_data:
+            Assignment.objects.create(project=project, **assignment_data)
+
+        return project
+
 
     def to_representation(self, instance):
         ret = super(ProjectsSerializer, self).to_representation(instance)

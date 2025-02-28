@@ -25,6 +25,7 @@ class Recruits(BaseModel):
 
     class Meta:
         db_table = "recruits"
+        ordering = ['-created']
 
     @property
     def get_full_name(self):
