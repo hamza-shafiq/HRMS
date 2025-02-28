@@ -212,8 +212,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, url_path="get_working_employee", methods=['get'])
     def get_working_employee(self, request):
-        employees = Employee.objects.filter(employee_status="WORKING")
-        serializer = EmployeeSerializer(employees, many=True)
+        serializer_context = {'request': request}
+        employees = Employee.objects.filter(employee_status="WORKING", )
+        serializer = EmployeeSerializer(employees, many=True, context=serializer_context)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
