@@ -4,7 +4,7 @@ from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 
 from attendance.serializers import LeaveSerializer
-from employees.models import Department, Employee, EmployeeHistory
+from employees.models import Department, Employee, EmployeeHistory, Tenure
 from user.models import User
 from user.tasks import send_email
 
@@ -142,5 +142,27 @@ class EmploymentHistorySerializer(serializers.ModelSerializer):
             ret['review_by'] = {
                 'review_by_id': str(instance.review_by.id),
                 'review_by_name': instance.review_by.get_full_name
+            }
+        return ret
+
+
+class TenureSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = Tenure
+        fields = ["id", "employee", "interval_from", "interval_to", "allocated_leaves","added_by"]
+
+    def to_representation(self, instance):
+        ret = super(TenureSerializer, self).to_representation(instance)
+        if instance.employee:
+            ret['employee'] = {
+                'employee_id': str(instance.employee.id),
+                'employee_name': instance.employee.get_full_name
+            }
+        if instance.added_by:
+            ret['added_by'] = {
+                'added_by_id': str(instance.added_by.id),
+                'added_by_name': instance.added_by.get_full_name
             }
         return ret

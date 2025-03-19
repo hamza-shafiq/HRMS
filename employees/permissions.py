@@ -19,3 +19,6 @@ class EmployeePermission(BaseCustomPermission):
 
 class EmployeeHistoryPermission(BaseCustomPermission):
     pass
+
+class TenurePermission(BaseCustomPermission):
+    pass

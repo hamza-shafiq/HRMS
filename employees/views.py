@@ -10,11 +10,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from employees.models import Department, Employee, EmployeeHistory
-from employees.permissions import DepartmentPermission, EmployeeHistoryPermission, EmployeePermission
+from employees.models import Department, Employee, EmployeeHistory, Tenure
+from employees.permissions import DepartmentPermission, EmployeeHistoryPermission, EmployeePermission, TenurePermission
 from hrms.pagination import CustomPageNumberPagination
 
-from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHistorySerializer
+from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHistorySerializer, TenureSerializer
 
 
 class EmployeeFilter(django_filters.FilterSet):
@@ -66,6 +66,18 @@ class EmployeeHistoryFilter(django_filters.FilterSet):
         model = EmployeeHistory
         fields = ["id", "employee", "subject", "remarks", "increment", "interval_from", "interval_to", "review_by",
                   "review_date", "added_by", "added_date"]
+
+    def filter_employee_id(self, queryset, name, value):
+        return queryset.filter(employee__id=value)
+    
+class TenureFilter(django_filters.FilterSet):
+    emp_id = filters.CharFilter(
+        method='filter_employee_id',
+    )
+
+    class Meta:
+        model = Tenure
+        fields = ["id", "employee", "interval_from", "interval_to", "allocated_leaves","added_by"]
 
     def filter_employee_id(self, queryset, name, value):
         return queryset.filter(employee__id=value)
@@ -224,3 +236,12 @@ class EmploymentHistoryViewSet(viewsets.ModelViewSet):
     serializer_class = EmploymentHistorySerializer
     pagination_class = CustomPageNumberPagination
     filterset_class = EmployeeHistoryFilter
+
+
+
+class TenureViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, TenurePermission]
+    queryset = Tenure.objects.all()
+    serializer_class = TenureSerializer
+    pagination_class = CustomPageNumberPagination
+    filterset_class = TenureFilter
