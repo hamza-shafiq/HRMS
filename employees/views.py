@@ -80,6 +80,8 @@ class TenureFilter(django_filters.FilterSet):
         fields = ["id", "employee", "interval_from", "interval_to", "allocated_leaves","added_by"]
 
     def filter_employee_id(self, queryset, name, value):
+        filtered = queryset.filter(employee__id=value)
+        print("Filtered Tenures:", list(filtered.values()))
         return queryset.filter(employee__id=value)
 
 
@@ -240,7 +242,7 @@ class EmploymentHistoryViewSet(viewsets.ModelViewSet):
 
 
 class TenureViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated, TenurePermission]
+    permission_classes = [IsAuthenticated]
     queryset = Tenure.objects.all()
     serializer_class = TenureSerializer
     pagination_class = CustomPageNumberPagination

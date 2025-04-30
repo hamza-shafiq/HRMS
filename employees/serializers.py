@@ -7,6 +7,7 @@ from attendance.serializers import LeaveSerializer
 from employees.models import Department, Employee, EmployeeHistory, Tenure
 from user.models import User
 from user.tasks import send_email
+from attendance.models import Leaves
 
 
 class DepartmentSerializer(serializers.HyperlinkedModelSerializer):
@@ -148,10 +149,15 @@ class EmploymentHistorySerializer(serializers.ModelSerializer):
 
 class TenureSerializer(serializers.ModelSerializer):
     id = serializers.CharField(read_only=True)
+    used_leaves = serializers.SerializerMethodField()
+    remaining_leaves = serializers.SerializerMethodField()
+    latest_tenure_for_employee = serializers.SerializerMethodField()
 
     class Meta:
         model = Tenure
-        fields = ["id", "employee", "interval_from", "interval_to", "allocated_leaves","added_by"]
+        fields = ["id", "status", "employee", "interval_from", "interval_to", "allocated_leaves", "added_by",
+                  "used_leaves",
+                  "remaining_leaves", "latest_tenure_for_employee"]
 
     def to_representation(self, instance):
         ret = super(TenureSerializer, self).to_representation(instance)
@@ -166,3 +172,40 @@ class TenureSerializer(serializers.ModelSerializer):
                 'added_by_name': instance.added_by.get_full_name
             }
         return ret
+
+    def get_used_leaves(self, instance):
+        leaves = Leaves.objects.filter(
+            employee=instance.employee,
+            from_date__gte=instance.interval_from,
+            to_date__lte=instance.interval_to,
+            status="APPROVED"
+        )
+
+        total_days = 0
+        for leave in leaves:
+            days = (leave.to_date - leave.from_date).days + 1
+            total_days += days
+
+        return total_days
+
+    def get_remaining_leaves(self, instance):
+        used = self.get_used_leaves(instance)
+        return max(instance.allocated_leaves - used, 0)
+
+    def get_latest_tenure_for_employee(self, instance):
+        latest = (
+            Tenure.objects
+            .filter(employee=instance.employee)
+            .order_by("-interval_from")
+            .first()
+        )
+        if latest:
+            return {
+                "id": str(latest.id),
+                "interval_from": latest.interval_from,
+                "interval_to": latest.interval_to,
+                "status": latest.status,
+                "used_leaves": self.get_used_leaves(latest),
+                "remaining_leaves": self.get_remaining_leaves(latest),
+            }
+        return None
