@@ -146,6 +146,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         except ValueError:
             return Response({'error': 'Invalid team lead ID'}, status=status.HTTP_400_BAD_REQUEST)
 
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
     @action(detail=False, url_path="unique-values", methods=['get'])
     def get(self, request, *args, **kwargs):
         user = request.user
