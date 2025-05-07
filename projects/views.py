@@ -28,6 +28,10 @@ class ProjectFilter(django_filters.FilterSet):
     def filter_by_status(self, queryset, name, value):
         return queryset.filter(status=value)
 
+    # todo
+    def filter_by_assignee(self, queryset, name, value):
+        pass
+
     def filter_queryset(self, queryset):
         portal = self.request.query_params.get('portal')
         user = self.request.user
