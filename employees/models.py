@@ -80,3 +80,16 @@ class EmployeeHistory(BaseModel):
 
     class Meta:
         db_table = "employee_history"
+
+
+class Tenure(BaseModel):
+    status = models.CharField(max_length=250,)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="tenure", null=True, blank=True)
+    interval_from = models.DateField()
+    interval_to = models.DateField()
+    allocated_leaves = models.IntegerField(default=0)
+    added_by = models.ForeignKey(Employee, on_delete=models.SET_NULL, related_name='tenure_added_by', null=True,
+                                 blank=True)
+
+    class Meta:
+        db_table = "tenure"

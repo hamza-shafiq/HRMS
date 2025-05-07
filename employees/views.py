@@ -10,11 +10,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from employees.models import Department, Employee, EmployeeHistory
-from employees.permissions import DepartmentPermission, EmployeeHistoryPermission, EmployeePermission
+from employees.models import Department, Employee, EmployeeHistory, Tenure
+from employees.permissions import DepartmentPermission, EmployeeHistoryPermission, EmployeePermission, TenurePermission
 from hrms.pagination import CustomPageNumberPagination
 
-from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHistorySerializer
+from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHistorySerializer, TenureSerializer
 
 
 class EmployeeFilter(django_filters.FilterSet):
@@ -68,6 +68,20 @@ class EmployeeHistoryFilter(django_filters.FilterSet):
                   "review_date", "added_by", "added_date"]
 
     def filter_employee_id(self, queryset, name, value):
+        return queryset.filter(employee__id=value)
+    
+class TenureFilter(django_filters.FilterSet):
+    emp_id = filters.CharFilter(
+        method='filter_employee_id',
+    )
+
+    class Meta:
+        model = Tenure
+        fields = ["id", "employee", "interval_from", "interval_to", "allocated_leaves","added_by"]
+
+    def filter_employee_id(self, queryset, name, value):
+        filtered = queryset.filter(employee__id=value)
+        print("Filtered Tenures:", list(filtered.values()))
         return queryset.filter(employee__id=value)
 
 
@@ -131,6 +145,9 @@ class EmployeeViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Team lead not found'}, status=status.HTTP_404_NOT_FOUND)
         except ValueError:
             return Response({'error': 'Invalid team lead ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+    def partial_update(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
 
     @action(detail=False, url_path="unique-values", methods=['get'])
     def get(self, request, *args, **kwargs):
@@ -224,3 +241,12 @@ class EmploymentHistoryViewSet(viewsets.ModelViewSet):
     serializer_class = EmploymentHistorySerializer
     pagination_class = CustomPageNumberPagination
     filterset_class = EmployeeHistoryFilter
+
+
+
+class TenureViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = Tenure.objects.all()
+    serializer_class = TenureSerializer
+    pagination_class = CustomPageNumberPagination
+    filterset_class = TenureFilter

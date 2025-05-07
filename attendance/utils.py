@@ -18,7 +18,6 @@ SLACK_CHANNEL_ID = env("SLACK_CHANNEL_ID")
 app = App(token=SLACK_TOKEN, signing_secret=SIGNING_SECRET)
 
 def send_leave_request_message(name, start_date, end_date, leave_type, status, team_lead_name):
-
     slack_url = "https://slack.com/api/chat.postMessage"
     headers = {
         "Authorization": f"Bearer {SLACK_TOKEN}",

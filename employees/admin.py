@@ -24,7 +24,12 @@ class EmployeesAdmin(admin.ModelAdmin):
     search_fields = ['first_name', 'last_name']
 
 
+class TenureAdmin(admin.ModelAdmin):
+    list_display = ['id', 'employee', 'status', 'interval_from', 'interval_to', 'allocated_leaves',]
+
+
 # Register your models here.
 admin.site.register(employees.models.Employee, EmployeesAdmin)
 admin.site.register(employees.models.Department)
 admin.site.register(employees.models.EmployeeHistory)
+admin.site.register(employees.models.Tenure, TenureAdmin)
