@@ -41,5 +41,10 @@ class AttendanceAdmin(admin.ModelAdmin):
     list_filter = (LeaveStatusFilter,)
 
 
+class AttendanceRequestAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'check_in_time', 'check_out_time', 'status', 'approved_by', 'reason')
+
+
 admin.site.register(attendance.models.Leaves, LeavesAdmin)
 admin.site.register(attendance.models.Attendance, AttendanceAdmin)
+admin.site.register(attendance.models.AttendanceRequest, AttendanceRequestAdmin)

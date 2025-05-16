@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from attendance.models import Attendance, Leaves
 from attendance.utils import send_leave_request_message
-
+from .models import AttendanceRequest
 
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -92,3 +92,37 @@ class LeaveSerializer(serializers.ModelSerializer):
         difference = self.difference_date(str(instance.from_date), str(instance.to_date))
         ret['number_of_days'] = str(difference + 1)
         return ret
+
+
+class AttendanceRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttendanceRequest
+        fields = '__all__'
+        read_only_fields = ['employee', 'status', 'approved_by', 'request_date']
+
+    def validate(self, data):
+        check_type = data.get('check_type')
+        if check_type == 'CHECK_IN' and not data.get('check_in_time'):
+            raise serializers.ValidationError("check-in time is required for CHECK_IN.")
+        if check_type == 'CHECK_OUT' and not data.get('check_out_time'):
+            raise serializers.ValidationError("check-out time is required for CHECK_OUT.")
+        if check_type == 'CHECK_IN_CHECK_OUT' and (
+                not data.get('check_in_time') or not data.get('check_out_time')):
+            raise serializers.ValidationError("Both check-in and check-out times are required for BOTH.")
+        return data
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        validated_data["employee"] = request.user.employee
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        ret = super(AttendanceRequestSerializer, self).to_representation(instance)
+        ret['employee_name'] = str(instance.employee.get_full_name)
+        if instance.approved_by:
+            ret['approved_by'] = {
+                'approved_by_id': str(instance.approved_by.id),
+                'approved_by_name': instance.approved_by.get_full_name
+            }
+        return ret
+

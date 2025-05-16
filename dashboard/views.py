@@ -8,8 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from assets.models import Asset, AssignedAsset
-from attendance.models import Attendance, Leaves
-from attendance.serializers import AttendanceSerializer, LeaveSerializer
+from attendance.models import Attendance, Leaves, AttendanceRequest
+from attendance.serializers import AttendanceSerializer, LeaveSerializer, AttendanceRequestSerializer
 from dashboard.permissions import DashboardPermission
 from employees.models import Department, Employee
 from employees.serializers import EmployeeSerializer
@@ -31,7 +31,8 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
         if user.is_admin and portal == "admin":
             leave_serializer = self.get_leave_data(False)
-            data = self.get_admin_data(att_serializer, leave_serializer, request)
+            attendance_serializer = self.get_attendance_request_data()
+            data = self.get_admin_data(att_serializer, leave_serializer, attendance_serializer, request)
             return JsonResponse(status=status.HTTP_200_OK, data=data)
         elif portal == "team_lead":
             employee = Employee.objects.get(id=user.id)
@@ -63,6 +64,10 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             record = Leaves.objects.filter(is_deleted=False).order_by('-request_date')[:3]
             return LeaveSerializer(record, many=True).data
 
+    def get_attendance_request_data(self):
+        record = AttendanceRequest.objects.all().order_by('-request_date')[:3]
+        return AttendanceRequestSerializer(record, many=True).data
+
     def get_team_lead_data(self, team_lead, att_serializer, leave_serializer):
         emp_attendance = att_serializer
 
@@ -85,7 +90,7 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             "leave_data": leave_serializer
         }
 
-    def get_admin_data(self, att_serializer, leave_serializer, request):
+    def get_admin_data(self, att_serializer, leave_serializer, attendance_serializer, request):
         emp_attendance = att_serializer
         total_department = Department.objects.count()
         total_employees = Employee.objects.count()
@@ -122,6 +127,7 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
             "total_attendees": attendees,
             "emp_attendance": emp_attendance,
             "leave_data": leave_serializer,
+            "attendance_request_records": attendance_serializer,
             "profile_pic": profile_pic
         }
 
@@ -153,6 +159,11 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 '-request_date')[:3]
             leave_serializer = LeaveSerializer(leave_records, many=True)
 
+            # Fetch the last three leave records for employees under the team lead
+            attendance_request_records = AttendanceRequest.objects.filter(employee__team_lead=team_lead_id).order_by(
+                '-request_date')[:3]
+            attendance_request_serializer = AttendanceRequestSerializer(attendance_request_records, many=True)
+
             # Fetch attendance data for employees under the team lead
             attendance_records = Attendance.objects.filter(employee__team_lead=team_lead_id, is_deleted=False)
             attendance_serializer = AttendanceSerializer(attendance_records, many=True)
@@ -165,6 +176,7 @@ class DashboardStatsViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
                 "total_attendees": attendees,
                 "emp_attendance": attendance_serializer.data,
                 "leave_data": leave_serializer.data,
+                "attendance_request_records": attendance_request_serializer.data,
                 # "profile_pic": employee.profile_pic if employee.profile_pic else None,
             }
             return Response(data, status=status.HTTP_200_OK)
