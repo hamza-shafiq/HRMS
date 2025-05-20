@@ -36,9 +36,14 @@ class LeavesPermission(BaseCustomPermission):
 class AttendanceRequestPermission(BaseCustomPermission):
     def has_permission(self, request, view):
         user_role = check_user_role(request.user)
+
+        if UserRoles.ADMIN in user_role or UserRoles.TEAM_LEAD in user_role:
+            return True
+
         if view.action in ['create', 'list', 'retrieve', 'partial_update', 'destroy']:
             if request.user.is_employee:
                 return True
+
 
         if view.action == 'approve_req':
             if UserRoles.ADMIN in user_role or UserRoles.TEAM_LEAD in user_role:

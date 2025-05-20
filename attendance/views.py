@@ -356,7 +356,6 @@ class AttendanceRequestFilter(django_filters.FilterSet):
     def filter_check_type(self, queryset, name, value):
         return queryset.filter(check_type=value)
 
-
     def filter_employee_id(self, queryset, name, value):
         return queryset.filter(employee__id=value)
 
@@ -385,8 +384,7 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return AttendanceRequest.objects.all().order_by('-request_date')
 
-    @action(detail=False, methods=['post'], url_path='create')
-    def create_attendance_request(self, request):
+    def create(self, request, *args, **kwargs):
         user = request.user
         data = request.data.copy()
         data['employee'] = user.employee.id
@@ -403,13 +401,12 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['patch'], url_path='approve_req')
     def approve_req(self, request, pk=None):
         correction_request = self.get_object()
-
         status_value = request.data.get('status')
-        print(status_value)
+
         if status_value not in ['APPROVED', 'REJECTED', 'PENDING']:
             return Response({"detail": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
 
-        attendance_date = request.data.get('attendance_date', correction_request.attendance_date)
+        attendance_date = correction_request.attendance_date
         if isinstance(attendance_date, str):
             try:
                 attendance_date = datetime.strptime(attendance_date, "%Y-%m-%d").date()
@@ -417,10 +414,8 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
                 return Response({"detail": "Invalid attendance_date format. Use YYYY-MM-DD."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-        check_in_time = request.data.get('check_in_time',
-                                         correction_request.check_in_time)
-        check_out_time = request.data.get('check_out_time',
-                                          correction_request.check_out_time)
+        check_in_time = correction_request.check_in_time
+        check_out_time = correction_request.check_out_time
 
         TIME_FORMAT = '%H:%M:%S'
         if check_in_time:
@@ -443,16 +438,11 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
         elif check_out_time is None:
             check_out_time = None
 
-            # Apply updates
-        correction_request.check_type = request.data.get('check_type', correction_request.check_type)
-        correction_request.attendance_date = attendance_date
-        correction_request.check_in_time = check_in_time
-        correction_request.check_out_time = check_out_time
+        # Apply update
         correction_request.status = status_value
         correction_request.approved_by = request.user.employee
         correction_request.save()
 
-        # If APPROVED, update or create attendance record
         if status_value == 'APPROVED':
             employee = correction_request.employee
             check_type = correction_request.check_type
@@ -465,7 +455,6 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
                 return Response({"detail": "Both check-in and check-out times are required."},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            # Make aware datetime objects
             check_in_dt = make_aware(
                 datetime.combine(attendance_date, check_in_time)) if check_in_time else None
             check_out_dt = make_aware(
@@ -477,6 +466,7 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
 
             # Update or create attendance
             attendance = Attendance.objects.filter(employee=employee, check_in__date=attendance_date).first()
+
             if attendance:
                 if check_type in ['CHECK_IN', 'CHECK_IN_CHECK_OUT']:
                     attendance.check_in = check_in_dt
@@ -493,8 +483,17 @@ class AttendanceRequestViewSet(viewsets.ModelViewSet):
                     total_time=total_time if check_in_dt and check_out_dt else None,
                     status='ATTENDANCE_REQUEST'
                 )
+        name = f"{correction_request.employee.first_name} {correction_request.employee.last_name}"
+        leave_type = correction_request.check_type
+        approved = correction_request.approved_by
+        start_date = attendance_date
+        end_date = attendance_date
+        team_lead_name = f"{approved.first_name} {approved.last_name}"
+        send_leave_request_message(name,start_date,end_date, leave_type,
+                                        "Approved", team_lead_name)
         serializer = self.get_serializer(correction_request)
-        return Response({"success": f"Request {status_value.lower()}.","data": serializer.data}, status=status.HTTP_200_OK)
+        return Response({"success": f"Request {status_value.lower()}.", "data": serializer.data},
+                        status=status.HTTP_200_OK)
 
     def destroy(self, request, *args, **kwargs):
         att_req = self.get_object()
