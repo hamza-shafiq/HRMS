@@ -152,12 +152,13 @@ class TenureSerializer(serializers.ModelSerializer):
     used_leaves = serializers.SerializerMethodField()
     remaining_leaves = serializers.SerializerMethodField()
     latest_tenure_for_employee = serializers.SerializerMethodField()
+    leave_type_counts = serializers.SerializerMethodField()
 
     class Meta:
         model = Tenure
         fields = ["id", "status", "employee", "interval_from", "interval_to", "allocated_leaves", "added_by",
                   "used_leaves",
-                  "remaining_leaves", "latest_tenure_for_employee"]
+                  "remaining_leaves", "latest_tenure_for_employee", "leave_type_counts"]
 
     def to_representation(self, instance):
         ret = super(TenureSerializer, self).to_representation(instance)
@@ -174,12 +175,15 @@ class TenureSerializer(serializers.ModelSerializer):
         return ret
 
     def get_used_leaves(self, instance):
-        leaves = Leaves.objects.filter(
+        leaves = (Leaves.objects.filter(
             employee=instance.employee,
             from_date__gte=instance.interval_from,
             to_date__lte=instance.interval_to,
             status="APPROVED"
-        )
+
+        ).exclude(
+            leave_type__in=["WORK_FROM_HOME", "EXTRA_DAYS", "REIMBURSEMENT"]
+        ))
 
         total_days = 0
         for leave in leaves:
@@ -191,6 +195,25 @@ class TenureSerializer(serializers.ModelSerializer):
     def get_remaining_leaves(self, instance):
         used = self.get_used_leaves(instance)
         return max(instance.allocated_leaves - used, 0)
+
+    def get_leave_type_counts(self, instance):
+        leaves = Leaves.objects.filter(
+            employee=instance.employee,
+            from_date__gte=instance.interval_from,
+            to_date__lte=instance.interval_to,
+            status="APPROVED"
+        )
+
+        leave_counts = {}
+        for leave in leaves:
+            leave_type = leave.leave_type
+            days = (leave.to_date - leave.from_date).days + 1
+            if leave_type in leave_counts:
+                leave_counts[leave_type] += days
+            else:
+                leave_counts[leave_type] = days
+
+        return leave_counts
 
     def get_latest_tenure_for_employee(self, instance):
         latest = (
