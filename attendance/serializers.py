@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from attendance.models import Attendance, Leaves
 from attendance.utils import send_leave_request_message
+from .models import AttendanceRequest
 
 
 class AttendanceSerializer(serializers.ModelSerializer):
@@ -17,12 +18,17 @@ class AttendanceSerializer(serializers.ModelSerializer):
         ret = super(AttendanceSerializer, self).to_representation(instance)
         ret['employee_name'] = str(str(instance.employee.first_name).capitalize() + " " +
                                    str(instance.employee.last_name).capitalize())
-        dt = datetime.strptime(str(instance.check_in), settings.DATETIME_FORMAT)
-        ret['time_check_in'] = (str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" +
-                                str(dt.second).zfill(2))
-        ret['check_in_date'] = dt.date()
+        if instance.check_in:
+            dt = datetime.strptime(str(instance.check_in), settings.DATETIME_FORMAT)
+            ret['time_check_in'] = (str(dt.hour + 5).zfill(2) + ":" + str(dt.minute).zfill(2) + ":" +
+                                    str(dt.second).zfill(2))
+            ret['check_in_date'] = dt.date()
 
-        ret['check in time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
+            ret['check in time'] = str(dt.hour + 5).zfill(2) + str(dt.minute).zfill(2) + str(dt.second).zfill(2)
+
+        else:
+            ret['time_check_in'] = None
+            ret['check in time'] = None
 
         if instance.check_out is None or instance.check_out is False:
             pass
@@ -91,4 +97,51 @@ class LeaveSerializer(serializers.ModelSerializer):
             }
         difference = self.difference_date(str(instance.from_date), str(instance.to_date))
         ret['number_of_days'] = str(difference + 1)
+        return ret
+
+
+class AttendanceRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AttendanceRequest
+        fields = '__all__'
+        read_only_fields = ['employee', 'approved_by', 'request_date']
+
+    def validate(self, data):
+        check_type = data.get('check_type')
+        if check_type == 'CHECK_IN' and not data.get('check_in_time'):
+            raise serializers.ValidationError("check-in time is required for CHECK_IN.")
+        if check_type == 'CHECK_OUT' and not data.get('check_out_time'):
+            raise serializers.ValidationError("check-out time is required for CHECK_OUT.")
+        if check_type == 'CHECK_IN_CHECK_OUT' and (
+                not data.get('check_in_time') or not data.get('check_out_time')):
+            raise serializers.ValidationError("Both check-in and check-out times are required for BOTH.")
+        return data
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        employee = request.user.employee
+        validated_data["employee"] = employee
+        leave_type = validated_data.get('check_type')
+        attendance_date = validated_data.get('attendance_date')
+
+        name = employee.first_name + " " + employee.last_name
+
+        status = "Pending"
+        team_lead = employee.team_lead
+        team_lead_name = team_lead.first_name + " " + team_lead.last_name if team_lead else "-"
+        start_date = attendance_date
+        end_date = attendance_date
+
+        send_leave_request_message(name, start_date, end_date, leave_type,
+                                   status, team_lead_name)
+        return super().create(validated_data)
+
+    def to_representation(self, instance):
+        ret = super(AttendanceRequestSerializer, self).to_representation(instance)
+        ret['employee_name'] = str(instance.employee.get_full_name)
+        if instance.approved_by:
+            ret['approved_by'] = {
+                'approved_by_id': str(instance.approved_by.id),
+                'approved_by_name': instance.approved_by.get_full_name
+            }
         return ret

@@ -113,7 +113,8 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'hrms.pagination.CustomPageNumberPagination',
-    'PAGE_SIZE': 20
+    'PAGE_SIZE': 20,
+    'NON_FIELD_ERRORS_KEY': 'error'
 }
 
 SPECTACULAR_SETTINGS = {

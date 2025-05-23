@@ -11,7 +11,8 @@ class Attendance(BaseModel):
         ('EARLY_ARRIVAL', 'EARLY_ARRIVAL'),
         ('EARLY_DEPARTURE', 'EARLY_DEPARTURE'),
         ('LATE_DEPARTURE', 'LATE_DEPARTURE'),
-        ('ON_TIME', 'ON_TIME')
+        ('ON_TIME', 'ON_TIME'),
+        ('ATTENDANCE_REQUEST', 'ATTENDANCE_REQUEST'),
     ]
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='attendance')
     check_in = models.DateTimeField(null=True, blank=True)
@@ -59,3 +60,34 @@ class Leaves(BaseModel):
 
     def __str__(self):
         return f"{self.employee.first_name} {self.created}"
+
+
+class AttendanceRequest(models.Model):
+    CHECK_TYPE_CHOICES = [
+        ('CHECK_IN', 'Check In'),
+        ('CHECK_OUT', 'Check Out'),
+        ('CHECK_IN_CHECK_OUT', 'Check In and Check Out'),
+    ]
+
+    STATUS_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name="attendance_requests")
+    check_type = models.CharField(max_length=20, choices=CHECK_TYPE_CHOICES)
+    request_date = models.DateTimeField(auto_now_add=True)
+    attendance_date = models.DateField()
+    check_in_time = models.TimeField(null=True, blank=True)
+    check_out_time = models.TimeField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
+    reason = models.TextField(max_length=500)
+    approved_by = models.ForeignKey(Employee, on_delete=models.CASCADE, null=True, blank=True, related_name="request_approver")
+    tracker = FieldTracker(fields=['status'])
+
+    class Meta:
+        db_table = "attendance_requests"
+
+    def __str__(self):
+        return f"{self.employee.first_name} - {self.attendance_date} - {self.check_type}"
