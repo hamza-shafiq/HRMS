@@ -214,7 +214,10 @@ class LeavesFilter(django_filters.FilterSet):
         return queryset.filter(approved_by__id=value)
 
     def filter_leave_type(self, queryset, name, value):
-        return queryset.filter(leave_type=value)
+        leave_types = value.split(',') if isinstance(value, str) else value
+
+        # Filter the queryset by the list of leave types
+        return queryset.filter(leave_type__in=leave_types)
 
     def filter_employee_id(self, queryset, name, value):
         return (queryset.annotate(full_name=Concat('employee__first_name', V(' '), 'employee__last_name')).
