@@ -32,6 +32,7 @@ class Employee(User):
     national_id_number = models.CharField(max_length=50, null=False, unique=True)
     emergency_contact_number = models.TextField(max_length=20)
     gender = models.CharField(choices=GENDER_OPTIONS, max_length=255)
+    dob = models.DateField(verbose_name="Date of Birth", null=True)
     department = models.ForeignKey(Department, on_delete=models.CASCADE, related_name="employees")
     designation = models.CharField(max_length=50)
     bank = models.CharField(max_length=50)
