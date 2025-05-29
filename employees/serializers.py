@@ -232,3 +232,10 @@ class TenureSerializer(serializers.ModelSerializer):
                 "remaining_leaves": self.get_remaining_leaves(latest),
             }
         return None
+
+
+class MonthlyEventSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    type = serializers.CharField()
+    event_date = serializers.DateField()

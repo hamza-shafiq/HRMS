@@ -1,3 +1,5 @@
+from datetime import date
+
 import django_filters
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -14,7 +16,8 @@ from employees.models import Department, Employee, EmployeeHistory, Tenure
 from employees.permissions import DepartmentPermission, EmployeeHistoryPermission, EmployeePermission, TenurePermission
 from hrms.pagination import CustomPageNumberPagination
 
-from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHistorySerializer, TenureSerializer
+from .serializers import DepartmentSerializer, EmployeeSerializer, EmploymentHistorySerializer, TenureSerializer, \
+    MonthlyEventSerializer
 
 
 class EmployeeFilter(django_filters.FilterSet):
@@ -69,7 +72,8 @@ class EmployeeHistoryFilter(django_filters.FilterSet):
 
     def filter_employee_id(self, queryset, name, value):
         return queryset.filter(employee__id=value)
-    
+
+
 class TenureFilter(django_filters.FilterSet):
     emp_id = filters.CharFilter(
         method='filter_employee_id',
@@ -77,7 +81,7 @@ class TenureFilter(django_filters.FilterSet):
 
     class Meta:
         model = Tenure
-        fields = ["id", "employee", "interval_from", "interval_to", "allocated_leaves","added_by"]
+        fields = ["id", "employee", "interval_from", "interval_to", "allocated_leaves", "added_by"]
 
     def filter_employee_id(self, queryset, name, value):
         filtered = queryset.filter(employee__id=value)
@@ -234,6 +238,51 @@ class EmployeeViewSet(viewsets.ModelViewSet):
         serializer = EmployeeSerializer(employees, many=True, context=serializer_context)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=['get'], url_path='monthly-events')
+    def monthly_events(self, request):
+        current_month = date.today().month
+
+        event_type = request.query_params.get("type")
+        start_date = request.query_params.get("start_date")
+        end_date = request.query_params.get("end_date")
+
+        birthdays = Employee.objects.filter(dob__month=current_month)
+        anniversaries = Employee.objects.filter(joining_date__month=current_month)
+
+        events = []
+
+        if not event_type or event_type.lower() == "birthday":
+            for emp in birthdays:
+                events.append({
+                    "id": f"{emp.id}-birthday",
+                    "name": f"{emp.first_name} {emp.last_name}",
+                    "type": "birthday",
+                    "event_date": emp.dob
+                })
+
+        if not event_type or event_type.lower() == "anniversary":
+            for emp in anniversaries:
+                events.append({
+                    "id": f"{emp.id}-anniversary",
+                    "name": f"{emp.first_name} {emp.last_name}",
+                    "type": "anniversary",
+                    "event_date": emp.joining_date
+                })
+
+        if start_date:
+            events = [e for e in events if e["event_date"] >= date.fromisoformat(start_date)]
+        if end_date:
+            events = [e for e in events if e["event_date"] <= date.fromisoformat(end_date)]
+
+        events.sort(key=lambda x: x['name'])
+
+
+        paginator = self.pagination_class()
+        paginated_data = paginator.paginate_queryset(events, request, view=self)
+
+        serializer = MonthlyEventSerializer(paginated_data, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
 
 class EmploymentHistoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, EmployeeHistoryPermission]
@@ -241,7 +290,6 @@ class EmploymentHistoryViewSet(viewsets.ModelViewSet):
     serializer_class = EmploymentHistorySerializer
     pagination_class = CustomPageNumberPagination
     filterset_class = EmployeeHistoryFilter
-
 
 
 class TenureViewSet(viewsets.ModelViewSet):
