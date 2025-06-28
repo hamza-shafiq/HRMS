@@ -270,7 +270,24 @@ class LeavesViewSet(viewsets.ModelViewSet):
         serializer_context = {
             'request': request,
         }
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        date_format = '%Y-%m-%d'
+        try:
+            if start_date:
+                start_date = datetime.strptime(start_date, date_format).date()
+            if end_date:
+                end_date = datetime.strptime(end_date, date_format).date()
+        except ValueError:
+            return Response({"error": "Invalid input"}, status=status.HTTP_400_BAD_REQUEST)
         leaves = Leaves.objects.filter(employee=user.id).order_by('-request_date')
+        if start_date and end_date:
+            leaves = leaves.filter(from_date__gte=start_date, to_date__lte=end_date)
+        elif start_date:
+            leaves = leaves.filter(from_date__gte=start_date)
+        elif end_date:
+            leaves = leaves.filter(to_date__lte=end_date)
+
         count = self.remaining_leaves_per_month(user.id, request)
         paginator = CustomPageNumberPagination()
         result_page = paginator.paginate_queryset(leaves, request)
